@@ -16,7 +16,7 @@ function Navbar() {
 
   return (
     <div className="navbar">
-      <span className="navbar-brand">LogiTrackApp</span>
+      <span className="navbar-brand">MediTrack</span>
       <div className="navbar-user">
         <span>{user.username}</span>
         <span className={`badge-role badge-role-${user.role.toLowerCase()}`}>{user.role}</span>

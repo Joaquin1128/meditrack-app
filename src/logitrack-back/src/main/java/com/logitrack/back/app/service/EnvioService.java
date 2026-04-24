@@ -20,25 +20,34 @@ public class EnvioService {
     private final List<Envio> envios = new ArrayList<>();
 
     public EnvioService() {
-        Envio e1 = new Envio("1", "Juan Pérez", "Ana García", "Av. Siempre Viva 123",
-                "Buenos Aires", "Córdoba", "2026-04-01", "", EstadoEnvio.CREADO);
-        e1.setPrioridad("ALTA"); 
-        e1.agregarHistorial(new HistorialEstado(EstadoEnvio.CREADO, "2026-03-28", "09:00", "sistema"));
+        Envio e1 = new Envio("1", "Laboratorio Roemmers S.A.", "Farmacia del Pueblo",
+                "Av. Corrientes 1234, Buenos Aires",
+                "Buenos Aires", "Rosario", "2026-04-28",
+                "Amoxicilina 500mg x 21 comp. — Lote: ROE-2026-04",
+                "Mantener entre 15°C y 25°C", EstadoEnvio.CREADO);
+        e1.setPrioridad("ALTA");
+        e1.agregarHistorial(new HistorialEstado(EstadoEnvio.CREADO, "2026-04-24", "08:00", "sistema"));
         envios.add(e1);
 
-        Envio e2 = new Envio("2", "Empresa XYZ", "Carlos López", "Calle Falsa 456",
-                "Rosario", "Mendoza", "2026-04-05", "Frágil", EstadoEnvio.EN_TRANSITO);
-        e2.setPrioridad("MEDIA");         
-        e2.agregarHistorial(new HistorialEstado(EstadoEnvio.CREADO,     "2026-03-25", "10:00", "admin"));
-        e2.agregarHistorial(new HistorialEstado(EstadoEnvio.EN_TRANSITO, "2026-03-26", "08:30", "admin"));
+        Envio e2 = new Envio("2", "Bioxcel Laboratorios", "Hospital Italiano de Buenos Aires",
+                "Gaspar Campos 450, San Justo",
+                "Córdoba", "Buenos Aires", "2026-04-26",
+                "Insulina Glargina 100UI/mL x 5 frascos — Refrigerado",
+                "Cadena de frío obligatoria: 2°C a 8°C. No congelar.", EstadoEnvio.EN_TRANSITO);
+        e2.setPrioridad("ALTA");
+        e2.agregarHistorial(new HistorialEstado(EstadoEnvio.CREADO,     "2026-04-22", "09:30", "admin"));
+        e2.agregarHistorial(new HistorialEstado(EstadoEnvio.EN_TRANSITO, "2026-04-23", "06:45", "repartidor01"));
         envios.add(e2);
 
-        Envio e3 = new Envio("3", "Transportes Sur", "María Fernández", "Belgrano 789",
-                "Salta", "Buenos Aires", "2026-03-30", "", EstadoEnvio.EN_SUCURSAL);
-        e3.setPrioridad("BAJA"); 
-        e3.agregarHistorial(new HistorialEstado(EstadoEnvio.CREADO,     "2026-03-22", "14:00", "admin"));
-        e3.agregarHistorial(new HistorialEstado(EstadoEnvio.EN_TRANSITO, "2026-03-24", "07:00", "admin"));
-        e3.agregarHistorial(new HistorialEstado(EstadoEnvio.EN_SUCURSAL, "2026-03-27", "15:00", "admin"));
+        Envio e3 = new Envio("3", "Depósito Central MediTrack", "Clínica Santa Rosa",
+                "Belgrano 789, Mendoza",
+                "Buenos Aires", "Mendoza", "2026-04-25",
+                "Ibuprofeno 400mg x 100 comp. + Paracetamol 1g x 50 comp. — Lote: DCM-0042",
+                "", EstadoEnvio.EN_DEPOSITO);
+        e3.setPrioridad("MEDIA");
+        e3.agregarHistorial(new HistorialEstado(EstadoEnvio.CREADO,      "2026-04-20", "14:00", "admin"));
+        e3.agregarHistorial(new HistorialEstado(EstadoEnvio.EN_TRANSITO, "2026-04-21", "07:00", "repartidor02"));
+        e3.agregarHistorial(new HistorialEstado(EstadoEnvio.EN_DEPOSITO, "2026-04-23", "18:30", "deposito_mza"));
         envios.add(e3);
     }
 
@@ -63,6 +72,7 @@ public class EnvioService {
             body.getOrDefault("origen", ""),
             body.getOrDefault("destino", ""),
             body.getOrDefault("fechaEstimada", ""),
+            body.getOrDefault("descripcionCarga", ""),
             body.getOrDefault("observaciones", ""),
             EstadoEnvio.CREADO
         );
@@ -84,6 +94,7 @@ public class EnvioService {
         if (body.containsKey("origen"))           envio.setOrigen(body.get("origen"));
         if (body.containsKey("destino"))          envio.setDestino(body.get("destino"));
         if (body.containsKey("fechaEstimada"))    envio.setFechaEstimada(body.get("fechaEstimada"));
+        if (body.containsKey("descripcionCarga")) envio.setDescripcionCarga(body.get("descripcionCarga"));
         if (body.containsKey("observaciones"))    envio.setObservaciones(body.get("observaciones"));
 
         return envio;

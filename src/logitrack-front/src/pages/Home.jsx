@@ -19,7 +19,8 @@ function Home() {
 
   const filtrados = envios.filter(e =>
     e.id.toLowerCase().includes(busqueda.toLowerCase()) ||
-    e.destinatario.toLowerCase().includes(busqueda.toLowerCase())
+    e.destinatario.toLowerCase().includes(busqueda.toLowerCase()) ||
+    e.remitente.toLowerCase().includes(busqueda.toLowerCase())
   );
 
   return (
@@ -33,7 +34,7 @@ function Home() {
           <input
             className="search-input"
             type="text"
-            placeholder="Buscar por Tracking Id o destinatario..."
+            placeholder="Buscar por Tracking Id, remitente o destinatario..."
             value={busqueda}
             onChange={e => setBusqueda(e.target.value)}
           />
@@ -50,6 +51,7 @@ function Home() {
           <thead>
             <tr>
               <th>Tracking Id</th>
+              <th>Remitente</th>
               <th>Destinatario</th>
               <th>Origen</th>
               <th>Destino</th>
@@ -62,7 +64,7 @@ function Home() {
           <tbody>
             {filtrados.length === 0 ? (
               <tr>
-                <td colSpan="7" style={{ textAlign: 'center', color: '#999', padding: '32px' }}>
+                <td colSpan="9" style={{ textAlign: 'center', color: '#999', padding: '32px' }}>
                   {envios.length === 0 && !error ? 'Cargando...' : 'Sin resultados'}
                 </td>
               </tr>
@@ -70,10 +72,11 @@ function Home() {
               filtrados.map(e => (
                 <tr key={e.id}>
                   <td><code>{e.id}</code></td>
-                  <td>{e.destinatario}</td>
+                  <td>{e.remitente || '-'}</td>
+                  <td>{e.destinatario || '-'}</td>
                   <td>{e.origen || '-'}</td>
                   <td>{e.destino || '-'}</td>
-                  <td><span className={`badge badge-${e.estado}`}>{e.estado?.replace('_', ' ')}</span></td>
+                  <td><span className={`badge badge-${e.estado}`}>{e.estado?.replace(/_/g, ' ')}</span></td>
                   <td>{e.prioridad || '-'}</td>
                   <td>{e.fechaEstimada || '-'}</td>
                   <td className="acciones">

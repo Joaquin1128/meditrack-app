@@ -61,27 +61,32 @@ function EditarEnvio() {
 
           <div className="form-group">
             <label>Remitente *</label>
-            <input name="remitente" value={form.remitente || ''} onChange={handleChange} />
+            <input name="remitente" value={form.remitente || ''} onChange={handleChange} placeholder="Laboratorio o depósito de origen" />
           </div>
 
           <div className="form-group">
             <label>Destinatario *</label>
-            <input name="destinatario" value={form.destinatario || ''} onChange={handleChange} />
+            <input name="destinatario" value={form.destinatario || ''} onChange={handleChange} placeholder="Farmacia u hospital de destino" />
+          </div>
+
+          <div className="form-group form-full">
+            <label>Descripción de la carga</label>
+            <input name="descripcionCarga" value={form.descripcionCarga || ''} onChange={handleChange} placeholder="Medicamento, lote, cantidad, condiciones de temperatura..." />
           </div>
 
           <div className="form-group form-full">
             <label>Dirección de entrega</label>
-            <input name="direccionEntrega" value={form.direccionEntrega || ''} onChange={handleChange} />
+            <input name="direccionEntrega" value={form.direccionEntrega || ''} onChange={handleChange} placeholder="Calle, número, localidad..." />
           </div>
 
           <div className="form-group">
             <label>Origen</label>
-            <input name="origen" value={form.origen || ''} onChange={handleChange} />
+            <input name="origen" value={form.origen || ''} onChange={handleChange} placeholder="Ciudad o provincia de origen" />
           </div>
 
           <div className="form-group">
             <label>Destino</label>
-            <input name="destino" value={form.destino || ''} onChange={handleChange} />
+            <input name="destino" value={form.destino || ''} onChange={handleChange} placeholder="Ciudad o provincia de destino" />
           </div>
 
           <div className="form-group">
@@ -91,7 +96,7 @@ function EditarEnvio() {
 
           <div className="form-group form-full">
             <label>Observaciones</label>
-            <textarea name="observaciones" value={form.observaciones || ''} onChange={handleChange} rows="3" />
+            <textarea name="observaciones" value={form.observaciones || ''} onChange={handleChange} rows="3" placeholder="Cadena de frío, manipulación especial, instrucciones adicionales..." />
           </div>
         </div>
       </div>

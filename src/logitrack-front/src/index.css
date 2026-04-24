@@ -179,7 +179,7 @@ code {
 
 .badge-CREADO       { background: #1e3a5f; color: #93c5fd; }
 .badge-EN_TRANSITO  { background: #4a3800; color: #fde68a; }
-.badge-EN_SUCURSAL  { background: #4a1f0f; color: #fdba74; }
+.badge-EN_DEPOSITO  { background: #4a1f0f; color: #fdba74; }
 .badge-ENTREGADO    { background: #14401f; color: #86efac; }
 
 /* ── Formularios ── */

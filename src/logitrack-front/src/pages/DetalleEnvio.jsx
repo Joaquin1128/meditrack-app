@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { getEnvio, updateEstado } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
-const ORDEN_ESTADOS = ['CREADO', 'EN_TRANSITO', 'EN_SUCURSAL', 'ENTREGADO'];
+const ORDEN_ESTADOS = ['CREADO', 'EN_TRANSITO', 'EN_DEPOSITO', 'ENTREGADO'];
 
 function siguienteEstado(estado) {
   const idx = ORDEN_ESTADOS.indexOf(estado);
@@ -95,7 +95,7 @@ function DetalleEnvio() {
           <div className="detalle-item">
             <span className="detalle-label">Estado</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span className={`badge badge-${envio.estado}`}>{envio.estado?.replace('_', ' ')}</span>
+              <span className={`badge badge-${envio.estado}`}>{envio.estado?.replace(/_/g, ' ')}</span>
               {proxEstado && (
                 <button className="btn btn-primary" style={{ padding: '4px 10px', fontSize: '12px' }} onClick={abrirModal}>
                   ACTUALIZAR
@@ -109,8 +109,14 @@ function DetalleEnvio() {
           </div>
           <div className="detalle-item">
             <span className="detalle-label">Destinatario</span>
-            <span className="detalle-valor">{envio.destinatario}</span>
+            <span className="detalle-valor">{envio.destinatario || '-'}</span>
           </div>
+          {envio.descripcionCarga && (
+            <div className="detalle-item form-full">
+              <span className="detalle-label">Descripción de la carga</span>
+              <span className="detalle-valor">{envio.descripcionCarga}</span>
+            </div>
+          )}
           <div className="detalle-item form-full">
             <span className="detalle-label">Dirección de entrega</span>
             <span className="detalle-valor">{envio.direccionEntrega || '-'}</span>
@@ -124,8 +130,12 @@ function DetalleEnvio() {
             <span className="detalle-valor">{envio.destino || '-'}</span>
           </div>
           <div className="detalle-item">
-            <span className="detalle-label">Fecha estimada</span>
+            <span className="detalle-label">Fecha estimada de entrega</span>
             <span className="detalle-valor">{envio.fechaEstimada || '-'}</span>
+          </div>
+          <div className="detalle-item">
+            <span className="detalle-label">Prioridad</span>
+            <span className="detalle-valor">{envio.prioridad || '-'}</span>
           </div>
           {envio.observaciones && (
             <div className="detalle-item form-full">
@@ -151,7 +161,7 @@ function DetalleEnvio() {
             <tbody>
               {envio.historial.map((h, i) => (
                 <tr key={i}>
-                  <td><span className={`badge badge-${h.estado}`}>{h.estado?.replace('_', ' ')}</span></td>
+                  <td><span className={`badge badge-${h.estado}`}>{h.estado?.replace(/_/g, ' ')}</span></td>
                   <td>{h.fecha}</td>
                   <td>{h.hora}</td>
                   <td>{h.usuario}</td>
@@ -167,11 +177,11 @@ function DetalleEnvio() {
       {modalAbierto && (
         <div className="modal-overlay" onClick={() => setModalAbierto(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
-            <h2 className="modal-title">Actualizar estado</h2>
+            <h2 className="modal-title">Actualizar estado del envío</h2>
 
             <div className="form-group">
               <label>Estado actual</label>
-              <input value={envio.estado?.replace('_', ' ')} disabled />
+              <input value={envio.estado?.replace(/_/g, ' ')} disabled />
             </div>
 
             <div className="form-group">
@@ -180,7 +190,7 @@ function DetalleEnvio() {
                 value={modalForm.nuevoEstado}
                 onChange={e => setModalForm({ ...modalForm, nuevoEstado: e.target.value })}
               >
-                {proxEstado && <option value={proxEstado}>{proxEstado.replace('_', ' ')}</option>}
+                {proxEstado && <option value={proxEstado}>{proxEstado.replace(/_/g, ' ')}</option>}
               </select>
             </div>
 

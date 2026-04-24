@@ -4,7 +4,7 @@ public enum EstadoEnvio {
     
     CREADO,
     EN_TRANSITO,
-    EN_SUCURSAL,
+    EN_DEPOSITO,
     ENTREGADO;
 
     public EstadoEnvio siguiente() {

@@ -47,7 +47,7 @@ class EnvioServiceTest {
         Map<String, String> body = Map.of("destinatario", "Test", "remitente", "Test");
         Envio envio = service.crear(body);
         assertThrows(IllegalArgumentException.class, () ->
-            service.cambiarEstado(envio.getId(), EstadoEnvio.EN_SUCURSAL, "2026-03-28", "10:00", "admin")
+            service.cambiarEstado(envio.getId(), EstadoEnvio.EN_DEPOSITO, "2026-03-28", "10:00", "admin")
         );
     }
 

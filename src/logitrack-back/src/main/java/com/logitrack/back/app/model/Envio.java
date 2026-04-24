@@ -12,13 +12,14 @@ public class Envio {
     private String origen;
     private String destino;
     private String fechaEstimada;
+    private String descripcionCarga;
     private String observaciones;
     private EstadoEnvio estado;
     private String prioridad;
     private List<HistorialEstado> historial = new ArrayList<>();
 
     public Envio(String id, String remitente, String destinatario, String direccionEntrega, String origen,
-        String destino, String fechaEstimada, String observaciones, EstadoEnvio estado) {
+        String destino, String fechaEstimada, String descripcionCarga, String observaciones, EstadoEnvio estado) {
         this.id = id;
         this.remitente = remitente;
         this.destinatario = destinatario;
@@ -26,6 +27,7 @@ public class Envio {
         this.origen = origen;
         this.destino = destino;
         this.fechaEstimada = fechaEstimada;
+        this.descripcionCarga = descripcionCarga;
         this.observaciones = observaciones;
         this.estado = estado;
     }
@@ -80,6 +82,14 @@ public class Envio {
 
     public void setFechaEstimada(String v) {
         this.fechaEstimada = v;
+    }
+
+    public String getDescripcionCarga() {
+        return descripcionCarga;
+    }
+
+    public void setDescripcionCarga(String v) {
+        this.descripcionCarga = v;
     }
 
     public String getObservaciones() {
