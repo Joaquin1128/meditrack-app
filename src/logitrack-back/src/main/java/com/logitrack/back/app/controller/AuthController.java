@@ -6,7 +6,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.logitrack.back.app.model.Sesion;
 import com.logitrack.back.app.service.AuthService;
 
 @RestController
@@ -23,24 +22,16 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> body) {
         try {
-            Sesion sesion = authService.login(body.get("username"), body.get("password"));
-            return ResponseEntity.ok(Map.of(
-                "token",    sesion.getToken(),
-                "username", sesion.getUsername(),
-                "role",     sesion.getRole().name()
-            ));
+            Map<String, String> respuesta = authService.login(body.get("email"), body.get("password"));
+            return ResponseEntity.ok(respuesta);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", e.getMessage()));
         }
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(@RequestHeader(value = "Authorization", required = false) String authHeader) {
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            authService.logout(authHeader.substring(7));
-        }
-
+    public ResponseEntity<?> logout() {
         return ResponseEntity.ok(Map.of("message", "Sesión cerrada"));
     }
-    
+
 }

@@ -367,8 +367,9 @@ textarea {
   letter-spacing: 0.5px;
 }
 
-.badge-role-supervisor { background: #1e3a5f; color: #93c5fd; }
-.badge-role-operador   { background: #3a1f5f; color: #c4b5fd; }
+.badge-role-supervisor  { background: #1e3a5f; color: #93c5fd; }
+.badge-role-repartidor  { background: #1a3a28; color: #6ee7b7; }
+.badge-role-operador    { background: #3a1f5f; color: #c4b5fd; }
 
 /* ── Login ── */
 .login-wrapper {

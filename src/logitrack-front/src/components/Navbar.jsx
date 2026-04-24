@@ -18,7 +18,7 @@ function Navbar() {
     <div className="navbar">
       <span className="navbar-brand">MediTrack</span>
       <div className="navbar-user">
-        <span>{user.username}</span>
+        <span>{user.nombre}</span>
         <span className={`badge-role badge-role-${user.role.toLowerCase()}`}>{user.role}</span>
         <button
           className="btn btn-secondary"

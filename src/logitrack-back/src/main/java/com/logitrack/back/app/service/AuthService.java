@@ -1,12 +1,11 @@
 package com.logitrack.back.app.service;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
+import com.logitrack.back.app.config.JwtUtil;
 import com.logitrack.back.app.model.Role;
 import com.logitrack.back.app.model.Sesion;
 import com.logitrack.back.app.model.Usuario;
@@ -14,37 +13,36 @@ import com.logitrack.back.app.model.Usuario;
 @Service
 public class AuthService {
 
+    private final JwtUtil jwtUtil;
+
     private final List<Usuario> usuarios = List.of(
-        new Usuario("supervisor", "1234", Role.SUPERVISOR),
-        new Usuario("operador", "1234", Role.OPERADOR)
+        new Usuario("supervisor@meditrack.com", "Admin MediTrack", "1234", Role.SUPERVISOR),
+        new Usuario("operador@meditrack.com",   "Carlos Ruiz",     "1234", Role.OPERADOR),
+        new Usuario("repartidor@meditrack.com", "Diego Torres",    "1234", Role.REPARTIDOR)
     );
 
-    private final Map<String, Sesion> sesiones = new HashMap<>();
+    public AuthService(JwtUtil jwtUtil) {
+        this.jwtUtil = jwtUtil;
+    }
 
-    public Sesion login(String username, String password) {
+    public Map<String, String> login(String email, String password) {
         Usuario usuario = usuarios.stream()
-            .filter(u -> u.getUsername().equals(username) && u.getPassword().equals(password))
+            .filter(u -> u.getEmail().equals(email) && u.getPassword().equals(password))
             .findFirst()
             .orElseThrow(() -> new RuntimeException("Credenciales inválidas"));
 
-        String token = UUID.randomUUID().toString();
-        Sesion sesion = new Sesion(token, usuario.getUsername(), usuario.getRole());
-        sesiones.put(token, sesion);
+        String token = jwtUtil.generarToken(usuario.getEmail(), usuario.getNombre(), usuario.getRole());
 
-        return sesion;
-    }
-
-    public void logout(String token) {
-        sesiones.remove(token);
+        return Map.of(
+            "token",  token,
+            "email",  usuario.getEmail(),
+            "nombre", usuario.getNombre(),
+            "role",   usuario.getRole().name()
+        );
     }
 
     public Sesion validar(String token) {
-        Sesion sesion = sesiones.get(token);
-        if (sesion == null) {
-            throw new RuntimeException("Token inválido o expirado");
-        }
-
-        return sesion;
+        return jwtUtil.validar(token);
     }
 
 }

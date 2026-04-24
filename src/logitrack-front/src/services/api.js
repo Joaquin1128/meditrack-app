@@ -22,11 +22,11 @@ async function handleResponse(res) {
   }
 }
 
-export async function login(username, password) {
+export async function login(email, password) {
   const res = await fetch(`${BASE_URL}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, password }),
+    body: JSON.stringify({ email, password }),
   });
   if (!res.ok) {
     const err = await res.json();

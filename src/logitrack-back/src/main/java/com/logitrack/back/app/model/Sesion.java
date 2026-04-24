@@ -2,22 +2,22 @@ package com.logitrack.back.app.model;
 
 public class Sesion {
 
-    private String token;
-    private String username;
+    private String email;
+    private String nombre;
     private Role role;
 
-    public Sesion(String token, String username, Role role) {
-        this.token = token;
-        this.username = username;
+    public Sesion(String email, String nombre, Role role) {
+        this.email = email;
+        this.nombre = nombre;
         this.role = role;
     }
 
-    public String getToken() {
-        return token;
+    public String getEmail() {
+        return email;
     }
 
-    public String getUsername(){
-        return username;
+    public String getNombre() {
+        return nombre;
     }
 
     public Role getRole() {

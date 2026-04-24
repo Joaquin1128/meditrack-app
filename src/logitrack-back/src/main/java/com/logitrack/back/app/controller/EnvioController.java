@@ -33,12 +33,12 @@ public class EnvioController {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             throw new RuntimeException("Token requerido");
         }
-
         return authService.validar(authHeader.substring(7));
     }
 
     @GetMapping
-    public ResponseEntity<?> listarTodos(@RequestHeader(value = "Authorization", required = false) String authHeader) {
+    public ResponseEntity<?> listarTodos(
+        @RequestHeader(value = "Authorization", required = false) String authHeader) {
         try {
             autenticar(authHeader);
             return ResponseEntity.ok(envioService.listarTodos());
@@ -57,7 +57,6 @@ public class EnvioController {
             if (e.getMessage().contains("no encontrado")) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
             }
-
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", e.getMessage()));
         }
     }
@@ -71,7 +70,6 @@ public class EnvioController {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body(Map.of("error", "Sin permisos para esta acción"));
             }
-
             Envio nuevo = envioService.crear(body);
             return ResponseEntity.status(HttpStatus.CREATED).body(nuevo);
         } catch (RuntimeException e) {
@@ -80,7 +78,7 @@ public class EnvioController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> actualizar(@PathVariable String id, @RequestBody Map<String, String> body, 
+    public ResponseEntity<?> actualizar(@PathVariable String id, @RequestBody Map<String, String> body,
         @RequestHeader(value = "Authorization", required = false) String authHeader) {
         try {
             Sesion sesion = autenticar(authHeader);
@@ -88,13 +86,11 @@ public class EnvioController {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body(Map.of("error", "Sin permisos para esta acción"));
             }
-
             return ResponseEntity.ok(envioService.actualizar(id, body));
         } catch (RuntimeException e) {
             if (e.getMessage().contains("no encontrado")) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
             }
-
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", e.getMessage()));
         }
     }
@@ -103,11 +99,15 @@ public class EnvioController {
     public ResponseEntity<?> cambiarEstado(@PathVariable String id, @RequestBody Map<String, String> body,
         @RequestHeader(value = "Authorization", required = false) String authHeader) {
         try {
-            autenticar(authHeader);
+            Sesion sesion = autenticar(authHeader);
+            if (sesion.getRole() == Role.OPERADOR) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("error", "Sin permisos para actualizar estados"));
+            }
             EstadoEnvio nuevoEstado = EstadoEnvio.valueOf(body.get("estado"));
             String fecha   = body.getOrDefault("fecha",   LocalDate.now().toString());
             String hora    = body.getOrDefault("hora",    LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm")));
-            String usuario = body.getOrDefault("usuario", "sistema");
+            String usuario = sesion.getNombre();
             return ResponseEntity.ok(envioService.cambiarEstado(id, nuevoEstado, fecha, hora, usuario));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
@@ -115,7 +115,6 @@ public class EnvioController {
             if (e.getMessage().contains("no encontrado")) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
             }
-
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", e.getMessage()));
         }
     }

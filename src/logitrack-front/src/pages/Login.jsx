@@ -6,7 +6,7 @@ import { login as apiLogin } from '../services/api';
 function Login() {
   const { user, login } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ username: '', password: '' });
+  const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -17,7 +17,7 @@ function Login() {
     setLoading(true);
     setError('');
     try {
-      const userData = await apiLogin(form.username, form.password);
+      const userData = await apiLogin(form.email, form.password);
       login(userData);
       navigate('/');
     } catch (err) {
@@ -30,17 +30,17 @@ function Login() {
   return (
     <div className="login-wrapper">
       <div className="login-card">
-        <h1 className="login-title">LogiTrackApp</h1>
-        <p className="login-subtitle">Sistema de seguimiento de envíos</p>
+        <h1 className="login-title">MediTrack</h1>
+        <p className="login-subtitle">Gestión logística farmacéutica</p>
 
         <form className="login-form" onSubmit={handleSubmit}>
           <div className="form-group">
-            <label>Usuario</label>
+            <label>Correo electrónico</label>
             <input
-              type="text"
-              value={form.username}
-              onChange={e => setForm({ ...form, username: e.target.value })}
-              placeholder="supervisor / operador"
+              type="email"
+              value={form.email}
+              onChange={e => setForm({ ...form, email: e.target.value })}
+              placeholder="usuario@meditrack.com"
               autoFocus
             />
           </div>
@@ -64,7 +64,9 @@ function Login() {
 
         <div className="login-hint">
           <strong>Usuarios de prueba:</strong><br />
-          supervisor / 1234 &nbsp;·&nbsp; operador / 1234
+          supervisor@meditrack.com · 1234<br />
+          repartidor@meditrack.com · 1234<br />
+          operador@meditrack.com · 1234
         </div>
       </div>
     </div>

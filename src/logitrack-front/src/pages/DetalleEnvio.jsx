@@ -34,10 +34,10 @@ function DetalleEnvio() {
         setEnvio(data);
         const sig = siguienteEstado(data.estado);
         const { fecha, hora } = ahora();
-        setModalForm({ nuevoEstado: sig || '', fecha, hora, usuario: user?.username || '' });
+        setModalForm({ nuevoEstado: sig || '', fecha, hora, usuario: user?.nombre || '' });
       })
       .catch(() => setError('Envío no encontrado.'));
-  }, [id, user?.username]);
+  }, [id, user?.nombre]);
 
   const abrirModal = () => {
     const { fecha, hora } = ahora();
@@ -45,7 +45,7 @@ function DetalleEnvio() {
       nuevoEstado: siguienteEstado(envio.estado) || '',
       fecha,
       hora,
-      usuario: user?.username || '',
+      usuario: user?.nombre || '',
     });
     setModalError('');
     setModalAbierto(true);
@@ -78,6 +78,7 @@ function DetalleEnvio() {
   }
 
   const proxEstado = siguienteEstado(envio.estado);
+  const puedeActualizar = user?.role === 'SUPERVISOR' || user?.role === 'REPARTIDOR';
 
   return (
     <div className="container">
@@ -96,7 +97,7 @@ function DetalleEnvio() {
             <span className="detalle-label">Estado</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <span className={`badge badge-${envio.estado}`}>{envio.estado?.replace(/_/g, ' ')}</span>
-              {proxEstado && (
+              {proxEstado && puedeActualizar && (
                 <button className="btn btn-primary" style={{ padding: '4px 10px', fontSize: '12px' }} onClick={abrirModal}>
                   ACTUALIZAR
                 </button>
