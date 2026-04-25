@@ -1,4 +1,4 @@
-const BASE_URL = 'http://localhost:8080/api';
+const BASE_URL = 'http://localhost:8080';
 
 function getAuthHeaders() {
   try {
@@ -20,7 +20,6 @@ async function handleResponse(res) {
     const body = await res.json().catch(() => ({}));
     throw new Error(body.error || 'Sin permisos para esta acción');
   }
-  return res;
 }
 
 export async function login(email, password) {
@@ -52,7 +51,7 @@ export async function getEnvios() {
   return res.json();
 }
 
-export async function getEnvioById(id) {
+export async function getEnvio(id) {
   const res = await fetch(`${BASE_URL}/envios/${id}`, {
     headers: { ...getAuthHeaders() },
   });
@@ -83,7 +82,7 @@ export async function updateEnvio(id, data) {
   return res.json();
 }
 
-export async function updateEstadoEnvio(id, estado, fecha, hora, usuario) {
+export async function updateEstado(id, estado, fecha, hora, usuario) {
   const res = await fetch(`${BASE_URL}/envios/${id}/estado`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
