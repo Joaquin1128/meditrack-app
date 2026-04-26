@@ -18,6 +18,7 @@ function NuevoEnvio() {
   const [form, setForm] = useState(FORM_INICIAL);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  // eslint-disable-next-line no-unused-vars
   const { user } = useAuth();
 
   const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
