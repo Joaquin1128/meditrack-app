@@ -17,7 +17,7 @@ function EditarEnvio() {
   const handleGuardar = async () => {
     try {
       await updateEnvio(id, form);
-      navigate(`/envio/${id}`);
+      navigate(`/detalle/${id}`, { state: { editSuccess: true } });
     } catch (err) {
       setError(err.message || 'Error al actualizar envío.');
     }
@@ -92,7 +92,7 @@ function EditarEnvio() {
           paddingTop: '20px',
           borderTop: '1px solid #eee'
         }}>
-          <button className="btn btn-secondary" onClick={() => navigate(`/envio/${id}`)}>CANCELAR</button>
+          <button className="btn btn-secondary" onClick={() => navigate(`/detalle/${id}`)}>CANCELAR</button>
           <button className="btn btn-primary" onClick={handleGuardar} style={{ backgroundColor: '#10B981', border: 'none' }}>GUARDAR</button>
         </div>
       </div>

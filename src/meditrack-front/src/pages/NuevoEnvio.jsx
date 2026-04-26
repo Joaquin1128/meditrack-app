@@ -6,11 +6,11 @@ import { useAuth } from '../context/AuthContext';
 const FORM_INICIAL = {
   remitente: '',
   destinatario: '',
-  direccionEntrega: '',
   origen: '',
   destino: '',
-  fechaEstimada: '',
   descripcionCarga: '',
+  direccionEntrega: '',
+  fechaEstimada: '',
   observaciones: '',
 };
 
@@ -18,7 +18,6 @@ function NuevoEnvio() {
   const [form, setForm] = useState(FORM_INICIAL);
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  // eslint-disable-next-line no-unused-vars
   const { user } = useAuth();
 
   const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
@@ -30,8 +29,13 @@ function NuevoEnvio() {
     }
 
     try {
-      await createEnvio(form); 
-      navigate('/');
+      const payload = { 
+        ...form, 
+        usuarioCreador: user?.nombre || 'Sistema' 
+      };
+      
+      await createEnvio(payload); 
+      navigate('/', { state: { success: true } });
     } catch (err) {
       setError(err.message || 'Error de conexión con el servidor.');
     }
@@ -44,12 +48,19 @@ function NuevoEnvio() {
       </div>
 
       <div className="card">
-        <div className="form-actions-top">
-          <button className="btn btn-primary" onClick={handleGuardar}>GUARDAR</button>
-          <button className="btn btn-secondary" onClick={() => navigate('/')}>CANCELAR</button>
-        </div>
-
-        {error && <p className="error-msg" style={{color: 'red', marginBottom: '10px'}}>{error}</p>}
+        {error && (
+          <div style={{ 
+            color: '#dc3545', 
+            backgroundColor: '#f8d7da', 
+            border: '1px solid #f5c6cb', 
+            padding: '10px', 
+            borderRadius: '4px', 
+            marginBottom: '15px',
+            fontWeight: 'bold' 
+          }}>
+            {error}
+          </div>
+        )}
 
         <div className="form-grid">
           <div className="form-group">
@@ -60,6 +71,16 @@ function NuevoEnvio() {
           <div className="form-group">
             <label>Destinatario *</label>
             <input name="destinatario" value={form.destinatario} onChange={handleChange} placeholder="Farmacia u hospital de destino" />
+          </div>
+
+          <div className="form-group">
+            <label>Origen</label>
+            <input name="origen" value={form.origen} onChange={handleChange} />
+          </div>
+
+          <div className="form-group">
+            <label>Destino</label>
+            <input name="destino" value={form.destino} onChange={handleChange} />
           </div>
 
           <div className="form-group form-full">
@@ -73,17 +94,7 @@ function NuevoEnvio() {
           </div>
 
           <div className="form-group">
-            <label>Origen</label>
-            <input name="origen" value={form.origen} onChange={handleChange} />
-          </div>
-
-          <div className="form-group">
-            <label>Destino</label>
-            <input name="destino" value={form.destino} onChange={handleChange} />
-          </div>
-
-          <div className="form-group">
-            <label>Fecha estimada de entrega</label>
+            <label>Fecha de entrega estimada</label>
             <input type="date" name="fechaEstimada" value={form.fechaEstimada} onChange={handleChange} />
           </div>
 
@@ -91,6 +102,18 @@ function NuevoEnvio() {
             <label>Observaciones</label>
             <textarea name="observaciones" value={form.observaciones} onChange={handleChange} rows="3" />
           </div>
+        </div>
+
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'flex-end', 
+          gap: '12px', 
+          marginTop: '25px',
+          paddingTop: '20px',
+          borderTop: '1px solid #eee'
+        }}>
+          <button className="btn btn-secondary" onClick={() => navigate('/')}>CANCELAR</button>
+          <button className="btn btn-primary" onClick={handleGuardar} style={{ backgroundColor: '#10B981', border: 'none' }}>GUARDAR</button>
         </div>
       </div>
     </div>
