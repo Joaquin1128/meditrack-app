@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import { getEnvioById, updateEstadoEnvio } from '../services/api';
+import { getEnvioById, updateEstadoEnvio, cancelarEnvio } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import ModalHistorial from '../components/ModalHistorial';
 import StatusLine from '../components/StatusLine';
+import ModalCancelacion from '../components/ModalCancelacion';
 
 const ESTADO_COLORS = {
   PENDIENTE: '#6b7280',
@@ -31,6 +32,7 @@ function DetalleEnvio() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+  
   const [envio, setEnvio] = useState(null);
   const [error, setError] = useState('');
   const [modalAbierto, setModalAbierto] = useState(false);
@@ -38,8 +40,9 @@ function DetalleEnvio() {
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [modalForm, setModalForm] = useState({ nuevoEstado: '', fecha: '', hora: '', usuario: '' });
   const [modalError, setModalError] = useState('');
+  const [cancelacionAbierta, setCancelacionAbierta] = useState(false);
 
-useEffect(() => {
+  useEffect(() => {
     getEnvioById(id)
       .then(data => {
         setEnvio(data);
@@ -54,17 +57,10 @@ useEffect(() => {
       .catch(() => setError('Envío no encontrado.'));
 
     if (location.state?.editSuccess) {
-      const snackTimer = setTimeout(() => {
-        setShowSnackbar(true);
-      }, 0);
+      setShowSnackbar(true);
       window.history.replaceState({}, document.title);
-      const hideTimer = setTimeout(() => {
-        setShowSnackbar(false);
-      }, 3000);
-      return () => {
-        clearTimeout(snackTimer);
-        clearTimeout(hideTimer);
-      };
+      const timer = setTimeout(() => setShowSnackbar(false), 3000);
+      return () => clearTimeout(timer);
     }
   }, [id, user?.nombre, location.state]);
 
@@ -82,6 +78,16 @@ useEffect(() => {
       setModalAbierto(false);
     } catch (e) {
       setModalError(e.message);
+    }
+  };
+
+  const handleConfirmarCancelacion = async (motivo, firma) => {
+    try {
+      const actualizado = await cancelarEnvio(id, motivo, firma);
+      setEnvio(actualizado);
+      setCancelacionAbierta(false);
+    } catch (e) {
+      alert(e.message);
     }
   };
 
@@ -118,11 +124,10 @@ useEffect(() => {
             box-shadow: 0 4px 20px rgba(0,0,0,0.2);
             z-index: 9999;
             animation: fadeInDown 0.4s ease-out;
-            white-space: nowrap;
           }
           @keyframes fadeInDown {
-            from { top: -50px; opacity: 0; transform: translateX(-50%); }
-            to { top: 20px; opacity: 1; transform: translateX(-50%); }
+            from { top: -50px; opacity: 0; }
+            to { top: 20px; opacity: 1; }
           }
           .info-row-grid {
             display: grid;
@@ -133,11 +138,7 @@ useEffect(() => {
         `}
       </style>
 
-      {showSnackbar && (
-        <div className="snackbar">
-          Envío editado correctamente!
-        </div>
-      )}
+      {showSnackbar && <div className="snackbar">¡Envío editado correctamente!</div>}
 
       <div className="page-header-row" style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '24px' }}>
         <button className="btn btn-secondary" onClick={() => navigate('/')}>VOLVER</button>
@@ -155,7 +156,7 @@ useEffect(() => {
           </div>
           <div className="detail-field">
             <label>ESTADO</label>
-            <div className="status-action-row" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <span style={getBadgeStyle(envio.estado)}>{envio.estado?.replace(/_/g, ' ')}</span>
               <button className="btn btn-primary btn-sm" onClick={abrirModalEstado} style={{ backgroundColor: '#10B981', border: 'none' }}>
                 ▾
@@ -198,26 +199,35 @@ useEffect(() => {
           </div>
         </div>
 
-
-        <div className="detail-full-width" style={{ marginTop: '10px', borderTop: '1px solid #E5E7EB', paddingTop: '20px' }}>
+        <div style={{ marginTop: '10px', borderTop: '1px solid #E5E7EB', paddingTop: '20px' }}>
           <div className="detail-field">
             <label>OBSERVACIONES</label>
             <span>{envio.observaciones || '-'}</span>
           </div>
         </div>
 
-        <div style={{ position: 'absolute', bottom: '20px', left: '25px' }}>
+        <div style={{ position: 'absolute', bottom: '20px', left: '25px', display: 'flex', gap: '12px' }}>
           {user?.role === 'SUPERVISOR' && (
-            <button 
-              className="btn btn-primary" 
-              onClick={() => navigate(`/editar/${id}`)}
-              style={{ backgroundColor: '#2563EB', color: 'white', padding: '10px 24px', borderRadius: '8px', border: 'none', fontWeight: '600' }}
-            >
-              Editar
-            </button>
+            <>
+              <button 
+                className="btn btn-primary" 
+                onClick={() => navigate(`/editar/${id}`)}
+                style={{ backgroundColor: '#2563EB', padding: '10px 24px', borderRadius: '8px', border: 'none', fontWeight: '600' }}
+              >
+                Editar
+              </button>
+              {envio.estado !== 'ENTREGADO' && envio.estado !== 'CANCELADO' && (
+                <button
+                  className="btn btn-primary"
+                  onClick={() => setCancelacionAbierta(true)}
+                  style={{ backgroundColor: '#DC2626', padding: '10px 24px', borderRadius: '8px', border: 'none', fontWeight: '600' }}
+                >
+                  Cancelar envío
+                </button>
+              )}
+            </>
           )}
         </div>
-
         <div style={{ position: 'absolute', bottom: '20px', right: '25px' }}>
           <button 
             onClick={() => setHistorialAbierto(true)} 
@@ -229,6 +239,13 @@ useEffect(() => {
       </div>
 
       {historialAbierto && <ModalHistorial historial={envio.historial || []} alCerrar={() => setHistorialAbierto(false)} />}
+      
+      {cancelacionAbierta && (
+        <ModalCancelacion 
+          onConfirmar={handleConfirmarCancelacion} 
+          onCerrar={() => setCancelacionAbierta(false)} 
+        />
+      )}
 
       {modalAbierto && (
         <div className="modal-overlay">

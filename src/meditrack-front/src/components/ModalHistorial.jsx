@@ -9,6 +9,8 @@ const ModalHistorial = ({ historial, alCerrar }) => {
         return { bg: '#DBEAFE', text: '#1E40AF' }; 
       case 'CAMBIO_ESTADO':
         return { bg: '#D1FAE5', text: '#065F46' }; 
+      case 'CANCELACION':
+        return { bg: '#FEE2E2', text: '#991B1B' };
       default:
         return { bg: '#F3F4F6', text: '#374151' };
     }
@@ -33,7 +35,7 @@ const ModalHistorial = ({ historial, alCerrar }) => {
               </tr>
             </thead>
             <tbody>
-              {historial.length > 0 ? (
+              {historial && historial.length > 0 ? (
                 historial.slice().reverse().map((item, index) => {
                   const colors = getBadgeColor(item.tipo);
                   return (
@@ -45,9 +47,11 @@ const ModalHistorial = ({ historial, alCerrar }) => {
                           fontSize: '11px', 
                           fontWeight: '700',
                           backgroundColor: colors.bg,
-                          color: colors.text
+                          color: colors.text,
+                          display: 'inline-block',
+                          whiteSpace: 'nowrap'
                         }}>
-                          {item.tipo}
+                          {item.tipo?.replace(/_/g, ' ')}
                         </span>
                       </td>
                       <td style={{ padding: '12px', fontSize: '13px', color: '#374151', lineHeight: '1.4' }}>
@@ -57,7 +61,7 @@ const ModalHistorial = ({ historial, alCerrar }) => {
                         {item.fecha} <span style={{ color: '#9CA3AF', marginLeft: '5px' }}>{item.hora}</span>
                       </td>
                       <td style={{ padding: '12px', fontSize: '13px', color: '#374151', fontWeight: '500' }}>
-                        {item.usuario}
+                        {item.usuario || 'Sistema'}
                       </td>
                     </tr>
                   );

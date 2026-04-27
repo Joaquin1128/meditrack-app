@@ -25,24 +25,14 @@ function Home() {
   const location = useLocation();
   const { user } = useAuth();
 
-useEffect(() => {
+  useEffect(() => {
     getEnvios().then(setEnvios).catch(console.error);
 
     if (location.state?.success) {
-      const snackTimer = setTimeout(() => {
-        setShowSnackbar(true);
-      }, 0);
-
+      setShowSnackbar(true);
       window.history.replaceState({}, document.title);
-      
-      const hideTimer = setTimeout(() => {
-        setShowSnackbar(false);
-      }, 3000);
-
-      return () => {
-        clearTimeout(snackTimer);
-        clearTimeout(hideTimer);
-      };
+      const timer = setTimeout(() => setShowSnackbar(false), 3000);
+      return () => clearTimeout(timer);
     }
   }, [location.state]);
 
@@ -148,13 +138,13 @@ useEffect(() => {
 
       {showSnackbar && (
         <div className="snackbar">
-          Envío creado correctamente!
+          ¡Envío creado correctamente!
         </div>
       )}
       
       <div className="header-with-action">
         <h1 style={{ fontSize: '24px', fontWeight: '800' }}>Gestión de Envíos</h1>
-        {user?.role === 'SUPERVISOR' && (
+        {(user?.role === 'SUPERVISOR' || user?.role === 'ADMINISTRADOR') && (
           <button className="btn btn-primary" onClick={() => navigate('/nuevo')}>
             + NUEVO ENVÍO
           </button>

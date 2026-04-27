@@ -21,7 +21,13 @@ function Navbar() {
 
   return (
     <nav className="navbar">
-      <div className="navbar-brand">MediTrack</div>
+      <div 
+        className="navbar-brand" 
+        onClick={() => navigate('/')} 
+        style={{ cursor: 'pointer' }}
+      >
+        MediTrack
+      </div>
       
       <div className="navbar-user-section">
         <div style={{ textAlign: 'right' }}>

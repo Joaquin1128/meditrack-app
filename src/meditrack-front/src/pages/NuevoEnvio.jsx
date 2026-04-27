@@ -27,7 +27,7 @@ function NuevoEnvio() {
     const hayCamposVacios = camposAValidar.some(key => !form[key]?.trim());
 
     if (hayCamposVacios) {
-      setError('Todos los campos son obligatorios.');
+      setError('Todos los campos con asterisco (*) son obligatorios.');
       return;
     }
 
@@ -73,31 +73,31 @@ function NuevoEnvio() {
 
           <div className="form-group">
             <label>Destinatario *</label>
-            <input name="destinatario" value={form.destinatario} onChange={handleChange} placeholder="Farmacia u hospital" />
-          </div>
-
-          <div className="form-group">
-            <label>Origen</label>
-            <input name="origen" value={form.origen} onChange={handleChange} />
-          </div>
-
-          <div className="form-group">
-            <label>Destino</label>
-            <input name="destino" value={form.destino} onChange={handleChange} />
+            <input name="destinatario" value={form.destinatario} onChange={handleChange} placeholder="Farmacia u hospital de destino" />
           </div>
 
           <div className="form-group form-full">
-            <label>Descripción de la carga</label>
+            <label>Descripción de la carga *</label>
             <input name="descripcionCarga" value={form.descripcionCarga} onChange={handleChange} />
           </div>
 
           <div className="form-group form-full">
-            <label>Dirección de entrega</label>
+            <label>Dirección de entrega *</label>
             <input name="direccionEntrega" value={form.direccionEntrega} onChange={handleChange} />
           </div>
 
           <div className="form-group">
-            <label>Fecha de entrega estimada</label>
+            <label>Origen *</label>
+            <input name="origen" value={form.origen} onChange={handleChange} />
+          </div>
+
+          <div className="form-group">
+            <label>Destino *</label>
+            <input name="destino" value={form.destino} onChange={handleChange} />
+          </div>
+
+          <div className="form-group">
+            <label>Fecha de entrega estimada *</label>
             <input type="date" name="fechaEstimada" value={form.fechaEstimada} onChange={handleChange} />
           </div>
 
@@ -116,7 +116,7 @@ function NuevoEnvio() {
           borderTop: '1px solid #eee'
         }}>
           <button className="btn btn-secondary" onClick={() => navigate('/')}>CANCELAR</button>
-          <button className="btn btn-primary" onClick={handleGuardar} style={{ backgroundColor: '#10B981', border: 'none' }}>GUARDAR</button>
+          <button className="btn btn-primary" onClick={handleGuardar} style={{ backgroundColor: '#10B981', border: 'none' }}>CREAR ENVÍO</button>
         </div>
       </div>
     </div>

@@ -60,13 +60,22 @@ function Login() {
           <button className="btn btn-primary btn-full" type="submit" disabled={loading}>
             {loading ? 'INGRESANDO...' : 'INGRESAR'}
           </button>
+          
+          <button
+            type="button"
+            onClick={() => navigate('/forgot-password')}
+            style={{ marginTop: '8px', background: 'none', border: 'none', color: 'var(--text-gray)', fontSize: '13px', cursor: 'pointer', width: '100%' }}
+          >
+            ¿Olvidaste tu contraseña?
+          </button>
         </form>
 
         <div className="login-hint">
           <strong>Usuarios de prueba:</strong><br />
           supervisor@meditrack.com · 1234<br />
           repartidor@meditrack.com · 1234<br />
-          operador@meditrack.com · 1234
+          operador@meditrack.com · 1234<br />
+          admin@meditrack.com · admin123
         </div>
       </div>
     </div>

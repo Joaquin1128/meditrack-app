@@ -44,11 +44,11 @@ public class EnvioService {
         nuevo.setEstado(EstadoEnvio.PENDIENTE);
         nuevo.setUsuarioResponsable(usuario);
 
-        String fechaHoraAhora = LocalDate.now().toString() + " " + LocalTime.now().toString().substring(0, 8);
-        nuevo.setFechaCreacion(fechaHoraAhora);
-
         String fecha = LocalDate.now().toString();
         String hora = LocalTime.now().toString().substring(0, 5);
+        nuevo.setFechaCreacion(fecha);
+        nuevo.setHoraCreacion(hora);
+
         registrarHistorial(nuevo, "CREACION", EstadoEnvio.PENDIENTE, "Creación del envío", fecha, hora, usuario);
 
         envios.add(nuevo);
@@ -89,6 +89,31 @@ public class EnvioService {
         return envio;
     }
 
+    public Envio cancelar(String id, String motivo, String firma, String fecha, String hora, String usuario) {
+        Envio envio = buscarPorId(id);
+
+        if (!envio.getEstado().permiteCancelacion()) {
+            throw new IllegalArgumentException("No se puede cancelar un envío en estado: " + envio.getEstado());
+        }
+
+        if (motivo == null || motivo.isBlank()) {
+            throw new IllegalArgumentException("El motivo de cancelación es obligatorio");
+        }
+
+        if (firma == null || firma.isBlank()) {
+            throw new IllegalArgumentException("La firma es obligatoria");
+        }
+
+        envio.setEstado(EstadoEnvio.CANCELADO);
+        envio.setMotivoCancelacion(motivo);
+        envio.setFirmaCancelacion(firma);
+        envio.setFechaCancelacion(fecha + " " + hora);
+        
+        registrarHistorial(envio, "CANCELACION", EstadoEnvio.CANCELADO, "Motivo: " + motivo, fecha, hora, usuario);
+        
+        return envio;
+    }
+
     private void registrarHistorial(Envio e, String tipo, EstadoEnvio estado, String detalle, String f, String h, String u) {
         HistorialEstado evento = new HistorialEstado();
         evento.setTipo(tipo);
@@ -97,7 +122,6 @@ public class EnvioService {
         evento.setFecha(f);
         evento.setHora(h);
         evento.setUsuario(u);
-        
         e.agregarHistorial(evento);
     }
 
