@@ -42,7 +42,7 @@ function DetalleEnvio() {
   const [modalError, setModalError] = useState('');
   const [cancelacionAbierta, setCancelacionAbierta] = useState(false);
 
-  useEffect(() => {
+useEffect(() => {
     getEnvioById(id)
       .then(data => {
         setEnvio(data);
@@ -55,12 +55,21 @@ function DetalleEnvio() {
         });
       })
       .catch(() => setError('Envío no encontrado.'));
-
     if (location.state?.editSuccess) {
-      setShowSnackbar(true);
+      const showTimer = setTimeout(() => {
+        setShowSnackbar(true);
+      }, 100);
+
       window.history.replaceState({}, document.title);
-      const timer = setTimeout(() => setShowSnackbar(false), 3000);
-      return () => clearTimeout(timer);
+
+      const hideTimer = setTimeout(() => {
+        setShowSnackbar(false);
+      }, 3100);
+
+      return () => {
+        clearTimeout(showTimer);
+        clearTimeout(hideTimer);
+      };
     }
   }, [id, user?.nombre, location.state]);
 
