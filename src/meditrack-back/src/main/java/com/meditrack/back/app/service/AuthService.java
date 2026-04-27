@@ -9,6 +9,7 @@ import java.util.Random;
 
 import org.springframework.stereotype.Service;
 import com.meditrack.back.app.config.JwtUtil;
+import com.meditrack.back.app.model.Role;
 import com.meditrack.back.app.model.Sesion;
 import com.meditrack.back.app.model.Usuario;
 
@@ -17,20 +18,21 @@ public class AuthService {
 
     private final JwtUtil jwtUtil;
     private final UsuarioService usuarioService;
-    public AuthService(JwtUtil jwtUtil, UsuarioService usuarioService) {
-
     private final List<Usuario> usuarios = new ArrayList<>(List.of(
         new Usuario("supervisor@meditrack.com", "Admin MediTrack", "1234", Role.SUPERVISOR),
         new Usuario("operador@meditrack.com",   "Carlos Ruiz",     "1234", Role.OPERADOR),
         new Usuario("repartidor@meditrack.com", "Diego Torres",    "1234", Role.REPARTIDOR)
     ));
+    private final Map<String, Map<String, Object>> resetCodes = new HashMap<>();
+    public AuthService(JwtUtil jwtUtil, UsuarioService usuarioService) {
 
     // email -> { code, expiresAt }
-    private final Map<String, Map<String, Object>> resetCodes = new HashMap<>();
     
-        this.jwtUtil = jwtUtil;
-        this.usuarioService = usuarioService;
+    
+    this.jwtUtil = jwtUtil;
+    this.usuarioService = usuarioService;
     }
+
     public Map<String, String> login(String email, String password) {
         Usuario usuario = usuarioService.buscarPorEmail(email)
             .orElseThrow(() -> new RuntimeException("Credenciales inválidas"));

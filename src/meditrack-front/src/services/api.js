@@ -176,7 +176,7 @@ export async function toggleEstadoUsuario(id) {
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.error || 'Error al cambiar estado del usuario');
-
+  }}
 export async function cancelarEnvio(id, motivo, firma) {
   const res = await fetch(`${BASE_URL}/api/envios/${id}/cancelar`, {
     method: 'PUT',
