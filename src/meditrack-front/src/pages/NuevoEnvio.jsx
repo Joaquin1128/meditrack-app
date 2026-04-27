@@ -23,8 +23,11 @@ function NuevoEnvio() {
   const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleGuardar = async () => {
-    if (!form.remitente.trim() || !form.destinatario.trim()) {
-      setError('Remitente y Destinatario son obligatorios.');
+    const camposAValidar = Object.keys(form).filter(key => key !== 'observaciones');
+    const hayCamposVacios = camposAValidar.some(key => !form[key]?.trim());
+
+    if (hayCamposVacios) {
+      setError('Todos los campos son obligatorios.');
       return;
     }
 
@@ -65,12 +68,12 @@ function NuevoEnvio() {
         <div className="form-grid">
           <div className="form-group">
             <label>Remitente *</label>
-            <input name="remitente" value={form.remitente} onChange={handleChange} placeholder="Laboratorio o depósito de origen" />
+            <input name="remitente" value={form.remitente} onChange={handleChange} placeholder="Laboratorio o depósito" />
           </div>
 
           <div className="form-group">
             <label>Destinatario *</label>
-            <input name="destinatario" value={form.destinatario} onChange={handleChange} placeholder="Farmacia u hospital de destino" />
+            <input name="destinatario" value={form.destinatario} onChange={handleChange} placeholder="Farmacia u hospital" />
           </div>
 
           <div className="form-group">
@@ -99,7 +102,7 @@ function NuevoEnvio() {
           </div>
 
           <div className="form-group form-full">
-            <label>Observaciones</label>
+            <label>Observaciones (Opcional)</label>
             <textarea name="observaciones" value={form.observaciones} onChange={handleChange} rows="3" />
           </div>
         </div>

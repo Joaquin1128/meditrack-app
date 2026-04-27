@@ -39,22 +39,32 @@ function DetalleEnvio() {
   const [modalForm, setModalForm] = useState({ nuevoEstado: '', fecha: '', hora: '', usuario: '' });
   const [modalError, setModalError] = useState('');
 
-  useEffect(() => {
+useEffect(() => {
     getEnvioById(id)
       .then(data => {
         setEnvio(data);
         const { fecha, hora } = ahora();
-        setModalForm({ nuevoEstado: data.estado, fecha, hora, usuario: user?.nombre || '' });
+        setModalForm({ 
+          nuevoEstado: data.estado, 
+          fecha, 
+          hora, 
+          usuario: user?.nombre || '' 
+        });
       })
       .catch(() => setError('Envío no encontrado.'));
 
     if (location.state?.editSuccess) {
-      setShowSnackbar(true);
+      const snackTimer = setTimeout(() => {
+        setShowSnackbar(true);
+      }, 0);
       window.history.replaceState({}, document.title);
-      const timer = setTimeout(() => {
+      const hideTimer = setTimeout(() => {
         setShowSnackbar(false);
       }, 3000);
-      return () => clearTimeout(timer);
+      return () => {
+        clearTimeout(snackTimer);
+        clearTimeout(hideTimer);
+      };
     }
   }, [id, user?.nombre, location.state]);
 
@@ -138,7 +148,6 @@ function DetalleEnvio() {
 
       <div className="card detail-main-card" style={{ position: 'relative', paddingBottom: '80px', paddingTop: '30px' }}>
         
-        {/* FILA 1: Tracking, Estado, Descripción */}
         <div className="info-row-grid">
           <div className="detail-field">
             <label>TRACKING ID</label>
@@ -159,7 +168,6 @@ function DetalleEnvio() {
           </div>
         </div>
 
-        {/* FILA 2: Remitente, Destinatario, Dirección */}
         <div className="info-row-grid">
           <div className="detail-field">
             <label>REMITENTE</label>
@@ -175,7 +183,6 @@ function DetalleEnvio() {
           </div>
         </div>
 
-        {/* FILA 3: Origen, Destino, Fecha Estimada */}
         <div className="info-row-grid">
           <div className="detail-field">
             <label>ORIGEN</label>
@@ -191,7 +198,7 @@ function DetalleEnvio() {
           </div>
         </div>
 
-        {/* SECCIÓN OBSERVACIONES */}
+
         <div className="detail-full-width" style={{ marginTop: '10px', borderTop: '1px solid #E5E7EB', paddingTop: '20px' }}>
           <div className="detail-field">
             <label>OBSERVACIONES</label>
@@ -199,7 +206,6 @@ function DetalleEnvio() {
           </div>
         </div>
 
-        {/* BOTONES DE ACCIÓN */}
         <div style={{ position: 'absolute', bottom: '20px', left: '25px' }}>
           {user?.role === 'SUPERVISOR' && (
             <button 

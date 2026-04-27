@@ -25,16 +25,24 @@ function Home() {
   const location = useLocation();
   const { user } = useAuth();
 
-  useEffect(() => {
+useEffect(() => {
     getEnvios().then(setEnvios).catch(console.error);
 
     if (location.state?.success) {
-      setShowSnackbar(true);
+      const snackTimer = setTimeout(() => {
+        setShowSnackbar(true);
+      }, 0);
+
       window.history.replaceState({}, document.title);
-      const timer = setTimeout(() => {
+      
+      const hideTimer = setTimeout(() => {
         setShowSnackbar(false);
       }, 3000);
-      return () => clearTimeout(timer);
+
+      return () => {
+        clearTimeout(snackTimer);
+        clearTimeout(hideTimer);
+      };
     }
   }, [location.state]);
 
