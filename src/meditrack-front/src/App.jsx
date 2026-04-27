@@ -11,6 +11,7 @@ import Usuarios from './pages/Usuarios';
 import NuevoUsuario from './pages/NuevoUsuario';
 import EditarUsuario from './pages/EditarUsuario';
 
+import ForgotPassword from './pages/ForgotPassword';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route element={<ProtectedLayout />}>
             <Route path="/"            element={<Home />} />
             <Route path="/envios"            element={<Home />} />
