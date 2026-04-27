@@ -25,16 +25,26 @@ function Home() {
   const location = useLocation();
   const { user } = useAuth();
 
-  useEffect(() => {
-    getEnvios().then(setEnvios).catch(console.error);
+useEffect(() => {
+  getEnvios().then(setEnvios).catch(console.error);
 
-    if (location.state?.success) {
+  if (location.state?.success) {
+    const showTimer = setTimeout(() => {
       setShowSnackbar(true);
-      window.history.replaceState({}, document.title);
-      const timer = setTimeout(() => setShowSnackbar(false), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [location.state]);
+    }, 100);
+
+    window.history.replaceState({}, document.title);
+
+    const hideTimer = setTimeout(() => {
+      setShowSnackbar(false);
+    }, 3100);
+
+    return () => {
+      clearTimeout(showTimer);
+      clearTimeout(hideTimer);
+    };
+  }
+}, [location.state]);
 
   const handleSort = (key) => {
     let direction = 'asc';
