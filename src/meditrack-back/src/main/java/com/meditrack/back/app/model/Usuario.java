@@ -1,6 +1,8 @@
 package com.meditrack.back.app.model;
 
 import java.util.UUID;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Usuario {
 
@@ -10,6 +12,7 @@ public class Usuario {
     private String password;
     private Role role;
     private boolean estadoActivo;
+    private List<HistorialUsuario> historial = new ArrayList<>();
 
     public Usuario() {
         this.estadoActivo = true;
@@ -72,4 +75,9 @@ public class Usuario {
         this.estadoActivo = estadoActivo; 
     }
     
+    public boolean isEstadoActivo() { return estadoActivo; }
+    public void setEstadoActivo(boolean estadoActivo) { this.estadoActivo = estadoActivo; }
+
+    public List<HistorialUsuario> getHistorial() { return historial; }
+    public void addHistorial(HistorialUsuario historial) { this.historial.add(historial); }
 }

@@ -23,7 +23,6 @@ public class AuthService {
         new Usuario("operador@meditrack.com",   "Carlos Ruiz",     "1234", Role.OPERADOR),
         new Usuario("repartidor@meditrack.com", "Diego Torres",    "1234", Role.REPARTIDOR)
     ));
-
     private final Map<String, Map<String, Object>> resetCodes = new HashMap<>();
 
     public AuthService(JwtUtil jwtUtil, UsuarioService usuarioService) {
@@ -101,5 +100,4 @@ public class AuthService {
         resetCodes.remove(email);
         System.out.println("[TRAZABILIDAD] Contrasena reseteada para: " + email);
     }
-
 }
