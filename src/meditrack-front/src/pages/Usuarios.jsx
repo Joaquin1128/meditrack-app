@@ -8,16 +8,12 @@ function Usuarios() {
     const [usuarios, setUsuarios] = useState([]);
     const [busqueda, setBusqueda] = useState('');
     const [historialAbierto, setHistorialAbierto] = useState(false);
+    const [usuarioSeleccionado, setUsuarioSeleccionado] = useState(null);
     const navigate = useNavigate();
     const { user } = useAuth();
 
     useEffect(() => {
-        getUsuarios().then(setUsuarios).catch(console.error);
-        getUsuarios().then( usser =>{
-            console.log(usser);
-        }
-            )
-        
+        getUsuarios().then(setUsuarios).catch(console.error);        
     }, []);
 
     const handleToggleEstado = async (id) => {
@@ -93,14 +89,24 @@ function Usuarios() {
                                 <td>
                                     <button
                                         className="btn btn-sm btn-secondary"
-                                        onClick={() => setHistorialAbierto(true)}
+                                            onClick={() => {
+                                            setUsuarioSeleccionado(u);
+                                            setHistorialAbierto(true);
+                                        }}
                                     >VER HISTORIAL</button>
                                 </td>
                             </tr>
                         ))}
 
-                        {historialAbierto && <ModalHistorialUsuario historial={[]} alCerrar={() => setHistorialAbierto(false)} />}
-
+                        {historialAbierto && usuarioSeleccionado && (
+                            <ModalHistorialUsuario
+                                usuario={usuarioSeleccionado}
+                                alCerrar={() => {
+                                    setHistorialAbierto(false);
+                                    setUsuarioSeleccionado(null);
+                                }}
+                            />
+                        )}
                         {usuariosFiltrados.length === 0 && (
                             <tr>
                                 <td colSpan="5" style={{ textAlign: 'center', padding: '20px', color: '#6b7280' }}>
