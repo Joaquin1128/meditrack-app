@@ -1,6 +1,5 @@
 package com.meditrack.back.app.service;
 
-import java.util.Map;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,6 +17,7 @@ public class AuthService {
 
     private final JwtUtil jwtUtil;
     private final UsuarioService usuarioService;
+
     private final List<Usuario> usuarios = new ArrayList<>(List.of(
         new Usuario("supervisor@meditrack.com", "Admin MediTrack", "1234", Role.SUPERVISOR),
         new Usuario("operador@meditrack.com",   "Carlos Ruiz",     "1234", Role.OPERADOR),
@@ -26,11 +26,11 @@ public class AuthService {
     private final Map<String, Map<String, Object>> resetCodes = new HashMap<>();
     public AuthService(JwtUtil jwtUtil, UsuarioService usuarioService) {
 
-    // email -> { code, expiresAt }
-    
-    
-    this.jwtUtil = jwtUtil;
-    this.usuarioService = usuarioService;
+    private final Map<String, Map<String, Object>> resetCodes = new HashMap<>();
+
+    public AuthService(JwtUtil jwtUtil, UsuarioService usuarioService) {
+        this.jwtUtil = jwtUtil;
+        this.usuarioService = usuarioService;
     }
 
     public Map<String, String> login(String email, String password) {
@@ -55,8 +55,6 @@ public class AuthService {
         return jwtUtil.validar(token);
     }
 
-// -- Olvido la contra --
-
     public Map<String, String> solicitarReset(String email) {
         boolean existe = usuarios.stream().anyMatch(u -> u.getEmail().equals(email));
         if (!existe) {
@@ -64,15 +62,14 @@ public class AuthService {
         }
 
         String codigo = String.format("%06d", new Random().nextInt(999999));
-        long expira = System.currentTimeMillis() + 30 * 60 * 1000; // 30 minutos
+        long expira = System.currentTimeMillis() + 30 * 60 * 1000;
 
         resetCodes.put(email, Map.of("code", codigo, "expiresAt", expira));
 
-        // Mock: en vez de mandar email, devolvemos el código directamente
         System.out.println("[MOCK EMAIL] Codigo para " + email + ": " + codigo);
         return Map.of(
             "mensaje", "Codigo enviado (mock)",
-            "codigo", codigo  // Sacar esto cuando implementen email real
+            "codigo", codigo
         );
     }
 
@@ -95,7 +92,7 @@ public class AuthService {
     }
 
     public void resetearPassword(String email, String codigo, String nuevaPassword) {
-        verificarCodigo(email, codigo); // revalida por si acaso
+        verificarCodigo(email, codigo);
 
         Usuario usuario = usuarios.stream()
             .filter(u -> u.getEmail().equals(email))
@@ -103,7 +100,7 @@ public class AuthService {
             .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         usuario.setPassword(nuevaPassword);
-        resetCodes.remove(email); // invalida el código usado
+        resetCodes.remove(email);
         System.out.println("[TRAZABILIDAD] Contrasena reseteada para: " + email);
     }
 }
