@@ -225,16 +225,3 @@ export async function toggleEstadoUsuario(id) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.error || 'Error al cambiar estado del usuario');
   }}
-export async function cancelarEnvio(id, motivo, firma) {
-  const res = await fetch(`${BASE_URL}/api/envios/${id}/cancelar`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-    body: JSON.stringify({ motivo, firma }),
-  });
-  await handleResponse(res);
-  if (!res.ok) {
-    const err = await res.json();
-    throw new Error(err.error || 'Error al cancelar envío');
-  }
-  return res.json();
-}
