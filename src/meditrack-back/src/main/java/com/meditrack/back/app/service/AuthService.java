@@ -24,9 +24,6 @@ public class AuthService {
         new Usuario("repartidor@meditrack.com", "Diego Torres",    "1234", Role.REPARTIDOR)
     ));
     private final Map<String, Map<String, Object>> resetCodes = new HashMap<>();
-    public AuthService(JwtUtil jwtUtil, UsuarioService usuarioService) {
-
-    private final Map<String, Map<String, Object>> resetCodes = new HashMap<>();
 
     public AuthService(JwtUtil jwtUtil, UsuarioService usuarioService) {
         this.jwtUtil = jwtUtil;
