@@ -74,9 +74,6 @@ public class Usuario {
     public void setEstadoActivo(boolean estadoActivo) { 
         this.estadoActivo = estadoActivo; 
     }
-    
-    public boolean isEstadoActivo() { return estadoActivo; }
-    public void setEstadoActivo(boolean estadoActivo) { this.estadoActivo = estadoActivo; }
 
     public List<HistorialUsuario> getHistorial() { return historial; }
     public void addHistorial(HistorialUsuario historial) { this.historial.add(historial); }
