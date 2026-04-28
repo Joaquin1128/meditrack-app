@@ -3,7 +3,6 @@ package com.meditrack.back.app.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -97,9 +96,11 @@ public class UsuarioService {
         usuario.setEstadoActivo(!usuario.isEstadoActivo());
         return usuario;
     }
+
     public Optional<Usuario> buscarPorEmail(String email) {
         return usuarios.stream()
                 .filter(u -> u.getEmail().equals(email))
                 .findFirst();
     }
+
 }

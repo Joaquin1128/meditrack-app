@@ -24,21 +24,52 @@ public class Usuario {
         this.estadoActivo = true;
     }
 
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
+    public String getId() { 
+        return id; 
+    }
+
+    public void setId(String id) { 
+        this.id = id; 
+    }
+
+    public String getEmail() { 
+        return email; 
+    }
+
+    public void setEmail(String email) { 
+        this.email = email; 
+    }
+
+    public String getNombre() { 
+        return nombre; 
+    }
+
+    public void setNombre(String nombre) { 
+        this.nombre = nombre; 
+    }
+
+    public String getPassword() { 
+        return password; 
+    }
+
+    public void setPassword(String password) { 
+        this.password = password; 
+    }
+
+    public Role getRole() { 
+        return role; 
+    }
+
+    public void setRole(Role role) { 
+        this.role = role; 
+    }
+
+    public boolean isEstadoActivo() { 
+        return estadoActivo; 
+    }
+
+    public void setEstadoActivo(boolean estadoActivo) { 
+        this.estadoActivo = estadoActivo; 
+    }
     
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-    
-    public String getNombre() { return nombre; }
-    public void setNombre(String nombre) { this.nombre = nombre; }
-    
-    public String getPassword() { return password; }
-    public void setPassword(String password) { this.password = password; }
-    
-    public Role getRole() { return role; }
-    public void setRole(Role role) { this.role = role; }
-    
-    public boolean isEstadoActivo() { return estadoActivo; }
-    public void setEstadoActivo(boolean estadoActivo) { this.estadoActivo = estadoActivo; }
 }
