@@ -205,7 +205,9 @@ body {
   gap: 20px;
 }
 
-.form-full { grid-column: 1 / -1; }
+.form-full {
+  grid-column: 1 / -1;
+}
 
 .form-group {
   display: flex;
@@ -296,18 +298,42 @@ input, select, textarea {
   white-space: nowrap;
 }
 
-.btn-primary { background: #10B981; color: white; }
-.btn-primary:hover { background: #059669; }
+.btn-primary {
+  background: #10B981;
+  color: white;
+}
 
-.btn-secondary { background: var(--border-color); color: var(--text-black); }
-.btn-secondary:hover { background: #d1d5db; }
+.btn-primary:hover {
+  background: #059669;
+}
 
-.btn-danger { background: #DC2626; color: white; }
-.btn-danger:hover { background: #b91c1c; }
+.btn-secondary {
+  background: var(--border-color);
+  color: var(--text-black);
+}
 
-.btn-sm { height: 28px; padding: 0 8px; font-size: 11px; }
+.btn-secondary:hover {
+  background: #d1d5db;
+}
 
-.btn-full { width: 100%; }
+.btn-danger {
+  background: #DC2626;
+  color: white;
+}
+
+.btn-danger:hover {
+  background: #b91c1c;
+}
+
+.btn-sm {
+  height: 28px;
+  padding: 0 8px;
+  font-size: 11px;
+}
+
+.btn-full {
+  width: 100%;
+}
 
 table {
   width: 100%;
@@ -342,11 +368,31 @@ td {
   display: inline-block;
 }
 
-.badge-CREADO, .badge-PENDIENTE { background: #E0F2FE; color: #0369A1; }
-.badge-EN_TRANSITO { background: #DBEAFE; color: var(--secondary-blue); }
-.badge-EN_DEPOSITO { background: #FEF3C7; color: #D97706; }
-.badge-ENTREGADO { background: #DCFCE7; color: var(--success); }
-.badge-SUPERVISOR { background: #DBEAFE; color: #2563EB; }
+.badge-CREADO,
+.badge-PENDIENTE {
+  background: #E0F2FE;
+  color: #0369A1;
+}
+
+.badge-EN_TRANSITO {
+  background: #DBEAFE;
+  color: var(--secondary-blue);
+}
+
+.badge-EN_DEPOSITO {
+  background: #FEF3C7;
+  color: #D97706;
+}
+
+.badge-ENTREGADO {
+  background: #DCFCE7;
+  color: var(--success);
+}
+
+.badge-SUPERVISOR {
+  background: #DBEAFE;
+  color: #2563EB;
+}
 
 .modal-overlay {
   position: fixed;
@@ -378,9 +424,15 @@ td {
   margin-top: 25px;
 }
 
-*:focus { outline: none !important; }
+*:focus {
+  outline: none !important;
+}
 
-.recharts-wrapper, .recharts-surface { outline: none !important; border: none !important; }
+.recharts-wrapper,
+.recharts-surface {
+  outline: none !important;
+  border: none !important;
+}
 
 .summary-card {
   background: white;
@@ -423,28 +475,98 @@ td {
   height: 80px;
 }
 
-.detail-item:hover { background: #F9FAFB; transform: translateY(-1px); }
+.detail-item:hover {
+  background: #F9FAFB;
+  transform: translateY(-1px);
+}
 
-.detail-item.active { border-color: currentColor; background: #f3f4f6; }
+.detail-item.active {
+  border-color: currentColor;
+  background: #f3f4f6;
+}
 
-.detail-info-block { display: flex; flex-direction: column; text-align: left; justify-content: center; }
+.detail-info-block {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  justify-content: center;
+}
 
-.mini-chart-wrapper { width: 72px; height: 72px; position: relative; pointer-events: none; flex-shrink: 0; }
+.mini-chart-wrapper {
+  width: 72px;
+  height: 72px;
+  position: relative;
+  pointer-events: none;
+  flex-shrink: 0;
+}
 
-.mini-percent { position: absolute; font-size: 15px; font-weight: 900; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #111827; white-space: nowrap; }
+.mini-percent {
+  position: absolute;
+  font-size: 15px;
+  font-weight: 900;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #111827;
+  white-space: nowrap;
+}
 
-.mini-percent-symbol { font-size: 10px; margin-left: 1px; }
+.mini-percent-symbol {
+  font-size: 10px;
+  margin-left: 1px;
+}
 
-.detail-label { font-size: 11px; font-weight: 800; text-transform: uppercase; margin-bottom: 5px; line-height: 1; max-width: 100px; }
+.detail-label {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+  line-height: 1;
+  max-width: 100px;
+}
 
-.detail-count { font-size: 28px; font-weight: 900; color: #111827; line-height: 1; }
+.detail-count {
+  font-size: 28px;
+  font-weight: 900;
+  color: #111827;
+  line-height: 1;
+}
 
-.chart-center-label { position: absolute; font-size: 11px; font-weight: 800; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; }
-.chart-center-label * { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; }
+.chart-center-label {
+  position: absolute;
+  font-size: 11px;
+  font-weight: 800;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+}
 
-.status-tag { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; display: inline-block; }
+.chart-center-label * {
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+}
 
-.snackbar-msg { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #00A86B; color: white; padding: 12px 30px; border-radius: 8px; z-index: 1000; }
+.status-tag {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  display: inline-block;
+}
+
+.snackbar-msg {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #00A86B;
+  color: white;
+  padding: 12px 30px;
+  border-radius: 8px;
+  z-index: 1000;
+}
 
 .clear-filters-btn {
   background: #ef4444;
@@ -474,7 +596,7 @@ td {
   background: #10B981;
   color: white;
   border: none;
-  padding: 0 10px;   /* controla el ancho */
+  padding: 0 10px;
   height: 38px;
   border-radius: 6px;
   font-weight: 800;
@@ -487,7 +609,9 @@ td {
   transition: all 0.2s;
 }
 
-.btn-new-shipment:hover { background: #059669; }
+.btn-new-shipment:hover {
+  background: #059669;
+}
 
 .action-icon-btn {
   background: none;
@@ -501,7 +625,9 @@ td {
   transition: background 0.2s;
 }
 
-.action-icon-btn:hover { background: #f3f4f6; }
+.action-icon-btn:hover {
+  background: #f3f4f6;
+}
 
 .btn-new-user {
   background: #10B981;
@@ -575,9 +701,13 @@ input:checked + .slider:before {
   min-width: 55px;
 }
 
-.status-active { color: #10b981; }
+.status-active {
+  color: #10b981;
+}
 
-.status-inactive { color: #ef4444; }
+.status-inactive {
+  color: #ef4444;
+}
 
 .search-input-user {
   margin: 0; 
