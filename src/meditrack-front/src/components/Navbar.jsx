@@ -94,5 +94,4 @@ function Navbar({ publicMode = false }) {
   );
 }
 
-
 export default Navbar;
