@@ -284,14 +284,6 @@ export async function getTrackingPublico(id) {
           ? "Tracking ID inválido"
           : "Error al consultar tracking";
 
-    // ✅ DEBUG ACÁ (SIEMPRE se ejecuta cuando hay error)
-    console.log("TRACKING DEBUG:", {
-      status: res.status,
-      statusText: res.statusText,   // acá vas a ver "Not Found"
-      msgFromJson,
-      msgByStatus,                  // acá debería decir "Envío no encontrado"
-      textFirst120: (text || "").slice(0, 120),
-    });
 
     const limpio =
     !msgFromJson || msgFromJson.toLowerCase() === "not found"
