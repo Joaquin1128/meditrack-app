@@ -29,6 +29,5 @@ public class TrackingPublicoDTO {
     public String getHoraUltimoEstado() {
         return horaUltimoEstado;
     }
-
+    
 }
-
