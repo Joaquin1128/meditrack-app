@@ -1,10 +1,10 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { 
-  Package, 
-  Users, 
-  Truck, 
+import {
+  Package,
+  Users,
+  Truck,
   ShieldAlert,
   TriangleRight,
   Pill,
@@ -67,11 +67,11 @@ const MainMenu = () => {
   );
 
   return (
-    <div style={{ 
-      padding: '40px', 
-      backgroundColor: '#f9fafb', 
+    <div style={{
+      padding: '40px',
+      backgroundColor: '#f9fafb',
       minHeight: '100vh',
-      fontFamily: 'inherit'
+      fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif"
     }}>
       <div style={{ 
         display: 'flex', 
@@ -134,12 +134,13 @@ const MainMenu = () => {
                   }}
                 >
                   <div style={{ marginBottom: '12px' }}>{item.icon}</div>
-                  <span style={{ 
-                    fontSize: '11px', 
-                    fontWeight: '800', 
-                    textAlign: 'center', 
+                  <span style={{
+                    fontSize: '11px',
+                    fontWeight: '800',
+                    textAlign: 'center',
                     lineHeight: '1.2',
-                    textTransform: 'uppercase'
+                    textTransform: 'uppercase',
+                    fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif"
                   }}>
                     {item.label}
                   </span>
