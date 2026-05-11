@@ -194,8 +194,7 @@ export async function updateUsuario(id, data) {
     nombre: data.nombre,
     dni: data.dni,
     email: data.email,
-    telefono: data.telefono,
-    rol: data.rol
+    role: data.role
   };
   
   if (data.password && data.password.trim() !== '') {
@@ -207,12 +206,15 @@ export async function updateUsuario(id, data) {
     headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
     body: JSON.stringify(dataLimpia),
   });
+
   await handleResponse(res);
+  
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.error || 'Error al actualizar usuario');
   }
-  return 
+  
+  return res.json(); 
 }
 
 // --- Medicamentos (stubs — conectar cuando exista el modelo) ---
