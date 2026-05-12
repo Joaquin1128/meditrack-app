@@ -107,13 +107,30 @@ public class EnvioController {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Sin permisos para actualizar estados"));
             }
             EstadoEnvio nuevoEstado = EstadoEnvio.valueOf(body.get("estado"));
-            return ResponseEntity.ok(envioService.actualizarEstado(id, nuevoEstado, sesion.getNombre()));
+            String repartidorId = body.get("repartidorId");
+            return ResponseEntity.ok(envioService.actualizarEstado(id, nuevoEstado, sesion.getNombre(), repartidorId));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "Estado no válido"));
         } catch (RuntimeException e) {
             if (e.getMessage().contains("no encontrado")) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
             }
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/{id}/reasignar")
+    public ResponseEntity<?> reasignarRepartidor(@PathVariable String id, @RequestBody Map<String, String> body, @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        try {
+            Sesion sesion = autenticar(authHeader);
+            if (sesion.getRole() == Role.REPARTIDOR) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Los repartidores no pueden reasignar envíos"));
+            }
+            String nuevoRepartidorId = body.get("repartidorId");
+            return ResponseEntity.ok(envioService.reasignarRepartidor(id, nuevoRepartidorId, sesion.getNombre()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", e.getMessage()));
         }
     }
