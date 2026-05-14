@@ -76,6 +76,21 @@ export async function resetPassword(email, codigo, nuevaPassword) {
   return data;
 }
 
+export async function descargarEtiqueta(id) {
+  const res = await fetch(`${BASE_URL}/api/envios/${id}/etiqueta`, {
+    headers: { ...getAuthHeaders() },
+  });
+  await handleResponse(res);
+  if (!res.ok) throw new Error('Error al generar la etiqueta');
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `etiqueta-${id}.pdf`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 export async function getEnvios() {
   const res = await fetch(`${BASE_URL}/api/envios`, {
     headers: { ...getAuthHeaders() },
@@ -129,16 +144,34 @@ export async function updateEnvio(id, data) {
   return res.json();
 }
 
-export async function updateEstadoEnvio(id, estado, fecha, hora, usuario) {
+export async function updateEstadoEnvio(id, estado, fecha, hora, usuario, repartidorId = null) {
+  const bodyData = { estado, fecha, hora, usuario };
+  if (repartidorId) {
+    bodyData.repartidorId = repartidorId;
+  }
   const res = await fetch(`${BASE_URL}/api/envios/${id}/estado`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-    body: JSON.stringify({ estado, fecha, hora, usuario }),
+    body: JSON.stringify(bodyData),
   });
   await handleResponse(res);
   if (!res.ok) {
     const err = await res.json();
     throw new Error(err.error || 'Error al actualizar estado');
+  }
+  return res.json();
+}
+
+export async function reasignarRepartidorEnvio(id, repartidorId) {
+  const res = await fetch(`${BASE_URL}/api/envios/${id}/reasignar`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+    body: JSON.stringify({ repartidorId }),
+  });
+  await handleResponse(res);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Error al reasignar repartidor');
   }
   return res.json();
 }
@@ -194,8 +227,7 @@ export async function updateUsuario(id, data) {
     nombre: data.nombre,
     dni: data.dni,
     email: data.email,
-    telefono: data.telefono,
-    rol: data.rol
+    role: data.role
   };
   
   if (data.password && data.password.trim() !== '') {
@@ -207,42 +239,93 @@ export async function updateUsuario(id, data) {
     headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
     body: JSON.stringify(dataLimpia),
   });
+
   await handleResponse(res);
+  
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.error || 'Error al actualizar usuario');
   }
-  return res.json();
+  
+  return res.json(); 
 }
 
 // --- Medicamentos (stubs — conectar cuando exista el modelo) ---
-
-const MOCK_MEDICAMENTOS = [
-  { id: 1, nombre: 'Ibuprofeno 400mg', principioActivo: 'Ibuprofeno', laboratorio: 'Bayer', presentacion: 'Comprimidos', stock: 500, unidad: 'mg' },
-  { id: 2, nombre: 'Amoxicilina 500mg', principioActivo: 'Amoxicilina', laboratorio: 'Pfizer', presentacion: 'Cápsulas', stock: 200, unidad: 'mg' },
-  { id: 3, nombre: 'Paracetamol 1g', principioActivo: 'Paracetamol', laboratorio: 'Genoma', presentacion: 'Comprimidos', stock: 800, unidad: 'mg' },
-];
-
 export async function getMedicamentos() {
-  return structuredClone(MOCK_MEDICAMENTOS);
+  const res = await fetch(`${BASE_URL}/api/medicamentos`, {
+    headers: { ...getAuthHeaders() },
+  });
+  await handleResponse(res);
+  if (!res.ok) throw new Error('Error al obtener medicamentos');
+  return res.json();
 }
 
 export async function getMedicamentoById(id) {
-  const m = MOCK_MEDICAMENTOS.find(m => String(m.id) === String(id));
-  if (!m) throw new Error('Medicamento no encontrado');
-  return structuredClone(m);
+  const res = await fetch(`${BASE_URL}/api/medicamentos/${id}`, {
+    headers: { ...getAuthHeaders() },
+  });
+
+  await handleResponse(res);
+  if (!res.ok) throw new Error('Error al obtener medicamentos');
+  return res.json();
 }
 
-export async function updateMedicamento(id, data) {
-  const idx = MOCK_MEDICAMENTOS.findIndex(m => String(m.id) === String(id));
-  if (idx === -1) throw new Error('Medicamento no encontrado');
-  MOCK_MEDICAMENTOS[idx] = { ...MOCK_MEDICAMENTOS[idx], ...data };
-  return structuredClone(MOCK_MEDICAMENTOS[idx]);
+export async function createMedicamento(formData) {
+  const response = await fetch(`${BASE_URL}/api/medicamentos`,
+    {
+      method: 'POST',
+      headers: {
+        ...getAuthHeaders()
+      },
+      body: formData,
+    }
+  );
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Error actualizando medicamento');
+  }
+
+  return response.json();
 }
 
-export async function deleteMedicamento(id) {
-  const idx = MOCK_MEDICAMENTOS.findIndex(m => String(m.id) === String(id));
-  if (idx !== -1) MOCK_MEDICAMENTOS.splice(idx, 1);
+export async function updateMedicamento(id, formData) {
+  const response = await fetch(`${BASE_URL}/api/medicamentos/${id}`,
+    {
+      method: 'PUT',
+      headers: {
+        ...getAuthHeaders()
+      },
+      body: formData,
+    }
+  );
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Error actualizando medicamento');
+  }
+
+  return response.json();
+}
+
+export async function inactivarMedicamento(id) {
+  const res = await fetch(`${BASE_URL}/api/medicamentos/${id}/cambiarEstado`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify({}) 
+  });
+
+  await handleResponse(res);
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Error al cambiar estado');
+  }
+
+  return res.json();
 }
 
 export async function toggleEstadoUsuario(id) {
