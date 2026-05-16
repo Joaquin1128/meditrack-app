@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getEnvioById, updateEnvio } from '../services/api';
+import { getEnvioById, updateEnvio, getMedicamentos } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
 function EditarEnvio() {
@@ -8,33 +8,231 @@ function EditarEnvio() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [form, setForm] = useState(null);
-  const [datosOriginales, setDatosOriginales] = useState(null);
+  const [catalogo, setCatalogo] = useState([]);
+  const [itemsCarga, setItemsCarga] = useState([]);
+  const [busqueda, setBusqueda] = useState('');
+  const [medicamentoSeleccionado, setMedicamentoSeleccionado] = useState(null);
+  const [cantidadMed, setCantidadMed] = useState(1);
+  const [loteMed, setLoteMed] = useState('');
+  const [vencimientoMed, setVencimientoMed] = useState('');
   const [error, setError] = useState('');
+  
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef(null);
 
   useEffect(() => {
+    getMedicamentos()
+      .then(setCatalogo)
+      .catch(err => setError(err.message || 'Error al cargar catálogo de medicamentos.'));
+
     getEnvioById(id)
       .then(data => {
+        let textoOriginal = data.descripcionCarga || '';
+        let itemsParseados = [];
+
+        let parteManual = '';
+        let parteMeds = '';
+
+        if (textoOriginal.includes('| Meds: ')) {
+          const partes = textoOriginal.split('| Meds: ');
+          parteManual = partes[0].trim();
+          parteMeds = partes[1] || '';
+        } else if (textoOriginal.startsWith('Meds: ')) {
+          parteMeds = textoOriginal.replace('Meds: ', '');
+        } else {
+          parteManual = textoOriginal;
+        }
+
+        if (parteManual.trim()) {
+          const mItems = parteManual.split(', ');
+          mItems.forEach((item, index) => {
+            if (!item.trim()) return;
+            const match = item.match(/^(.*?)\s\[Lote:\s(.*?)\s\/\sVenc:\s(.*?)\]\sx(\d+)$/);
+            if (match) {
+              itemsParseados.push({
+                id: `manual-init-${index}-${Date.now()}`,
+                nombre: match[1],
+                presentacion: '',
+                imagenUrl: '',
+                lote: match[2],
+                vencimiento: match[3],
+                cantidad: Number(match[4]),
+                esManual: true
+              });
+            } else {
+              const matchSimple = item.match(/^(.*?)\sx(\d+)$/);
+              itemsParseados.push({
+                id: `manual-init-${index}-${Date.now()}`,
+                nombre: matchSimple ? matchSimple[1] : item,
+                presentacion: '',
+                imagenUrl: '',
+                lote: 'N/A',
+                vencimiento: 'N/A',
+                cantidad: matchSimple ? Number(matchSimple[2]) : 1,
+                esManual: true
+              });
+            }
+          });
+        }
+
+        if (parteMeds.trim()) {
+          const medItems = parteMeds.split(', ');
+          medItems.forEach((item, index) => {
+            if (!item.trim()) return;
+            const match = item.match(/^(.*?)\s\((.*?)\)\s\[Lote:\s(.*?)\s\/\sVenc:\s(.*?)\]\sx(\d+)$/);
+            if (match) {
+              itemsParseados.push({
+                id: `med-init-${index}-${Date.now()}`,
+                nombre: match[1],
+                presentacion: match[2],
+                imagenUrl: '',
+                lote: match[3],
+                vencimiento: match[4],
+                cantidad: Number(match[5]),
+                esManual: false
+              });
+            } else {
+              const matchSimple = item.match(/^(.*?)\s\((.*?)\)\sx(\d+)$/);
+              itemsParseados.push({
+                id: `med-init-${index}-${Date.now()}`,
+                nombre: matchSimple ? matchSimple[1] : item,
+                presentacion: matchSimple ? matchSimple[2] : '',
+                imagenUrl: '',
+                lote: 'N/A',
+                vencimiento: 'N/A',
+                cantidad: matchSimple ? Number(matchSimple[3]) : 1,
+                esManual: false
+              });
+            }
+          });
+        }
+
         const initialForm = {
           id: data.id,
           remitente: data.remitente || '',
           destinatario: data.destinatario || '',
           origen: data.origen || '',
           destino: data.destino || '',
-          descripcionCarga: data.descripcionCarga || '',
           direccionEntrega: data.direccionEntrega || '',
           fechaEstimada: data.fechaEstimada || '',
-          observaciones: data.observaciones || ''
+          observaciones: data.observaciones || '',
+          prioridad: data.prioridad || 'MEDIA'
         };
+        
         setForm(initialForm);
-        setDatosOriginales(initialForm);
+        setItemsCarga(itemsParseados);
       })
       .catch(() => setError('Error al cargar el envío.'));
+
+    const handleClickAfuera = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickAfuera);
+    return () => document.removeEventListener('mousedown', handleClickAfuera);
   }, [id]);
+
+  useEffect(() => {
+    if (catalogo.length > 0 && itemsCarga.length > 0) {
+      const vinculados = itemsCarga.map(m => {
+        if (m.esManual || m.imagenUrl) return m;
+        const coincidencia = catalogo.find(c => c.nombre.toLowerCase().trim() === m.nombre.toLowerCase().trim());
+        return coincidencia ? { ...m, id: coincidencia.id, imagenUrl: coincidencia.imagenUrl } : m;
+      });
+      if (JSON.stringify(vinculados) !== JSON.stringify(itemsCarga)) {
+        setItemsCarga(vinculados);
+      }
+    }
+  }, [catalogo, itemsCarga]);
 
   const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
 
+  const handleSelectMedicamento = (med) => {
+    setMedicamentoSeleccionado(med);
+    setBusqueda(`${med.nombre} (${med.presentacion})`);
+    if (med.lote) setLoteMed(med.lote);
+    if (med.fechaVencimiento) setVencimientoMed(med.fechaVencimiento);
+    setIsOpen(false);
+  };
+
+  const handleAñadirCarga = () => {
+    if (!busqueda.trim()) return;
+
+    if (!form.fechaEstimada) {
+      alert('Debe ingresar primero la Fecha de entrega estimada del envío para poder validar el vencimiento.');
+      return;
+    }
+
+    if (!loteMed.trim() || !vencimientoMed) {
+      alert('El Lote y la Fecha de Vencimiento son campos estrictamente obligatorios.');
+      return;
+    }
+
+    const fechaEntrega = new Date(form.fechaEstimada);
+    const fechaVenc = new Date(vencimientoMed);
+
+    if (fechaVenc <= fechaEntrega) {
+      alert('La fecha de vencimiento del medicamento debe ser mayor que la fecha estimada de entrega del envío.');
+      return;
+    }
+
+    if (medicamentoSeleccionado) {
+      const yaExiste = itemsCarga.some(m => m.nombre === medicamentoSeleccionado.nombre && m.lote === loteMed.trim());
+      if (yaExiste) {
+        alert('Este mismo medicamento con el mismo número de lote ya figura en la lista de la carga.');
+        return;
+      }
+
+      setItemsCarga([
+        ...itemsCarga,
+        {
+          id: medicamentoSeleccionado.id + '-' + Date.now(),
+          nombre: medicamentoSeleccionado.nombre,
+          presentacion: medicamentoSeleccionado.presentacion,
+          imagenUrl: medicamentoSeleccionado.imagenUrl,
+          cantidad: Number(cantidadMed),
+          lote: loteMed.trim(),
+          vencimiento: vencimientoMed,
+          esManual: false
+        }
+      ]);
+    } else {
+      setItemsCarga([
+        ...itemsCarga,
+        {
+          id: `manual-${Date.now()}`,
+          nombre: busqueda.trim(),
+          presentacion: '',
+          imagenUrl: '',
+          cantidad: Number(cantidadMed),
+          lote: loteMed.trim(),
+          vencimiento: vencimientoMed,
+          esManual: true
+        }
+      ]);
+    }
+
+    setBusqueda('');
+    setMedicamentoSeleccionado(null);
+    setCantidadMed(1);
+    setLoteMed('');
+    setVencimientoMed('');
+  };
+
+  const eliminarItem = id => {
+    setItemsCarga(itemsCarga.filter(m => m.id !== id));
+  };
+
+  const actualizarCantidad = (id, nuevaCantidad) => {
+    if (nuevaCantidad <= 0) return;
+    setItemsCarga(itemsCarga.map(m => 
+      m.id === id ? { ...m, cantidad: Number(nuevaCantidad) } : m
+    ));
+  };
+
   const handleGuardar = async () => {
-    const camposAValidar = ['remitente', 'destinatario', 'origen', 'destino', 'descripcionCarga', 'direccionEntrega', 'fechaEstimada'];
+    const camposAValidar = ['remitente', 'destinatario', 'origen', 'destino', 'direccionEntrega', 'fechaEstimada'];
     const hayCamposVacios = camposAValidar.some(key => !form[key]?.trim());
 
     if (hayCamposVacios) {
@@ -42,14 +240,30 @@ function EditarEnvio() {
       return;
     }
 
-    const haCambiado = JSON.stringify(form) !== JSON.stringify(datosOriginales);
-
-    if (!haCambiado) {
-      navigate(`/detalle/${id}`);
+    if (itemsCarga.length === 0) {
+      setError('Debe detallar o asociar al menos un componente en la Asignación de la Carga.');
       return;
     }
+
     try {
-      const payload = { ...form, usuarioEditor: user?.nombre || 'Sistema' };
+      const itemsManuales = itemsCarga.filter(i => i.esManual).map(i => `${i.nombre} [Lote: ${i.lote} / Venc: ${i.vencimiento}] x${i.cantidad}`).join(', ');
+      const itemsMeds = itemsCarga.filter(i => !i.esManual).map(i => `${i.nombre} ${i.presentacion ? `(${i.presentacion})` : ''}`.trim() + ` [Lote: ${i.lote} / Venc: ${i.vencimiento}] x${i.cantidad}`).join(', ');
+      
+      let descripcionFinal = '';
+      if (itemsManuales && itemsMeds) {
+        descripcionFinal = `${itemsManuales} | Meds: ${itemsMeds}`;
+      } else if (itemsManuales) {
+        descripcionFinal = itemsManuales;
+      } else if (itemsMeds) {
+        descripcionFinal = `Meds: ${itemsMeds}`;
+      }
+
+      const payload = { 
+        ...form,
+        descripcionCarga: String(descripcionFinal),
+        usuarioEditor: user?.nombre || 'Sistema' 
+      };
+
       await updateEnvio(id, payload);
       navigate(`/detalle/${id}`, { state: { editSuccess: true } });
     } catch (err) {
@@ -59,11 +273,18 @@ function EditarEnvio() {
 
   if (!form) return <div className="container">Cargando...</div>;
 
+  const opcionesFiltradas = catalogo.filter(m => 
+    m.estadoActivo && 
+    (m.nombre.toLowerCase().includes(busqueda.toLowerCase()) || 
+     m.presentacion.toLowerCase().includes(busqueda.toLowerCase()))
+  );
+
   return (
     <div className="container">
       <div className="page-header">
-        <h1>Editar Envío: {id}</h1>
+        <h1>Editar envío</h1>
       </div>
+
       <div className="card">
         {error && (
           <div style={{ 
@@ -80,42 +301,177 @@ function EditarEnvio() {
         )}
 
         <div className="form-grid">
-          <div className="form-group form-full">
-            <label>Tracking Id</label>
-            <input value={form.id} disabled className="input-locked" />
-          </div>
           <div className="form-group">
             <label>Remitente *</label>
-            <input name="remitente" value={form.remitente} onChange={handleChange} />
+            <input name="remitente" value={form.remitente} onChange={handleChange} placeholder="Laboratorio o depósito" />
           </div>
+
           <div className="form-group">
             <label>Destinatario *</label>
-            <input name="destinatario" value={form.destinatario} onChange={handleChange} />
+            <input name="destinatario" value={form.destinatario} onChange={handleChange} placeholder="Farmacia u hospital de destino" />
           </div>
+
           <div className="form-group">
             <label>Origen *</label>
             <input name="origen" value={form.origen} onChange={handleChange} />
           </div>
+
           <div className="form-group">
             <label>Destino *</label>
             <input name="destino" value={form.destino} onChange={handleChange} />
           </div>
-          <div className="form-group form-full">
-            <label>Descripción de la carga *</label>
-            <input name="descripcionCarga" value={form.descripcionCarga} onChange={handleChange} />
-          </div>
-          <div className="form-group form-full">
+
+          <div className="form-group">
             <label>Dirección de entrega *</label>
             <input name="direccionEntrega" value={form.direccionEntrega} onChange={handleChange} />
           </div>
+
           <div className="form-group">
-            <label>Fecha estimada de entrega *</label>
+            <label>Fecha de entrega estimada *</label>
             <input type="date" name="fechaEstimada" value={form.fechaEstimada} onChange={handleChange} />
           </div>
+
           <div className="form-group form-full">
             <label>Observaciones (Opcional)</label>
             <textarea name="observaciones" value={form.observaciones} onChange={handleChange} rows="3" />
           </div>
+        </div>
+
+        <div style={{ background: '#F9FAFB', padding: '20px', borderRadius: '12px', border: '1px solid #E5E7EB', marginTop: '20px' }}>
+          <h3 style={{ margin: '0 0 4px 0', fontSize: '16px', fontWeight: '700', color: '#374151' }}>Asignación y Detalle de la Carga *</h3>
+          <p style={{ margin: '0 0 16px 0', fontSize: '13px', color: '#6B7280' }}>Busque un medicamento del catálogo o escriba una descripción manual. Luego complete lote, vencimiento vigente y añádalo.</p>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
+            <div style={{ position: 'relative' }} ref={dropdownRef}>
+              <label style={{ fontSize: '13px', fontWeight: '600', color: '#4B5563', marginBottom: '4px', display: 'block' }}>Escribir descripción o Buscar medicamento</label>
+              <input 
+                type="text"
+                value={busqueda}
+                onChange={e => {
+                  setBusqueda(e.target.value);
+                  setMedicamentoSeleccionado(null);
+                  setIsOpen(true);
+                }}
+                onFocus={() => setIsOpen(true)}
+                placeholder="Ej: Paracetamol o Caja con insumos térmicos..."
+                style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #D1D5DB', boxSizing: 'border-box', minHeight: '42px' }}
+              />
+
+              {isOpen && busqueda.trim() && (
+                <div style={{ 
+                  position: 'absolute', 
+                  top: '100%', 
+                  left: 0, 
+                  right: 0, 
+                  backgroundColor: '#fff', 
+                  border: '1px solid #D1D5DB', 
+                  borderRadius: '8px', 
+                  marginTop: '4px', 
+                  maxHeight: '220px', 
+                  overflowY: 'auto', 
+                  zIndex: 1000,
+                  boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)'
+                }}>
+                  {opcionesFiltradas.map(med => (
+                    <div 
+                      key={med.id}
+                      onClick={() => handleSelectMedicamento(med)}
+                      style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px', cursor: 'pointer', borderBottom: '1px solid #F3F4F6', fontSize: '14px' }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#F3F4F6'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#fff'}
+                    >
+                      {med.imagenUrl ? (
+                        <img src={`http://localhost:8080${med.imagenUrl}`} alt="" style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} />
+                      ) : (
+                        <div style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: '#E5E7EB', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: '#9CA3AF' }}>N/A</div>
+                      )}
+                      <div style={{ flex: 1 }}>
+                        <span style={{ fontWeight: '600' }}>{med.nombre}</span> <span style={{ color: '#6B7280' }}>({med.presentacion})</span>
+                      </div>
+                      <div style={{ fontSize: '12px', color: '#9CA3AF' }}>Stock: {med.stock}</div>
+                    </div>
+                  ))}
+                  <div 
+                    onClick={() => setIsOpen(false)}
+                    style={{ padding: '12px', cursor: 'pointer', backgroundColor: '#EFF6FF', color: '#2563EB', fontSize: '14px', fontWeight: '600', textAlign: 'center' }}
+                  >
+                    ✓ Continuar con la entrada manual de: "{busqueda}"
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-end' }}>
+              <div style={{ flex: 1 }}>
+                <label style={{ fontSize: '13px', fontWeight: '600', color: '#4B5563', marginBottom: '4px', display: 'block' }}>Lote *</label>
+                <input type="text" value={loteMed} onChange={e => setLoteMed(e.target.value)} placeholder="Ej: LOTE-123" style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #D1D5DB', boxSizing: 'border-box', minHeight: '42px' }} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <label style={{ fontSize: '13px', fontWeight: '600', color: '#4B5563', marginBottom: '4px', display: 'block' }}>F. Vencimiento *</label>
+                <input type="date" value={vencimientoMed} onChange={e => setVencimientoMed(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #D1D5DB', boxSizing: 'border-box', minHeight: '42px' }} />
+              </div>
+              <div style={{ width: '100px' }}>
+                <label style={{ fontSize: '13px', fontWeight: '600', color: '#4B5563', marginBottom: '4px', display: 'block' }}>Cantidad</label>
+                <input type="number" min="1" value={cantidadMed} onChange={e => setCantidadMed(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #D1D5DB', boxSizing: 'border-box', minHeight: '42px' }} />
+              </div>
+              <button type="button" onClick={handleAñadirCarga} disabled={!busqueda.trim()} style={{ padding: '11px 20px', backgroundColor: '#10B981', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', minHeight: '42px' }}>
+                AÑADIR
+              </button>
+            </div>
+          </div>
+
+          {itemsCarga.length > 0 ? (
+            <div style={{ border: '1px solid #E5E7EB', borderRadius: '8px', overflow: 'hidden', background: '#fff' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
+                <thead style={{ backgroundColor: '#F3F4F6' }}>
+                  <tr>
+                    <th style={{ padding: '10px', textAlign: 'left', width: '60px' }}>Foto</th>
+                    <th style={{ padding: '10px', textAlign: 'left' }}>Detalle de Carga / Componente</th>
+                    <th style={{ padding: '10px', textAlign: 'left' }}>Presentación</th>
+                    <th style={{ padding: '10px', textAlign: 'left' }}>Lote</th>
+                    <th style={{ padding: '10px', textAlign: 'left' }}>Vencimiento</th>
+                    <th style={{ padding: '10px', textAlign: 'center', width: '100px' }}>Cantidad</th>
+                    <th style={{ padding: '10px', textAlign: 'center', width: '60px' }}>Acción</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {itemsCarga.map((item) => (
+                    <tr key={item.id} style={{ borderBottom: '1px solid #E5E7EB' }}>
+                      <td style={{ padding: '10px', textAlign: 'center' }}>
+                        {!item.esManual && item.imagenUrl ? (
+                          <img 
+                            src={`http://localhost:8080${item.imagenUrl}`} 
+                            alt={item.nombre} 
+                            style={{ width: '36px', height: '36px', objectFit: 'cover', borderRadius: '50%', border: '1px solid #E5E7EB', display: 'block', margin: '0 auto' }} 
+                          />
+                        ) : (
+                          <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: item.esManual ? '#FEF3C7' : '#E5E7EB', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: item.esManual ? '#D97706' : '#9CA3AF', fontWeight: 'bold', margin: '0 auto' }}>
+                            {item.esManual ? 'TXT' : 'N/A'}
+                          </div>
+                        )}
+                      </td>
+                      <td style={{ padding: '10px', fontWeight: '600' }}>
+                        {item.nombre} {item.esManual && <span style={{ fontStyle: 'italic', fontSize: '12px', color: '#9CA3AF', fontWeight: 'normal' }}>(Texto manual)</span>}
+                      </td>
+                      <td style={{ padding: '10px', color: '#6B7280' }}>{item.presentacion || 'N/A'}</td>
+                      <td style={{ padding: '10px', color: '#374151', fontWeight: '500' }}>{item.lote}</td>
+                      <td style={{ padding: '10px', color: '#374151' }}>{item.vencimiento}</td>
+                      <td style={{ padding: '10px', textAlign: 'center' }}>
+                        <input type="number" min="1" value={item.cantidad} onChange={e => actualizarCantidad(item.id, e.target.value)} style={{ width: '60px', padding: '4px', textAlign: 'center', borderRadius: '4px', border: '1px solid #D1D5DB' }} />
+                      </td>
+                      <td style={{ padding: '10px', textAlign: 'center' }}>
+                        <button type="button" onClick={() => eliminarItem(item.id)} style={{ background: 'none', border: 'none', color: '#EF4444', fontWeight: 'bold', cursor: 'pointer' }}>✕</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div style={{ textTransform: 'uppercase', textAlign: 'center', padding: '14px', fontSize: '12px', color: '#9CA3AF', border: '2px dashed #D1D5DB', borderRadius: '8px' }}>
+              La carga está vacía. Añada medicamentos del catálogo o ingrese sus descripciones personalizadas.
+            </div>
+          )}
         </div>
 
         <div style={{ 
@@ -126,7 +482,7 @@ function EditarEnvio() {
           paddingTop: '20px',
           borderTop: '1px solid #eee'
         }}>
-          <button className="btn btn-secondary" onClick={() => navigate(`/detalle/${id}`)}>CANCELAR</button>
+          <button className="btn btn-secondary" onClick={() => navigate('/envios')}>CANCELAR</button>
           <button className="btn btn-primary" onClick={handleGuardar}>ACTUALIZAR ENVÍO</button>
         </div>
       </div>

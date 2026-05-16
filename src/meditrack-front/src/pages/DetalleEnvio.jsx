@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import { getEnvioById, updateEstadoEnvio, cancelarEnvio, getUsuarios, reasignarRepartidorEnvio, descargarEtiqueta } from '../services/api';
+import { getEnvioById, updateEstadoEnvio, cancelarEnvio, getUsuarios, reasignarRepartidorEnvio, descargarEtiqueta, getMedicamentos } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import ModalHistorial from '../components/ModalHistorial';
 import StatusLine from '../components/StatusLine';
@@ -43,6 +43,8 @@ function DetalleEnvio() {
   const [envio, setEnvio] = useState(null);
   const [error, setError] = useState('');
   const [repartidores, setRepartidores] = useState([]);
+  const [catalogo, setCatalogo] = useState([]);
+  const [itemsCarga, setItemsCarga] = useState([]);
   
   const [modalAbierto, setModalAbierto] = useState(false);
   const [historialAbierto, setHistorialAbierto] = useState(false);
@@ -55,6 +57,10 @@ function DetalleEnvio() {
   const [modalError, setModalError] = useState('');
 
   useEffect(() => {
+    getMedicamentos()
+      .then(setCatalogo)
+      .catch(() => {});
+
     getEnvioById(id)
       .then(data => {
         setEnvio(data);
@@ -66,6 +72,107 @@ function DetalleEnvio() {
           usuario: user?.nombre || '',
           repartidorId: ''
         });
+
+        let textoOriginal = data.descripcionCarga || '';
+        let itemsParseados = [];
+        let parteManual = '';
+        let parteMeds = '';
+
+        if (textoOriginal.includes('| Meds: ')) {
+          const partes = textoOriginal.split('| Meds: ');
+          parteManual = partes[0].trim();
+          parteMeds = partes[1] || '';
+        } else if (textoOriginal.startsWith('Meds: ')) {
+          parteMeds = textoOriginal.replace('Meds: ', '');
+        } else {
+          parteManual = textoOriginal;
+        }
+
+        if (parteManual.trim()) {
+          const mItems = parteManual.split(', ');
+          mItems.forEach((item, index) => {
+            if (!item.trim()) return;
+            const match = item.match(/^(.*?)\s\[Lote:\s(.*?)\s\/\sVenc:\s(.*?)\]\sx(\d+)$/);
+            if (match) {
+              itemsParseados.push({
+                id: `manual-${index}-${Date.now()}`,
+                nombre: match[1],
+                presentacion: '',
+                lote: match[2],
+                vencimiento: match[3],
+                cantidad: Number(match[4]),
+                esManual: true
+              });
+            } else {
+              const matchSimple = item.match(/^(.*?)\sx(\d+)$/);
+              itemsParseados.push({
+                id: `manual-${index}-${Date.now()}`,
+                nombre: matchSimple ? matchSimple[1] : item,
+                presentacion: '',
+                lote: 'N/A',
+                vencimiento: 'N/A',
+                cantidad: matchSimple ? Number(matchSimple[2]) : 1,
+                esManual: true
+              });
+            }
+          });
+        }
+
+        if (parteMeds.trim()) {
+          const medItems = parteMeds.split(', ');
+          medItems.forEach((item, index) => {
+            if (!item.trim()) return;
+            const match = item.match(/^(.*?)\s\((.*?)\)\s\[Lote:\s(.*?)\s\/\sVenc:\s(.*?)\]\sx(\d+)$/);
+            if (match) {
+              itemsParseados.push({
+                id: `med-${index}-${Date.now()}`,
+                nombre: match[1],
+                presentacion: match[2],
+                lote: match[3],
+                vencimiento: match[4],
+                cantidad: Number(match[5]),
+                esManual: false
+              });
+            } else {
+              const matchSimple = item.match(/^(.*?)\s\((.*?)\)\sx(\d+)$/);
+              if (matchSimple) {
+                itemsParseados.push({
+                  id: `med-${index}-${Date.now()}`,
+                  nombre: matchSimple[1],
+                  presentacion: matchSimple[2],
+                  lote: 'N/A',
+                  vencimiento: 'N/A',
+                  cantidad: Number(matchSimple[3]),
+                  esManual: false
+                });
+              } else {
+                const matchVerySimple = item.match(/^(.*?)\s\[Lote:\s(.*?)\s\/\sVenc:\s(.*?)\]\sx(\d+)$/);
+                if (matchVerySimple) {
+                  itemsParseados.push({
+                    id: `med-${index}-${Date.now()}`,
+                    nombre: matchVerySimple[1],
+                    presentacion: '',
+                    lote: matchVerySimple[2],
+                    vencimiento: matchVerySimple[3],
+                    cantidad: Number(matchVerySimple[4]),
+                    esManual: false
+                  });
+                } else {
+                  itemsParseados.push({
+                    id: `med-${index}-${Date.now()}`,
+                    nombre: item,
+                    presentacion: '',
+                    lote: 'N/A',
+                    vencimiento: 'N/A',
+                    cantidad: 1,
+                    esManual: false
+                  });
+                }
+              }
+            }
+          });
+        }
+        setItemsCarga(itemsParseados);
       })
       .catch(() => setError('Envío no encontrado.'));
 
@@ -82,6 +189,19 @@ function DetalleEnvio() {
       return () => { clearTimeout(showTimer); clearTimeout(hideTimer); };
     }
   }, [id, user?.nombre, location.state]);
+
+  useEffect(() => {
+    if (catalogo.length > 0 && itemsCarga.length > 0) {
+      const vinculados = itemsCarga.map(m => {
+        if (m.esManual || m.imagenUrl) return m;
+        const coincidencia = catalogo.find(c => c.nombre.toLowerCase().trim() === m.nombre.toLowerCase().trim());
+        return coincidencia ? { ...m, imagenUrl: coincidencia.imagenUrl } : m;
+      });
+      if (JSON.stringify(vinculados) !== JSON.stringify(itemsCarga)) {
+        setItemsCarga(vinculados);
+      }
+    }
+  }, [catalogo, itemsCarga]);
 
   const abrirModalEstado = () => {
     const { fecha, hora } = ahora();
@@ -232,10 +352,6 @@ function DetalleEnvio() {
               )}
             </div>
           </div>
-          <div className="detail-field">
-            <label>DESCRIPCIÓN DE LA CARGA</label>
-            <span>{envio.descripcionCarga || '-'}</span>
-          </div>
         </div>
 
         <div className="info-row-grid">
@@ -269,6 +385,39 @@ function DetalleEnvio() {
         </div>
 
         <div className="info-row-grid" style={{ marginTop: '10px', borderTop: '1px solid #E5E7EB', paddingTop: '20px', marginBottom: '0' }}>
+          <div className="detail-field" style={{ gridColumn: 'span 3' }}>
+            <label>DESCRIPCIÓN DE LA CARGA</label>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '10px' }}>
+              {itemsCarga.length > 0 ? (
+                itemsCarga.map((item) => (
+                  <div key={item.id} style={{ display: 'flex', gap: '16px', alignItems: 'center', padding: '14px', border: '1px solid #E5E7EB', borderRadius: '8px', background: '#F9FAFB' }}>
+                    <div style={{ width: '50px', height: '50px', borderRadius: '8px', overflow: 'hidden', background: '#E5E7EB', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      {item.imagenUrl ? (
+                        <img src={`http://localhost:8080${item.imagenUrl}`} alt={item.nombre} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ) : (
+                        <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#9CA3AF' }}>
+                          {item.esManual ? 'TXT' : 'N/A'}
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <span style={{ fontWeight: '600', color: '#111827', fontSize: '15px' }}>
+                        {item.nombre} {item.presentacion ? `(${item.presentacion})` : ''} x{item.cantidad}
+                      </span>
+                      <span style={{ color: '#4B5563', fontSize: '13px', fontWeight: '500' }}>
+                        Lote: {item.lote} | Fecha de Vencimiento: {item.vencimiento}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <span>{envio.descripcionCarga || '-'}</span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="info-row-grid" style={{ marginTop: '20px', borderTop: '1px solid #E5E7EB', paddingTop: '20px', marginBottom: '0' }}>
           <div className="detail-field" style={{ gridColumn: 'span 3' }}>
             <label>REPARTIDOR ASIGNADO</label>
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginTop: '5px' }}>
