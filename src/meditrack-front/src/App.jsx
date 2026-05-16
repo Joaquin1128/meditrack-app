@@ -24,9 +24,9 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/tracking" element={<TrackingPublico />} />
+          <Route path="/" element={<TrackingPublico />} />
           <Route element={<ProtectedLayout />}>
-            <Route path="/" element={<MainMenu />} />
+            <Route path="/menu" element={<MainMenu />} />
             <Route path="/envios" element={<Home />} />
             <Route path="/detalle/:id" element={<DetalleEnvio />} />
             <Route path="/envios/nuevo" element={<ProtectedRoute roles={['SUPERVISOR','ADMINISTRADOR']}><NuevoEnvio /></ProtectedRoute>} />

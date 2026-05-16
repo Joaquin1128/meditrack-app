@@ -23,7 +23,7 @@ function Navbar({ publicMode = false }) {
     <nav className="navbar">
       <div
         className="navbar-brand"
-        onClick={() => navigate('/')}
+        onClick={() => navigate('/menu')}
         style={{
           cursor: 'pointer',
           display: 'flex',

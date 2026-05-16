@@ -24,7 +24,7 @@ const MainMenu = () => {
       rolesPermitidos: ['ADMINISTRADOR', 'SUPERVISOR', 'OPERADOR'],
       items: [
         { label: "Panel de Envíos", icon: <Package size={32} />, path: "/envios", color: "#3b82f6" },
-        { label: "Rutas Activas", icon: <Truck size={32} />, path: "/rutas", color: "#3b82f6" },
+        { label: "Rutas Activas", icon: <Truck size={32} />, path: "/menu", color: "#3b82f6" },
       ]
     },
     {
@@ -32,7 +32,7 @@ const MainMenu = () => {
       rolesPermitidos: ['ADMINISTRADOR', 'SUPERVISOR', 'OPERADOR'],
       items: [
         { label: "Medicamentos", icon: <Pill size={32} />, path: "/medicamentos", color: "#00A86B" },
-        { label: "Clientes", icon: <Hospital size={32} />, path: "/farmacias", color: "#00A86B" },
+        { label: "Clientes", icon: <Hospital size={32} />, path: "/menu", color: "#00A86B" },
       ]
     },
     {
@@ -46,18 +46,18 @@ const MainMenu = () => {
       title: "Reportes",
       rolesPermitidos: ['ADMINISTRADOR', 'SUPERVISOR', 'OPERADOR'],
       items: [
-        { label: "Incidencias", icon: <ShieldAlert size={32} />, path: "/incidencias", color: "#4338CA" },
-        { label: "Volumen", icon: <TriangleRight size={32} />, path: "/volumen", color: "#4338CA" },
+        { label: "Incidencias", icon: <ShieldAlert size={32} />, path: "/menu", color: "#4338CA" },
+        { label: "Volumen", icon: <TriangleRight size={32} />, path: "/menu", color: "#4338CA" },
       ]
     },
     {
       title: "Repartidores y Transportes",
       rolesPermitidos: ['ADMINISTRADOR', 'SUPERVISOR', 'REPARTIDOR'],
       items: [
-        { label: "Repartidor", icon: <Users size={32} />, path: "/repartidor", color: "#ec7f35" },
-        { label: "Asignaciones", icon: <NotepadText size={32} />, path: "/asignaciones-repartidor", color: "#ec7f35" },
-        { label: "Historial", icon: <History size={32} />, path: "/historial-repartidor", color: "#ec7f35" },
-        { label: "Transportes", icon: <Truck size={32} />, path: "/transportes", color: "#ec7f35" },
+        { label: "Repartidor", icon: <Users size={32} />, path: "/menu", color: "#ec7f35" },
+        { label: "Asignaciones", icon: <NotepadText size={32} />, path: "/menu", color: "#ec7f35" },
+        { label: "Historial", icon: <History size={32} />, path: "/menu", color: "#ec7f35" },
+        { label: "Transportes", icon: <Truck size={32} />, path: "/menu", color: "#ec7f35" },
       ]
     }
   ];

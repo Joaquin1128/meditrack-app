@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { login as apiLogin } from '../services/api';
+import loginBg from '../assets/login-bg.png';
 
 function Login() {
   const { user, login } = useAuth();
@@ -10,7 +11,7 @@ function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  if (user) return <Navigate to="/" replace />;
+  if (user) return <Navigate to="/menu" replace />;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -28,7 +29,7 @@ function Login() {
   };
 
   return (
-    <div className="login-wrapper">
+    <div className="login-wrapper" style={{ backgroundImage: `url(${loginBg})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', minHeight: '100vh', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div className="login-card">
         <h1 className="login-title">MediTrack</h1>
         <p className="login-subtitle">Gestión logística farmacéutica</p>
