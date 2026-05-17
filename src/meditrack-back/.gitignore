@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Ignorar configuraciones locales de Spring Boot
+**/application-local.properties
