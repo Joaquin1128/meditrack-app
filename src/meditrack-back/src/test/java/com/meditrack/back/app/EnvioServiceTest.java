@@ -4,7 +4,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import org.junit.jupiter.api.BeforeEach;
+//import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import com.meditrack.back.app.model.Envio;
 import com.meditrack.back.app.model.EstadoEnvio;
@@ -15,10 +15,10 @@ class EnvioServiceTest {
     private EnvioService service;
     private final String USUARIO_TEST = "admin_test";
 
-    @BeforeEach
-    void setUp() {
-        service = new EnvioService();
-    }
+ //   @BeforeEach
+//    void setUp() {
+//        service = new EnvioService();
+//    }
 
     @Test
     void listarTodos_inicialmenteVacio() {
