@@ -70,6 +70,7 @@ class EnvioServiceTest {
         Envio envioExistente = new Envio();
         envioExistente.setId("ENV-111");
         envioExistente.setEstado(EstadoEnvio.PENDIENTE);
+        envioExistente.setUsuarioResponsable(USUARIO_TEST);
 
         when(envioRepository.findById("ENV-111")).thenReturn(Optional.of(envioExistente));
         when(envioRepository.save(any(Envio.class))).thenAnswer(i -> i.getArguments()[0]);
@@ -111,6 +112,8 @@ class EnvioServiceTest {
     void estados_todosLosNuevosEstadosSonAccesibles() {
         Envio envioExistente = new Envio();
         envioExistente.setId("ENV-999");
+        envioExistente.setEstado(EstadoEnvio.PENDIENTE);
+        envioExistente.setUsuarioResponsable(USUARIO_TEST);
 
         when(envioRepository.findById("ENV-999")).thenReturn(Optional.of(envioExistente));
         when(envioRepository.save(any(Envio.class))).thenAnswer(i -> i.getArguments()[0]);
