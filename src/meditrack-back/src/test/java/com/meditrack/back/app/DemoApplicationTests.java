@@ -10,13 +10,15 @@ import org.springframework.test.context.TestPropertySource;
     "spring.datasource.driverClassName=org.h2.Driver",
     "spring.datasource.username=sa",
     "spring.datasource.password=",
-    "spring.jpa.database-platform=org.hibernate.dialect.H2Dialect"
+    "spring.jpa.database-platform=org.hibernate.dialect.H2Dialect",
+    "cloudinary.cloud_name=test",
+    "cloudinary.api_key=test",
+    "cloudinary.api_secret=test"
 })
 class LogitrackApplicationTests {
 
     @Test
     void contextLoads() {
-        
     }
 
 }
