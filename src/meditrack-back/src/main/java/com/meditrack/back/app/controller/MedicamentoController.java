@@ -53,6 +53,7 @@ public class MedicamentoController {
             @RequestHeader(value = "Authorization", required = false) String authHeader) {
         try {
             autenticar(authHeader);
+
             return ResponseEntity.ok(medicamentoService.obtenerPorId(id));
         } catch (RuntimeException e) {
             if (e.getMessage().contains("no encontrado")) {
