@@ -16,12 +16,6 @@ function Login() {
   const [otp, setOtp] = useState(new Array(6).fill(""));
   const inputRefs = useRef([]);
 
-  useEffect(() => {
-    if (step === 2) {
-      setOtp(new Array(6).fill(""));
-    }
-  }, [step]);
-
   if (user) return <Navigate to="/" replace />;
 
   const handleFormSubmit = async (e) => {
@@ -35,6 +29,7 @@ function Login() {
         
         if (responseData.require2fa) {
           setTempData(responseData);
+          setOtp(new Array(6).fill(""));
           setStep(2);
         } else {
           login(responseData);
@@ -181,7 +176,7 @@ function Login() {
           {step === 2 && (
             <button
               type="button"
-              onClick={() => { setStep(1); setError(''); }}
+              onClick={() => { setStep(1); setError(''); setOtp(new Array(6).fill("")); }}
               style={{ marginTop: '10px', background: 'none', border: 'none', color: '#6b7280', fontSize: '13px', cursor: 'pointer', width: '100%', fontWeight: 'bold' }}
             >
               ← Volver al inicio de sesión
