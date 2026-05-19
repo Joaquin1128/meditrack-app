@@ -24,7 +24,7 @@ const MainMenu = () => {
       rolesPermitidos: ['ADMINISTRADOR', 'SUPERVISOR', 'OPERADOR'],
       items: [
         { label: "Panel de Envíos", icon: <Package size={32} />, path: "/envios", color: "#3b82f6" },
-        { label: "Rutas Activas", icon: <Truck size={32} />, path: "/menu", color: "#3b82f6" },
+        { label: "Rutas Activas", icon: <Truck size={32} />, path: "/rutas", color: "#3b82f6" },
       ]
     },
     {

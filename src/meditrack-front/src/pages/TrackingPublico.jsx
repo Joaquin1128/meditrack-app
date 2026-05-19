@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { getTrackingPublico } from "../services/api";
 import Navbar from '../components/Navbar';
-import fondoCamion from '../assets/meditrack-bg.png';
+import bgImg from '../assets/bg.png';
+import { Package, Truck, MapPin, AlertTriangle, CheckCircle2, XCircle, Search, Loader2 } from "lucide-react";
 
 const STEP_DETAILS = {
-  PENDIENTE: 'Recibimos tu solicitud de envío. Estamos procesando los detalles.',
-  ASIGNADO: 'Un chofer y vehículo han sido asignados para recolectar tu paquete.',
   EN_PREPARACION: 'Tu paquete está siendo embalado y verificado en nuestro centro de distribución.',
   EN_TRANSITO: '¡Tu envío está en camino! Salió de nuestro centro y se dirige a destino.',
   INCIDENTE_REPORTADO: 'Se ha registrado un inconveniente con tu envío. Nuestro equipo de soporte está trabajando para solucionarlo a la brevedad.',
@@ -34,6 +33,13 @@ export default function TrackingPublico() {
     setCargando(true);
     try {
       const data = await getTrackingPublico(id);
+      
+      if (['PENDIENTE', 'ASIGNADO', 'EN_PREPARACION'].includes(data.estado)) {
+        data.estadoVisual = 'EN_PREPARACION';
+      } else {
+        data.estadoVisual = data.estado;
+      }
+      
       setResultado(data);
     } catch (err) {
       setError(err?.message || 'Error al consultar tracking');
@@ -43,74 +49,71 @@ export default function TrackingPublico() {
   }
 
   const obtenerPasos = () => {
-    if (!resultado || !resultado.estado) return [];
-
-    const estadoActual = resultado.estado;
+    if (!resultado) return [];
+    
     const historial = resultado.historial || [];
-    const caminoBase = ['PENDIENTE', 'ASIGNADO', 'EN_PREPARACION', 'EN_TRANSITO'];
+    const estadosVistos = new Set();
 
-    if (estadoActual === 'CANCELADO') {
-      const saltoDirecto = !historial.some(h => {
-        if (h.tipo !== 'CAMBIO_ESTADO' || !h.detalle) return false;
-        const detalleNormalizado = h.detalle
-          .toUpperCase()
-          .normalize("NFD")
-          .replace(/[\u0300-\u036f]/g, "");
-        
-        return (
-          detalleNormalizado.includes('ASIGNADO') || 
-          detalleNormalizado.includes('PREPARACION') || 
-          detalleNormalizado.includes('TRANSITO')
-        );
-      });
-      
-      if (saltoDirecto) return ['PENDIENTE', 'CANCELADO'];
-    }
-
-    const registroIncidente = historial.find(h => {
-      if (h.tipo !== 'CAMBIO_ESTADO' || !h.detalle) return false;
-      const detalleNormalizado = h.detalle
-        .toUpperCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "");
-      return detalleNormalizado.includes('INCIDENTE_REPORTADO');
+    historial.forEach(h => {
+      if (h.estado) {
+        const est = h.estado.toUpperCase().trim();
+        if (['PENDIENTE', 'ASIGNADO', 'EN_PREPARACION'].includes(est)) {
+          estadosVistos.add('EN_PREPARACION');
+        } else {
+          estadosVistos.add(est);
+        }
+      }
     });
 
-    if (registroIncidente || estadoActual === 'INCIDENTE_REPORTADO' || estadoActual === 'CANCELADO') {
-      const detalle = registroIncidente?.detalle || "";
-      const pasoPrevio = detalle.split(' → ')[0]?.trim().toUpperCase();
-      if (pasoPrevio === 'EN_PUNTO_DE_ENTREGA') {
-        return [...caminoBase, 'EN_PUNTO_DE_ENTREGA', 'INCIDENTE_REPORTADO', 'CANCELADO'];
-      } else {
-        return [...caminoBase, 'INCIDENTE_REPORTADO', 'CANCELADO'];
-      }
+    if (resultado.estadoVisual) {
+      estadosVistos.add(resultado.estadoVisual);
     }
-    return [...caminoBase, 'EN_PUNTO_DE_ENTREGA', 'ENTREGADO'];
+
+    const ordenLogico = [
+      'EN_PREPARACION',
+      'EN_TRANSITO',
+      'EN_PUNTO_DE_ENTREGA',
+      'INCIDENTE_REPORTADO',
+      'ENTREGADO',
+      'CANCELADO'
+    ];
+
+    return ordenLogico.filter(estado => estadosVistos.has(estado));
   };
 
   const pasos = obtenerPasos();
-  const indiceActual = pasos.indexOf(resultado?.estado);
 
-  const getStepConfig = (step, index) => {
-    const isPassed = index <= indiceActual && indiceActual !== -1;
-    if (!isPassed) return { color: '#E5E7EB', icon: '○', textColor: '#9CA3AF' };
-    if (step === 'INCIDENTE_REPORTADO') return { color: '#F59E0B', icon: '⚠️', textColor: '#F59E0B' };
-    if (step === 'CANCELADO') return { color: '#EF4444', icon: '❌', textColor: '#EF4444' };
-    return { color: '#10B981', icon: '✅', textColor: '#10B981' };
+  const getStepConfig = (step) => {
+    switch (step) {
+      case 'EN_PREPARACION':
+        return { color: '#10B981', icon: Package, textColor: '#10B981' };
+      case 'EN_TRANSITO':
+        return { color: '#10B981', icon: Truck, textColor: '#10B981' };
+      case 'EN_PUNTO_DE_ENTREGA':
+        return { color: '#10B981', icon: MapPin, textColor: '#10B981' };
+      case 'INCIDENTE_REPORTADO':
+        return { color: '#F59E0B', icon: AlertTriangle, textColor: '#F59E0B' };
+      case 'ENTREGADO':
+        return { color: '#10B981', icon: CheckCircle2, textColor: '#10B981' };
+      case 'CANCELADO':
+        return { color: '#EF4444', icon: XCircle, textColor: '#EF4444' };
+      default:
+        return { color: '#10B981', icon: Package, textColor: '#10B981' };
+    }
   };
 
   const getLineColor = (index) => {
-    if (indiceActual === -1 || index >= indiceActual) return '#E5E7EB';
+    if (index >= pasos.length - 1) return '#E5E7EB';
     const nextStep = pasos[index + 1];
     if (nextStep === 'INCIDENTE_REPORTADO') return '#F59E0B';
     if (nextStep === 'CANCELADO') return '#EF4444';
     return '#10B981';
   };
 
-  const encontrarFechaHora = (step, index) => {
+  const encontrarFechaHora = (step) => {
     if (!resultado) return '';
     
-    if (step === resultado.estado) {
+    if (step === resultado.estadoVisual) {
       const f = resultado.fechaUltimoEstado || '';
       const h = resultado.horaUltimoEstado || '';
       if (!f) return '';
@@ -118,16 +121,15 @@ export default function TrackingPublico() {
       return y && m && d ? `${d}/${m}/${y} ${h}`.trim() : `${f} ${h}`.trim();
     }
 
-    if (index > indiceActual) return '';
-
     const historial = resultado.historial || [];
-    const registro = historial.find(h => {
-      if (h.tipo !== 'CAMBIO_ESTADO' || !h.detalle) return false;
-      const detalleNormalizado = h.detalle
-        .toUpperCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "");
-      return detalleNormalizado.includes(`→ ${step.replace(/_/g, ' ')}`) || detalleNormalizado.includes(`→ ${step}`);
+    
+    const registro = [...historial].reverse().find(h => {
+      if (!h.estado) return false;
+      const est = h.estado.toUpperCase().trim();
+      if (step === 'EN_PREPARACION') {
+        return ['PENDIENTE', 'ASIGNADO', 'EN_PREPARACION'].includes(est);
+      }
+      return est === step;
     });
 
     if (registro && registro.fecha) {
@@ -136,20 +138,11 @@ export default function TrackingPublico() {
       return `${fFormateada} ${registro.hora || ''}`.trim();
     }
 
-    if (step === 'PENDIENTE') {
-      const registroCreacion = historial.find(h => h.tipo === 'CREACION');
-      if (registroCreacion && registroCreacion.fecha) {
-        const [y, m, d] = registroCreacion.fecha.split('-');
-        const fFormateada = y && m && d ? `${d}/${m}/${y}` : registroCreacion.fecha;
-        return `${fFormateada} ${registroCreacion.hora || ''}`.trim();
-      }
-    }
-
     return '';
   };
 
   return (
-    <div style={{ backgroundImage: `url(${fondoCamion})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', minHeight: '100vh', width: '100%', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ backgroundImage: `url(${bgImg})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', minHeight: '100vh', width: '100%', display: 'flex', flexDirection: 'column' }}>
       <Navbar customLoginIcon={true} />
 
       <div style={{ flex: 1, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: 16, paddingTop: '8vh' }}>
@@ -175,7 +168,9 @@ export default function TrackingPublico() {
                 transition: "transform 0.05s ease, filter 0.15s ease",
                 filter: cargando ? 'brightness(0.95)' : 'none',
                 fontWeight: 'bold',
-                fontSize: 20
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
               }}
               onMouseDown={(e) => {
                 if (!cargando) e.currentTarget.style.transform = 'scale(0.95)';
@@ -193,7 +188,7 @@ export default function TrackingPublico() {
                 e.currentTarget.style.filter = cargando ? 'brightness(0.95)' : 'none';
               }}
             >
-              {cargando ? '...' : '🔍'}
+              {cargando ? <Loader2 size={20} className="animate-spin" /> : <Search size={20} />}
             </button>
           </form>
           {error && (
@@ -211,10 +206,10 @@ export default function TrackingPublico() {
               {pasos.length > 0 ? (
                 <div style={{ position: 'relative', display: 'flex', flexDirection: 'column' }}>
                   {pasos.map((step, index) => {
-                    const config = getStepConfig(step, index);
-                    const isPassed = index <= indiceActual && indiceActual !== -1;
-                    const fechaHoraText = encontrarFechaHora(step, index);
-                    const detalleTexto = index === indiceActual ? STEP_DETAILS[step] : `El envío completó la etapa de ${step.toLowerCase().replace(/_/g, ' ')}.`;
+                    const config = getStepConfig(step);
+                    const IconComponent = config.icon;
+                    const fechaHoraText = encontrarFechaHora(step);
+                    const detalleTexto = index === pasos.length - 1 ? STEP_DETAILS[step] : `El envío completó la etapa de ${step.toLowerCase().replace(/_/g, ' ')}.`;
 
                     return (
                       <div key={`${step}-${index}`} style={{ display: 'flex', gap: 16, marginBottom: index === pasos.length - 1 ? 0 : 28, position: 'relative', zIndex: 1, alignItems: 'flex-start' }}>
@@ -224,18 +219,16 @@ export default function TrackingPublico() {
                             width: 36,
                             height: 36,
                             borderRadius: '50%',
-                            backgroundColor: isPassed ? config.color : 'white',
-                            border: `2px solid ${isPassed ? config.color : '#D1D5DB'}`,
-                            color: isPassed ? 'white' : '#9CA3AF',
+                            backgroundColor: config.color,
+                            border: `2px solid ${config.color}`,
+                            color: 'white',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            fontSize: 18,
-                            fontWeight: 700,
                             boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
                             zIndex: 2
                           }}>
-                            {config.icon}
+                            <IconComponent size={18} strokeWidth={2.5} />
                           </div>
                           
                           {index < pasos.length - 1 && (
@@ -254,15 +247,15 @@ export default function TrackingPublico() {
 
                         <div style={{ flex: 1 }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4, gap: 10, flexWrap: 'wrap' }}>
-                            <div style={{ fontSize: 16, fontWeight: 700, color: isPassed ? config.textColor : '#9CA3AF', textTransform: 'uppercase' }}>
+                            <div style={{ fontSize: 16, fontWeight: 700, color: config.textColor, textTransform: 'uppercase' }}>
                               {step.replace(/_/g, ' ')}
                             </div>
-                            <div style={{ fontSize: 13, color: index === indiceActual ? config.textColor : '#9CA3AF', fontWeight: index === indiceActual ? '600' : '400' }}>
+                            <div style={{ fontSize: 13, color: index === pasos.length - 1 ? config.textColor : '#9CA3AF', fontWeight: index === pasos.length - 1 ? '600' : '400' }}>
                               {fechaHoraText}
                             </div>
                           </div>
-                          <p style={{ fontSize: 14, margin: 0, color: index === indiceActual ? '#111827' : '#9CA3AF' }}>
-                            {isPassed ? detalleTexto : 'Etapa pendiente.'}
+                          <p style={{ fontSize: 14, margin: 0, color: index === pasos.length - 1 ? '#111827' : '#9CA3AF' }}>
+                            {detalleTexto}
                           </p>
                         </div>
 
