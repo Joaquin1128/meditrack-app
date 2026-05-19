@@ -49,7 +49,7 @@ function NuevaRuta() {
       setEnviosDisponibles(
         todosEnvios.filter(e => e.estado === 'PENDIENTE' && !enviosEnRuta.has(e.id))
       );
-    } catch (e) {
+    } catch {
       setError('Error al cargar envíos disponibles');
     } finally {
       setLoadingEnvios(false);

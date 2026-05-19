@@ -121,8 +121,6 @@ class RutaServiceTest {
         repartidor.setHaciendoEntrega(true);
 
         when(usuarioRepository.findById(REPARTIDOR_ID)).thenReturn(Optional.of(repartidor));
-        when(envioRepository.findById(ENVIO_ID_1)).thenReturn(Optional.of(envioPendiente(ENVIO_ID_1)));
-        when(rutaEnvioRepository.existsByEnvio_Id(ENVIO_ID_1)).thenReturn(false);
 
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> rutaService.crear(bodyValido(), USUARIO_TEST));
@@ -136,8 +134,6 @@ class RutaServiceTest {
         repartidor.setEstadoActivo(false);
 
         when(usuarioRepository.findById(REPARTIDOR_ID)).thenReturn(Optional.of(repartidor));
-        when(envioRepository.findById(ENVIO_ID_1)).thenReturn(Optional.of(envioPendiente(ENVIO_ID_1)));
-        when(rutaEnvioRepository.existsByEnvio_Id(ENVIO_ID_1)).thenReturn(false);
 
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> rutaService.crear(bodyValido(), USUARIO_TEST));
@@ -164,7 +160,6 @@ class RutaServiceTest {
 
         when(usuarioRepository.findById(REPARTIDOR_ID)).thenReturn(Optional.of(repartidorDisponible()));
         when(envioRepository.findById(ENVIO_ID_1)).thenReturn(Optional.of(envioAsignado));
-        when(rutaEnvioRepository.existsByEnvio_Id(ENVIO_ID_1)).thenReturn(false);
 
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> rutaService.crear(bodyValido(), USUARIO_TEST));
