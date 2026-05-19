@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getEnvioById, updateEnvio, getMedicamentos } from '../services/api';
-import { useAuth } from '../context/AuthContext';
+import { getEnvioById, updateEnvio, getMedicamentos } from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 
 function EditarEnvio() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user } = useAuthuth();
   const [form, setForm] = useState(null);
   const [catalogo, setCatalogo] = useState([]);
   const [itemsCarga, setItemsCarga] = useState([]);

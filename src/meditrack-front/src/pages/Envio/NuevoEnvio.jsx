@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createEnvio, getMedicamentos } from '../services/api';
+import { createEnvio, getMedicamentos } from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 
 const FORM_INICIAL = {
   remitente: '',
