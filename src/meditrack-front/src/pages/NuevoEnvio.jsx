@@ -53,7 +53,10 @@ function NuevoEnvio() {
   };
 
   const handleAñadirCarga = () => {
-    if (!busqueda.trim()) return;
+    if (!busqueda.trim() || !medicamentoSeleccionado) {
+      alert('Debe seleccionar un medicamento válido del catálogo para poder asociarlo al envío.');
+      return;
+    }
 
     if (!form.fechaEstimada) {
       alert('Debe ingresar primero la Fecha de entrega estimada del envío para poder validar el vencimiento.');
@@ -73,41 +76,24 @@ function NuevoEnvio() {
       return;
     }
 
-    if (medicamentoSeleccionado) {
-      const yaExiste = itemsCarga.some(m => m.id === medicamentoSeleccionado.id && m.lote === loteMed.trim());
-      if (yaExiste) {
-        alert('Este mismo medicamento con el mismo número de lote ya ha sido agregado.');
-        return;
-      }
-
-      setItemsCarga([
-        ...itemsCarga,
-        { 
-          id: medicamentoSeleccionado.id + '-' + Date.now(), 
-          nombre: medicamentoSeleccionado.nombre, 
-          presentacion: medicamentoSeleccionado.presentacion, 
-          imagenUrl: medicamentoSeleccionado.imagenUrl,
-          cantidad: Number(cantidadMed),
-          lote: loteMed.trim(),
-          vencimiento: vencimientoMed,
-          esManual: false
-        }
-      ]);
-    } else {
-      setItemsCarga([
-        ...itemsCarga,
-        {
-          id: `manual-${Date.now()}`,
-          nombre: busqueda.trim(),
-          presentacion: '',
-          imagenUrl: '',
-          cantidad: Number(cantidadMed),
-          lote: loteMed.trim(),
-          vencimiento: vencimientoMed,
-          esManual: true
-        }
-      ]);
+    const yaExiste = itemsCarga.some(m => m.idMedicamento === medicamentoSeleccionado.id && m.lote === loteMed.trim());
+    if (yaExiste) {
+      alert('Este medicamento con el mismo lote ya figura en la lista de la carga.');
+      return;
     }
+
+    setItemsCarga([
+      ...itemsCarga,
+      { 
+        idMedicamento: medicamentoSeleccionado.id, 
+        nombre: medicamentoSeleccionado.nombre, 
+        presentacion: medicamentoSeleccionado.presentacion, 
+        imagenUrl: medicamentoSeleccionado.imagenUrl,
+        cantidad: Number(cantidadMed),
+        lote: loteMed.trim(),
+        vencimiento: vencimientoMed
+      }
+    ]);
 
     setBusqueda('');
     setMedicamentoSeleccionado(null);
@@ -116,14 +102,15 @@ function NuevoEnvio() {
     setVencimientoMed('');
   };
 
-  const eliminarItem = id => {
-    setItemsCarga(itemsCarga.filter(m => m.id !== id));
+  const eliminarItem = (idMedicamento, lote) => {
+    setItemsCarga(itemsCarga.filter(m => !(m.idMedicamento === idMedicamento && m.lote === lote)));
   };
 
-  const actualizarCantidad = (id, nuevaCantidad) => {
-    if (nuevaCantidad <= 0) return;
-    setItemsCarga(itemsCarga.map(m => 
-      m.id === id ? { ...m, cantidad: Number(nuevaCantidad) } : m
+  const actualizarCantidad = (idMedicamento, lote, nuevaCantidad) => {
+    const val = Number(nuevaCantidad);
+    if (val <= 0) return;
+    setItemsCarga(prevItems => prevItems.map(m => 
+      (m.idMedicamento === idMedicamento && m.lote === lote) ? { ...m, cantidad: val } : m
     ));
   };
 
@@ -141,29 +128,22 @@ function NuevoEnvio() {
       return;
     }
 
+    const descripcionGenerada = itemsCarga.map(i => `${i.nombre} x${i.cantidad}`).join(', ');
+
     try {
-      const itemsManuales = itemsCarga.filter(i => i.esManual).map(i => `${i.nombre} [Lote: ${i.lote} / Venc: ${i.vencimiento}] x${i.cantidad}`).join(', ');
-      const itemsMeds = itemsCarga.filter(i => !i.esManual).map(i => `${i.nombre} (${i.presentacion}) [Lote: ${i.lote} / Venc: ${i.vencimiento}] x${i.cantidad}`).join(', ');
-      
-      let descripcionFinal = '';
-      if (itemsManuales && itemsMeds) {
-        descripcionFinal = `${itemsManuales} | Meds: ${itemsMeds}`;
-      } else if (itemsManuales) {
-        descripcionFinal = itemsManuales;
-      } else if (itemsMeds) {
-        descripcionFinal = `Meds: ${itemsMeds}`;
-      }
+      const detallesEnvio = itemsCarga.map(item => ({
+        medicamento: { id: String(item.idMedicamento) },
+        cantidad: Number(item.cantidad),
+        lote: item.lote,
+        fechaVencimiento: item.vencimiento
+      }));
 
       const payload = { 
-        remitente: String(form.remitente),
-        destinatario: String(form.destinatario),
-        origen: String(form.origen),
-        destino: String(form.destino),
-        direccionEntrega: String(form.direccionEntrega),
-        fechaEstimada: String(form.fechaEstimada),
-        observaciones: String(form.observaciones),
-        descripcionCarga: String(descripcionFinal),
-        prioridad: 'MEDIA'
+        ...form,
+        descripcionCarga: descripcionGenerada,
+        prioridad: 'MEDIA',
+        estado: 'PENDIENTE',
+        detalles: detallesEnvio
       };
       
       await createEnvio(payload); 
@@ -187,15 +167,7 @@ function NuevoEnvio() {
 
       <div className="card">
         {error && (
-          <div style={{ 
-            color: '#dc3545', 
-            backgroundColor: '#f8d7da', 
-            border: '1px solid #f5c6cb', 
-            padding: '10px', 
-            borderRadius: '4px', 
-            marginBottom: '15px',
-            fontWeight: 'bold' 
-          }}>
+          <div style={{ color: '#dc3545', backgroundColor: '#f8d7da', border: '1px solid #f5c6cb', padding: '10px', borderRadius: '4px', marginBottom: '15px', fontWeight: 'bold' }}>
             {error}
           </div>
         )}
@@ -205,32 +177,26 @@ function NuevoEnvio() {
             <label>Remitente *</label>
             <input name="remitente" value={form.remitente} onChange={handleChange} placeholder="Laboratorio o depósito" />
           </div>
-
           <div className="form-group">
             <label>Destinatario *</label>
             <input name="destinatario" value={form.destinatario} onChange={handleChange} placeholder="Farmacia u hospital de destino" />
           </div>
-
           <div className="form-group">
             <label>Origen *</label>
             <input name="origen" value={form.origen} onChange={handleChange} />
           </div>
-
           <div className="form-group">
             <label>Destino *</label>
             <input name="destino" value={form.destino} onChange={handleChange} />
           </div>
-
           <div className="form-group">
             <label>Dirección de entrega *</label>
             <input name="direccionEntrega" value={form.direccionEntrega} onChange={handleChange} />
           </div>
-
           <div className="form-group">
             <label>Fecha de entrega estimada *</label>
             <input type="date" name="fechaEstimada" value={form.fechaEstimada} onChange={handleChange} />
           </div>
-
           <div className="form-group form-full">
             <label>Observaciones (Opcional)</label>
             <textarea name="observaciones" value={form.observaciones} onChange={handleChange} rows="3" />
@@ -239,11 +205,11 @@ function NuevoEnvio() {
 
         <div style={{ background: '#F9FAFB', padding: '20px', borderRadius: '12px', border: '1px solid #E5E7EB', marginTop: '20px' }}>
           <h3 style={{ margin: '0 0 4px 0', fontSize: '16px', fontWeight: '700', color: '#374151' }}>Asignación y Detalle de la Carga *</h3>
-          <p style={{ margin: '0 0 16px 0', fontSize: '13px', color: '#6B7280' }}>Busque un medicamento del catálogo o escriba una descripción manual. Luego complete lote, vencimiento vigente y añádalo.</p>
+          <p style={{ margin: '0 0 16px 0', fontSize: '13px', color: '#6B7280' }}>Busque un medicamento del catálogo. Luego complete lote, vencimiento vigente y añádalo.</p>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
             <div style={{ position: 'relative' }} ref={dropdownRef}>
-              <label style={{ fontSize: '13px', fontWeight: '600', color: '#4B5563', marginBottom: '4px', display: 'block' }}>Escribir descripción o Buscar medicamento</label>
+              <label style={{ fontSize: '13px', fontWeight: '600', color: '#4B5563', marginBottom: '4px', display: 'block' }}>Buscar medicamento</label>
               <input 
                 type="text"
                 value={busqueda}
@@ -253,50 +219,21 @@ function NuevoEnvio() {
                   setIsOpen(true);
                 }}
                 onFocus={() => setIsOpen(true)}
-                placeholder="Ej: Paracetamol o Caja con insumos térmicos..."
+                placeholder="Ej: Paracetamol..."
                 style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #D1D5DB', boxSizing: 'border-box', minHeight: '42px' }}
               />
-
               {isOpen && busqueda.trim() && (
-                <div style={{ 
-                  position: 'absolute', 
-                  top: '100%', 
-                  left: 0, 
-                  right: 0, 
-                  backgroundColor: '#fff', 
-                  border: '1px solid #D1D5DB', 
-                  borderRadius: '8px', 
-                  marginTop: '4px', 
-                  maxHeight: '220px', 
-                  overflowY: 'auto', 
-                  zIndex: 1000,
-                  boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)'
-                }}>
+                <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, backgroundColor: '#fff', border: '1px solid #D1D5DB', borderRadius: '8px', marginTop: '4px', maxHeight: '220px', overflowY: 'auto', zIndex: 1000, boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
                   {opcionesFiltradas.map(med => (
-                    <div 
-                      key={med.id}
-                      onClick={() => handleSelectMedicamento(med)}
-                      style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px', cursor: 'pointer', borderBottom: '1px solid #F3F4F6', fontSize: '14px' }}
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#F3F4F6'}
-                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#fff'}
-                    >
-                      {med.imagenUrl ? (
-                        <img src={`http://localhost:8080${med.imagenUrl}`} alt="" style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} />
-                      ) : (
-                        <div style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: '#E5E7EB', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: '#9CA3AF' }}>N/A</div>
+                    <div key={med.id} onClick={() => handleSelectMedicamento(med)} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px', cursor: 'pointer', borderBottom: '1px solid #F3F4F6', fontSize: '14px' }}>
+                      {med.imagenUrl && (
+                        <img src={med.imagenUrl} alt={med.nombre} style={{ width: '32px', height: '32px', objectFit: 'cover', borderRadius: '4px' }} />
                       )}
                       <div style={{ flex: 1 }}>
                         <span style={{ fontWeight: '600' }}>{med.nombre}</span> <span style={{ color: '#6B7280' }}>({med.presentacion})</span>
                       </div>
-                      <div style={{ fontSize: '12px', color: '#9CA3AF' }}>Stock: {med.stock}</div>
                     </div>
                   ))}
-                  <div 
-                    onClick={() => setIsOpen(false)}
-                    style={{ padding: '12px', cursor: 'pointer', backgroundColor: '#EFF6FF', color: '#2563EB', fontSize: '14px', fontWeight: '600', textAlign: 'center' }}
-                  >
-                    ✓ Continuar con la entrada manual de: "{busqueda}"
-                  </div>
                 </div>
               )}
             </div>
@@ -325,42 +262,29 @@ function NuevoEnvio() {
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
                 <thead style={{ backgroundColor: '#F3F4F6' }}>
                   <tr>
-                    <th style={{ padding: '10px', textAlign: 'left', width: '60px' }}>Foto</th>
-                    <th style={{ padding: '10px', textAlign: 'left' }}>Detalle de Carga / Componente</th>
-                    <th style={{ padding: '10px', textAlign: 'left' }}>Presentación</th>
+                    <th style={{ padding: '10px', textAlign: 'left' }}>Detalle</th>
                     <th style={{ padding: '10px', textAlign: 'left' }}>Lote</th>
                     <th style={{ padding: '10px', textAlign: 'left' }}>Vencimiento</th>
-                    <th style={{ padding: '10px', textAlign: 'center', width: '100px' }}>Cantidad</th>
-                    <th style={{ padding: '10px', textAlign: 'center', width: '60px' }}>Acción</th>
+                    <th style={{ padding: '10px', textAlign: 'center' }}>Cantidad</th>
+                    <th style={{ padding: '10px', textAlign: 'center' }}>Acción</th>
                   </tr>
                 </thead>
                 <tbody>
                   {itemsCarga.map((item) => (
-                    <tr key={item.id} style={{ borderBottom: '1px solid #E5E7EB' }}>
-                      <td style={{ padding: '10px', textAlign: 'center' }}>
-                        {!item.esManual && item.imagenUrl ? (
-                          <img 
-                            src={`http://localhost:8080${item.imagenUrl}`} 
-                            alt={item.nombre} 
-                            style={{ width: '36px', height: '36px', objectFit: 'cover', borderRadius: '50%', border: '1px solid #E5E7EB', display: 'block', margin: '0 auto' }} 
-                          />
-                        ) : (
-                          <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: item.esManual ? '#FEF3C7' : '#E5E7EB', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: item.esManual ? '#D97706' : '#9CA3AF', fontWeight: 'bold', margin: '0 auto' }}>
-                            {item.esManual ? 'TXT' : 'N/A'}
-                          </div>
+                    <tr key={`${item.idMedicamento}-${item.lote}`} style={{ borderBottom: '1px solid #E5E7EB' }}>
+                      <td style={{ padding: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        {item.imagenUrl && (
+                          <img src={item.imagenUrl} alt={item.nombre} style={{ width: '32px', height: '32px', objectFit: 'cover', borderRadius: '4px' }} />
                         )}
+                        <span>{item.nombre}</span>
                       </td>
-                      <td style={{ padding: '10px', fontWeight: '600' }}>
-                        {item.nombre} {item.esManual && <span style={{ fontStyle: 'italic', fontSize: '12px', color: '#9CA3AF', fontWeight: 'normal' }}>(Texto manual)</span>}
-                      </td>
-                      <td style={{ padding: '10px', color: '#6B7280' }}>{item.presentacion || 'N/A'}</td>
-                      <td style={{ padding: '10px', color: '#374151', fontWeight: '500' }}>{item.lote}</td>
-                      <td style={{ padding: '10px', color: '#374151' }}>{item.vencimiento}</td>
+                      <td style={{ padding: '10px' }}>{item.lote}</td>
+                      <td style={{ padding: '10px' }}>{item.vencimiento}</td>
                       <td style={{ padding: '10px', textAlign: 'center' }}>
-                        <input type="number" min="1" value={item.cantidad} onChange={e => actualizarCantidad(item.id, e.target.value)} style={{ width: '60px', padding: '4px', textAlign: 'center', borderRadius: '4px', border: '1px solid #D1D5DB' }} />
+                        <input type="number" min="1" value={item.cantidad} onChange={e => actualizarCantidad(item.idMedicamento, item.lote, e.target.value)} style={{ width: '60px', padding: '4px', textAlign: 'center', borderRadius: '4px', border: '1px solid #D1D5DB' }} />
                       </td>
                       <td style={{ padding: '10px', textAlign: 'center' }}>
-                        <button type="button" onClick={() => eliminarItem(item.id)} style={{ background: 'none', border: 'none', color: '#EF4444', fontWeight: 'bold', cursor: 'pointer' }}>✕</button>
+                        <button type="button" onClick={() => eliminarItem(item.idMedicamento, item.lote)} style={{ background: 'none', border: 'none', color: '#EF4444', fontWeight: 'bold', cursor: 'pointer' }}>✕</button>
                       </td>
                     </tr>
                   ))}
@@ -368,20 +292,13 @@ function NuevoEnvio() {
               </table>
             </div>
           ) : (
-            <div style={{ textTransform: 'uppercase', textAlign: 'center', padding: '14px', fontSize: '12px', color: '#9CA3AF', border: '2px dashed #D1D5DB', borderRadius: '8px' }}>
-              La carga está vacía. Añada medicamentos del catálogo o ingrese sus descripciones personalizadas.
+            <div style={{ textAlign: 'center', padding: '14px', fontSize: '12px', color: '#9CA3AF', border: '2px dashed #D1D5DB', borderRadius: '8px' }}>
+              La carga está vacía. Añada medicamentos para continuar.
             </div>
           )}
         </div>
 
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'flex-end', 
-          gap: '6px',
-          marginTop: '25px',
-          paddingTop: '20px',
-          borderTop: '1px solid #eee'
-        }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px', marginTop: '25px', paddingTop: '20px', borderTop: '1px solid #eee' }}>
           <button className="btn btn-secondary" onClick={() => navigate('/envios')}>CANCELAR</button>
           <button className="btn btn-primary" onClick={handleGuardar}>CREAR ENVÍO</button>
         </div>

@@ -145,7 +145,14 @@ export async function updateEnvio(id, data) {
     destino: data.destino,
     fechaEstimada: data.fechaEstimada,
     prioridad: data.prioridad,
-    observaciones: data.observaciones
+    observaciones: data.observaciones,
+    detalles: data.detalles.map(d => ({
+      id: d.id,
+      medicamento: d.medicamento,
+      cantidad: d.cantidad,
+      lote: d.lote,
+      fechaVencimiento: d.fechaVencimiento
+    }))
   };
 
   const res = await fetch(`${BASE_URL}/api/envios/${id}`, {
