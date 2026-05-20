@@ -1,26 +1,41 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-//import { getClienteById, updateCliente } from '../../services/api';
+import DireccionAutocomplete from '../../components/DireccionAutocomplete';
+import { getClienteById, updateCliente } from '../../services/api';
+import { getTipoStyles, iconos } from '../../util/Util';
 
 function EditarCliente() {
 
     const { id } = useParams();
+
     const navigate = useNavigate();
 
     const [form, setForm] = useState(null);
     const [error, setError] = useState('');
 
     useEffect(() => {
-
-        /*getClienteById(id)
+        getClienteById(id)
             .then(setForm)
             .catch(() =>
-                setError('Error al cargar datos del cliente.')
-            );*/
-
+                setError(
+                    'Error al cargar datos del cliente.'
+                )
+            );
     }, [id]);
 
+    const handleDireccionSeleccionada = (data) => {
+
+        setForm(prev => ({
+            ...prev,
+            direccion: data.direccion,
+            latitud: data.latitud,
+            longitud: data.longitud,
+            placeId: data.placeId
+        }));
+    };
+
     const handleChange = (e) => {
+
         setForm({
             ...form,
             [e.target.name]: e.target.value
@@ -29,26 +44,47 @@ function EditarCliente() {
 
     const handleGuardar = async () => {
 
+        if (
+            !form.nombre?.trim() ||
+            !form.direccion?.trim() ||
+            !form.tipoEstablecimiento
+        ) {
+
+            setError(
+                'Nombre, dirección y tipo son obligatorios.'
+            );
+
+            return;
+        }
+
         try {
 
-            //await updateCliente(id, form);
+            await updateCliente(id, form);
 
             navigate('/clientes');
 
         } catch (err) {
 
-            setError(err.message || 'Error al actualizar cliente.');
+            setError(
+                err.message ||
+                'Error al actualizar cliente.'
+            );
         }
     };
 
-    if (!form)
-        return <div className="container">Cargando...</div>;
+    if (!form) {
+        return (
+            <div className="container">
+                Cargando...
+            </div>
+        );
+    }
 
     return (
         <div className="container">
 
             <div className="page-header">
-                <h1>Editar cliente</h1>
+                <h1>Editar Cliente</h1>
             </div>
 
             <div className="card">
@@ -82,21 +118,19 @@ function EditarCliente() {
 
                     <div
                         style={{
-                            width: '110px',
-                            height: '110px',
+                            width: '90px',
+                            height: '90px',
                             borderRadius: '50%',
-                            background: '#DCFCE7',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             fontSize: '34px',
                             fontWeight: '700',
-                            color: '#166534',
-                            border: '1px solid #BBF7D0'
+                            border: '1px solid #E5E7EB',
+                            ...getTipoStyles(form.tipoEstablecimiento)
                         }}
                     >
-                        {form.nombre?.charAt(0)}
-                        {form.apellido?.charAt(0)}
+                        {iconos[form.tipoEstablecimiento] || '🏢'}
                     </div>
 
                     <div>
@@ -109,131 +143,125 @@ function EditarCliente() {
                                 color: '#111827'
                             }}
                         >
-                            {form.nombre} {form.apellido}
+                            {form.nombre || 'Cliente'}
                         </h2>
 
-                        <p
-                            style={{
-                                marginTop: '6px',
-                                color: '#6B7280'
-                            }}
-                        >
-                            DNI: {form.dni || 'Sin DNI'}
-                        </p>
+                        <div style={{ marginTop: '8px' }}>
+
+                            <span
+                                style={{
+                                    padding: '6px 10px',
+                                    borderRadius: '999px',
+                                    fontWeight: '600',
+                                    fontSize: '12px',
+                                    ...getTipoStyles(form.tipoEstablecimiento)
+                                }}
+                            >
+                                {form.tipoEstablecimiento || 'SIN TIPO'}
+                            </span>
+
+                        </div>
 
                     </div>
+
                 </div>
 
                 <div className="form-grid">
 
                     <div className="form-group form-full">
+
                         <label>ID</label>
 
                         <input
-                            value={form.id}
+                            value={form.id || ''}
                             disabled
                             className="input-locked"
                         />
+
                     </div>
 
                     <div className="form-group">
+
                         <label>Nombre *</label>
 
                         <input
                             name="nombre"
+                            placeholder="Nombre del establecimiento"
                             value={form.nombre || ''}
                             onChange={handleChange}
                         />
+
                     </div>
 
                     <div className="form-group">
-                        <label>Apellido *</label>
 
-                        <input
-                            name="apellido"
-                            value={form.apellido || ''}
+                        <label>
+                            Tipo de establecimiento *
+                        </label>
+
+                        <select
+                            name="tipoEstablecimiento"
+                            value={form.tipoEstablecimiento || ''}
                             onChange={handleChange}
-                        />
-                    </div>
+                        >
 
-                    <div className="form-group">
-                        <label>DNI *</label>
+                            <option value="">
+                                Seleccione
+                            </option>
 
-                        <input
-                            name="dni"
-                            value={form.dni || ''}
-                            onChange={handleChange}
-                        />
-                    </div>
+                            <option value="LABORATORIO">
+                                Laboratorio
+                            </option>
 
-                    <div className="form-group">
-                        <label>Email</label>
+                            <option value="DEPOSITO">
+                                Depósito
+                            </option>
 
-                        <input
-                            type="email"
-                            name="email"
-                            value={form.email || ''}
-                            onChange={handleChange}
-                        />
-                    </div>
+                            <option value="HOSPITAL">
+                                Hospital
+                            </option>
 
-                    <div className="form-group">
-                        <label>Teléfono</label>
+                            <option value="FARMACIA">
+                                Farmacia
+                            </option>
 
-                        <input
-                            name="telefono"
-                            value={form.telefono || ''}
-                            onChange={handleChange}
-                        />
-                    </div>
+                        </select>
 
-                    <div className="form-group">
-                        <label>Fecha de nacimiento</label>
-
-                        <input
-                            type="date"
-                            name="fechaNacimiento"
-                            value={form.fechaNacimiento || ''}
-                            onChange={handleChange}
-                        />
                     </div>
 
                     <div
                         className="form-group"
-                        style={{ gridColumn: '1 / -1' }}
+                        style={{
+                            gridColumn: '1 / -1'
+                        }}
                     >
-                        <label>Dirección</label>
 
-                        <input
-                            name="direccion"
-                            value={form.direccion || ''}
-                            onChange={handleChange}
+                        <label>Dirección *</label>
+
+                        <DireccionAutocomplete
+                            onSelect={handleDireccionSeleccionada}
                         />
+
+                        {form.direccion && (
+
+                            <div
+                                style={{
+                                    marginTop: '12px',
+                                    padding: '12px',
+                                    background: '#F9FAFB',
+                                    border: '1px solid #E5E7EB',
+                                    borderRadius: '10px',
+                                    color: '#374151',
+                                    fontSize: '14px'
+                                }}
+                            >
+                                📍 {form.direccion}
+                            </div>
+
+                        )}
+
                     </div>
 
-                </div>
-
-                <div
-                    className="form-group"
-                    style={{ marginTop: '20px' }}
-                >
-
-                    <label>Observaciones</label>
-
-                    <textarea
-                        name="observaciones"
-                        value={form.observaciones || ''}
-                        onChange={handleChange}
-                        rows="4"
-                        placeholder="Observaciones del cliente..."
-                        style={{
-                            width: '100%',
-                            padding: '10px',
-                            borderRadius: '8px',
-                            border: '1px solid #D1D5DB',
-                            resize: 'vertical'
-                        }}
-                    />
                 </div>
 
                 <div
@@ -257,6 +285,11 @@ function EditarCliente() {
                     <button
                         className="btn btn-primary"
                         onClick={handleGuardar}
+                        disabled={
+                            !form.nombre ||
+                            !form.direccion ||
+                            !form.tipoEstablecimiento
+                        }
                     >
                         GUARDAR
                     </button>
@@ -264,6 +297,7 @@ function EditarCliente() {
                 </div>
 
             </div>
+
         </div>
     );
 }

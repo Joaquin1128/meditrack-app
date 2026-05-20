@@ -31,7 +31,7 @@ public class ClienteService {
                 );
     }
 
-    public Cliente crear(Map<String, String> datos, String usuario) {
+    public Cliente crear(Map<String, Object> datos, String usuario) {
         Cliente nuevo = new Cliente();
 
         mapDataToCliente(datos, nuevo, usuario);
@@ -39,7 +39,7 @@ public class ClienteService {
         return clienteRepository.save(nuevo);
     }
 
-    public Cliente actualizar(String id, Map<String, String> body, String usuario) {
+    public Cliente actualizar(String id, Map<String, Object> body, String usuario) {
         Cliente updateCliente = clienteRepository.findById(id)
                                                 .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
 
@@ -59,23 +59,25 @@ public class ClienteService {
         return clienteRepository.save(updateCliente);
     }
 
-    private void mapDataToCliente(Map<String, String> body, Cliente cliente, String usuario) {
-        cliente.setNombre( body.get("nombre") );
+    private void mapDataToCliente(Map<String, Object> body, Cliente cliente, String usuario) {
+        cliente.setNombre(body.get("nombre").toString());
+        cliente.setDireccion(body.get("direccion").toString());
+        cliente.setPlaceId(body.get("placeId").toString());
 
-        cliente.setDireccion(body.get("direccion"));
-
-        cliente.setPlaceId(body.get("placeId"));
-
-        cliente.setTipoEstablecimiento(TipoEstablecimiento.valueOf(body.get("tipoEstablecimiento")));
+        cliente.setTipoEstablecimiento(
+                TipoEstablecimiento.valueOf(
+                        body.get("tipoEstablecimiento").toString()));
 
         cliente.setUsuarioResponsable(usuario);
 
-        if (body.get("latitud") != null && !body.get("latitud").isBlank()) {
-            cliente.setLatitud(new BigDecimal(body.get("latitud")));
+        if (body.get("latitud") != null) {
+            cliente.setLatitud(
+                    new BigDecimal(body.get("latitud").toString()));
         }
 
-        if (body.get("longitud") != null && !body.get("longitud").isBlank()) {
-            cliente.setLongitud(new BigDecimal(body.get("longitud")));
+        if (body.get("longitud") != null) {
+            cliente.setLongitud(
+                    new BigDecimal(body.get("longitud").toString()));
         }
     }
 }

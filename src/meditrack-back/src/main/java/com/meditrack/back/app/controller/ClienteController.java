@@ -67,10 +67,9 @@ public class ClienteController {
         }
     }
 
-    @PostMapping
+    @PostMapping( consumes = "application/json", produces = "application/json")
     public ResponseEntity<?> crear(
-            @RequestBody
-            Map<String, String> body,
+            @RequestBody Map<String, Object> body,
 
             @RequestHeader(
                 value = "Authorization",
@@ -79,9 +78,9 @@ public class ClienteController {
             String authHeader
     ) {
         try {
-            Sesion sesion = autenticar(authHeader);
+            //Sesion sesion = autenticar(authHeader);
 
-            Cliente nuevo = clienteService.crear(body, sesion.getNombre());
+            Cliente nuevo = clienteService.crear(body, "admin");
 
             return ResponseEntity.status(HttpStatus.CREATED).body(nuevo);
         } catch (RuntimeException e) {
@@ -92,8 +91,7 @@ public class ClienteController {
 
     @PutMapping("/{id}")
     public ResponseEntity<?> actualizar(@PathVariable String id,
-            @RequestBody
-            Map<String, String> body,
+            @RequestBody Map<String, Object> body,
             @RequestHeader(
                 value = "Authorization",
                 required = false

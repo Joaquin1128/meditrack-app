@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-//import { getClientes, inactivarCliente } from '../../services/api';
+import { cambiarEstadoCliente, getClientes } from '../../services/api';
+import { getTipoStyles, iconos } from '../../util/Util';
 
 function Clientes() {
 
@@ -10,32 +11,24 @@ function Clientes() {
     const navigate = useNavigate();
 
     useEffect(() => {
-
-        //getClientes()
-        //    .then(setClientes)
-        //    .catch(console.error);
-
+        getClientes()
+            .then(setClientes)
+            .catch(console.error);
     }, []);
 
     const handleInactivar = async (id) => {
-
         try {
+            await cambiarEstadoCliente(id);
 
-            //await inactivarCliente(id);
-
-            //const data = await getClientes();
-            //setClientes(data);
-
+            const data = await getClientes();
+            setClientes(data);
         } catch (error) {
-
             console.error(error);
         }
     };
 
     const filtrados = clientes.filter(c => {
-
         const term = busqueda.toLowerCase();
-
         return (
             c.nombre?.toLowerCase().includes(term) ||
             c.tipoEstablecimiento?.toLowerCase().includes(term) ||
@@ -44,9 +37,7 @@ function Clientes() {
     });
 
     return (
-
         <div className="container">
-
             <div className="page-header-row">
 
                 <button
@@ -99,7 +90,6 @@ function Clientes() {
                         <tr>
                             <th>Cliente</th>
                             <th>Tipo</th>
-                            <th>Dirección</th>
                             <th>Estado</th>
 
                             <th
@@ -126,7 +116,7 @@ function Clientes() {
                                 }}
                                 onMouseEnter={(e) => {
                                     e.currentTarget.style.background =
-                                        '#deffe4';
+                                        '#f8fafc';
                                 }}
                                 onMouseLeave={(e) => {
                                     e.currentTarget.style.background =
@@ -159,13 +149,13 @@ function Clientes() {
                                                     'center',
                                                 fontWeight:
                                                     '700',
-                                                color:
-                                                    '#166534',
-                                                border:
-                                                    '1px solid #BBF7D0'
+                                                ...getTipoStyles(
+                                                    c.tipoEstablecimiento
+                                                ),
+                                                border: '1px solid #E5E7EB',
                                             }}
                                         >
-                                            {c.nombre?.charAt(0)}
+                                            {iconos[c.tipoEstablecimiento] || '🏢'}
                                         </div>
 
                                         <div>
@@ -183,25 +173,15 @@ function Clientes() {
 
                                             <div
                                                 style={{
-                                                    fontSize:
-                                                        '13px',
-                                                    color:
-                                                        '#6B7280'
+                                                    fontSize: '13px',
+                                                    color: '#6B7280',
+                                                    maxWidth: '320px',
+                                                    whiteSpace: 'nowrap',
+                                                    overflow: 'hidden',
+                                                    textOverflow: 'ellipsis'
                                                 }}
                                             >
-                                                {c.latitud &&
-                                                    c.longitud && (
-                                                        <>
-                                                            Lat:{' '}
-                                                            {c.latitud.toFixed(
-                                                                4
-                                                            )}{' '}
-                                                            | Lng:{' '}
-                                                            {c.longitud.toFixed(
-                                                                4
-                                                            )}
-                                                        </>
-                                                    )}
+                                                {c.direccion}
                                             </div>
 
                                         </div>
@@ -214,41 +194,17 @@ function Clientes() {
 
                                     <span
                                         style={{
-                                            padding:
-                                                '6px 10px',
-                                            borderRadius:
-                                                '999px',
-                                            background:
-                                                '#ECFDF3',
-                                            color:
-                                                '#166534',
-                                            fontWeight:
-                                                '600',
-                                            fontSize:
-                                                '12px'
+                                            padding: '6px 10px',
+                                            borderRadius: '999px',
+                                            fontWeight: '600',
+                                            fontSize: '12px',
+                                            ...getTipoStyles(
+                                                c.tipoEstablecimiento
+                                            )
                                         }}
                                     >
                                         {c.tipoEstablecimiento}
                                     </span>
-
-                                </td>
-
-                                <td>
-
-                                    <div
-                                        style={{
-                                            maxWidth:
-                                                '280px',
-                                            whiteSpace:
-                                                'nowrap',
-                                            overflow:
-                                                'hidden',
-                                            textOverflow:
-                                                'ellipsis'
-                                        }}
-                                    >
-                                        {c.direccion}
-                                    </div>
 
                                 </td>
 
@@ -282,11 +238,10 @@ function Clientes() {
                                         </label>
 
                                         <span
-                                            className={`user-status-label ${
-                                                c.estadoActivo
-                                                    ? 'status-active'
-                                                    : 'status-inactive'
-                                            }`}
+                                            className={`user-status-label ${c.estadoActivo
+                                                ? 'status-active'
+                                                : 'status-inactive'
+                                                }`}
                                         >
                                             {c.estadoActivo
                                                 ? 'ACTIVO'

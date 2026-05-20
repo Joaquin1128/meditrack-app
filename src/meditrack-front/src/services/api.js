@@ -442,3 +442,79 @@ export async function getTrackingPublico(id) {
 
   return data;
 }
+
+//Clientes
+export async function getClientes() {
+    const response = await fetch(`${BASE_URL}/api/clientes`,{
+            headers: { ...getAuthHeaders() },
+        }
+    );
+
+    if (!response.ok) 
+        throw new Error('Error al obtener clientes');
+    
+    return response.json();
+}
+
+export async function getClienteById(id) {
+    const response = await fetch(`${BASE_URL}/api/clientes/${id}`,
+        {
+            headers: { ...getAuthHeaders() },
+        }
+    );
+
+    if (!response.ok) 
+        throw new Error('Error al obtener cliente');
+    
+    return response.json();
+}
+
+export async function createCliente(cliente) {
+    const response = await fetch(`${BASE_URL}/api/clientes`,
+        {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+        body: JSON.stringify(cliente)
+      }
+    );
+
+  if (!response.ok) {
+    const error = await response.json();
+        throw new Error(error.error || 'Error al crear cliente');
+    }
+
+    return response.json();
+}
+
+export async function updateCliente(id, cliente) {
+    const response = await fetch(`${BASE_URL}/api/clientes/${id}`,
+        {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+            body: JSON.stringify(cliente)
+        }
+    );
+
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error ||'Error al actualizar cliente');
+    }
+
+    return response.json();
+}
+
+export async function cambiarEstadoCliente(id) {
+    const response = await fetch(`${BASE_URL}/api/clientes/${id}/cambiarEstado`,
+        {
+            method: 'PUT',
+            headers: { ...getAuthHeaders() },
+        }
+    );
+
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Error al cambiar estado');
+    }
+
+    return response.json();
+}

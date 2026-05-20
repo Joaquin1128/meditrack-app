@@ -6,7 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 function EditarEnvio() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuthuth();
+  const { user } = useAuth();
   const [form, setForm] = useState(null);
   const [catalogo, setCatalogo] = useState([]);
   const [itemsCarga, setItemsCarga] = useState([]);

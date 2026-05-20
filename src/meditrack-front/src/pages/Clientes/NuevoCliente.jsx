@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DireccionAutocomplete from '../../components/DireccionAutocomplete';
-//import { createCliente } from '../../services/api';
+import { createCliente } from '../../services/api';
+import { getTipoStyles, iconos } from '../../util/Util';
 
 function NuevoCliente() {
 
@@ -33,21 +34,18 @@ function NuevoCliente() {
     };
 
     const handleGuardar = async () => {
-        if (!form.nombre?.trim() || !form.direccion?.trim() || !form.tipoEstablecimiento)
-        {
-            setError( 'Nombre, dirección y tipo son obligatorios.' );
+        if (!form.nombre?.trim() || !form.direccion?.trim() || !form.tipoEstablecimiento) {
+            setError('Nombre, dirección y tipo son obligatorios.');
             return;
         }
 
         try {
             console.log(form);
-
-            //await createCliente(form);
+            await createCliente(form);
 
             navigate('/clientes');
-
         } catch (err) {
-            setError( err.message || 'Error al crear cliente.' );
+            setError(err.message || 'Error al crear cliente.');
         }
     };
 
@@ -102,11 +100,13 @@ function NuevoCliente() {
                                 justifyContent: 'center',
                                 fontSize: '34px',
                                 fontWeight: '700',
-                                color: '#166534',
-                                border: '1px solid #BBF7D0'
+                                ...getTipoStyles(
+                                    form.tipoEstablecimiento
+                                ),
+                                border: '1px solid #E5E7EB',
                             }}
                         >
-                            {form.nombre?.charAt(0) || 'C'}
+                            {iconos[form.tipoEstablecimiento] || '🏢'}
                         </div>
 
                         <div>
@@ -128,7 +128,19 @@ function NuevoCliente() {
                                     color: '#6B7280'
                                 }}
                             >
-                                {form.tipoEstablecimiento || 'Sin tipo'}
+                                <span
+                                    style={{
+                                        padding: '6px 10px',
+                                        borderRadius: '999px',
+                                        fontWeight: '600',
+                                        fontSize: '12px',
+                                        ...getTipoStyles(
+                                            form.tipoEstablecimiento
+                                        )
+                                    }}
+                                >
+                                    {form.tipoEstablecimiento || 'SIN TIPO'}
+                                </span>
                             </p>
 
                         </div>
@@ -214,29 +226,6 @@ function NuevoCliente() {
 
                 <div
                     style={{
-                        marginTop: '20px',
-                        background: '#F9FAFB',
-                        padding: '12px',
-                        borderRadius: '8px',
-                        fontSize: '13px',
-                        color: '#374151'
-                    }}
-                >
-
-                    <div>
-                        <strong>Latitud:</strong>{' '}
-                        {form.latitud}
-                    </div>
-
-                    <div>
-                        <strong>Longitud:</strong>{' '}
-                        {form.longitud}
-                    </div>
-
-                </div>
-
-                <div
-                    style={{
                         display: 'flex',
                         justifyContent: 'flex-end',
                         gap: '6px',
@@ -246,7 +235,7 @@ function NuevoCliente() {
                     }}
                 >
 
-                    <button className="btn btn-secondary" onClick={() => navigate('/clientes') }> CANCELAR</button>
+                    <button className="btn btn-secondary" onClick={() => navigate('/clientes')}> CANCELAR</button>
                     <button className="btn btn-primary" onClick={handleGuardar}>GUARDAR </button>
                 </div>
 
