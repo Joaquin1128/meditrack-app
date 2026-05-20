@@ -166,16 +166,24 @@ export async function updateEnvio(id, data) {
   return res.json();
 }
 
-export async function updateEstadoEnvio(id, estado, fecha, hora, usuario, repartidorId = null) {
+export async function updateEstadoEnvio(id, estado, fecha, hora, usuario, repartidorId = null, tipoIncidencia = null, descripcionIncidencia = null) {
   const bodyData = { estado, fecha, hora, usuario };
+  
   if (repartidorId) {
     bodyData.repartidorId = repartidorId;
   }
+  
+  if (estado === 'INCIDENTE_REPORTADO') {
+    bodyData.tipoIncidencia = tipoIncidencia;
+    bodyData.descripcionIncidencia = descripcionIncidencia;
+  }
+
   const res = await fetch(`${BASE_URL}/api/envios/${id}/estado`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
     body: JSON.stringify(bodyData),
   });
+  
   await handleResponse(res);
   if (!res.ok) {
     const err = await res.json();
@@ -441,4 +449,22 @@ export async function getTrackingPublico(id) {
   }
 
   return data;
+}
+export async function getReporte({ tema, fechaInicio, fechaFin, granularidad }) {
+  const params = new URLSearchParams({
+    tema,
+    fechaInicio,
+    fechaFin,
+    granularidad
+  });
+  const res = await fetch(`${BASE_URL}/api/reportes?${params.toString()}`, {
+    method: 'GET',
+    headers: { ...getAuthHeaders() }
+  });
+  await handleResponse(res);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Error al generar el reporte operativo');
+  }
+  return res.json();
 }
