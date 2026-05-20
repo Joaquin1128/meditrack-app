@@ -45,7 +45,7 @@ const MainMenu = () => {
     },
     {
       title: "Reportes",
-      rolesPermitidos: ['ADMINISTRADOR', 'SUPERVISOR', 'OPERADOR'],
+      rolesPermitidos: ['ADMINISTRADOR', 'SUPERVISOR'],
       items: [
         { label: "Reportes", icon: <ShieldAlert size={32} />, path: "/reportes", color: "#4338CA" },
       ]
