@@ -522,6 +522,7 @@ export async function desactivarTransporte(id) {
   if (!res.ok) throw new Error(body.error || "Error al desactivar transporte");
   return body;
 }
+
 //Clientes
 export async function getClientes() {
     const response = await fetch(`${BASE_URL}/api/clientes`,{
