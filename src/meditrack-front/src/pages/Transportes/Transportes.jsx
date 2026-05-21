@@ -35,18 +35,33 @@ function Transportes() {
 
     const puedeEditar = user?.role === 'ADMINISTRADOR'; // HU: "Como administrador"
 
-    const cargar = () => {
-        setLoading(true);
-        setError('');
-        return getTransportes(busqueda, filtroEstado)
-            .then(setTransportes)
-            .catch((e) => setError(e.message || 'Error al cargar transportes'))
-            .finally(() => setLoading(false));
+    const cargar = async () => {
+        try{
+            setLoading(true);
+            setError('');
+            const data = await getTransportes(busqueda, filtroEstado);
+            setTransportes(data);
+        } catch (e) {
+            setError(e.message || 'Error al cargar transportes');
+        } finally {
+            setLoading(false);
+        }
     };
 
     useEffect(() => {
-        cargar();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        const fetchInitial = async () => {
+            try{
+                const data = await getTransportes("","");
+                setTransportes(data);
+            } catch (e) {
+                setError(e.message || 'Error al cargar transportes');
+            }
+            finally{
+                setLoading(false);
+            }
+        };
+        fetchInitial();
+        
     }, []);
 
     const transportesFiltrados = useMemo(() => {
