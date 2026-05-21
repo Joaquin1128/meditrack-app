@@ -60,6 +60,10 @@ public class EnvioService {
         nuevo.setUsuarioResponsable(usuario);
         nuevo.setFechaCreacion(LocalDate.now().toString());
         nuevo.setHoraCreacion(LocalTime.now().toString().substring(0, 5));
+        nuevo.setLatitudOrigen(nuevo.getLatitudOrigen());
+        nuevo.setLongitudOrigen(nuevo.getLongitudOrigen());
+        nuevo.setLatitudDestino(nuevo.getLatitudDestino());
+        nuevo.setLongitudDestino(nuevo.getLongitudDestino());
 
         if (nuevo.getDetalles() != null) {
             for (DetalleEnvio detalle : nuevo.getDetalles()) {
@@ -94,13 +98,16 @@ public class EnvioService {
 
         envio.setRemitente(datosNuevos.getRemitente());
         envio.setDestinatario(datosNuevos.getDestinatario());
-        envio.setDireccionEntrega(datosNuevos.getDireccionEntrega());
         envio.setOrigen(datosNuevos.getOrigen());
         envio.setDestino(datosNuevos.getDestino());
         envio.setFechaEstimada(datosNuevos.getFechaEstimada());
         envio.setDescripcionCarga(datosNuevos.getDescripcionCarga());
         envio.setPrioridad(datosNuevos.getPrioridad());
         envio.setObservaciones(datosNuevos.getObservaciones());
+        envio.setLatitudOrigen(datosNuevos.getLatitudOrigen());
+        envio.setLongitudOrigen(datosNuevos.getLongitudOrigen());
+        envio.setLatitudDestino(datosNuevos.getLatitudDestino());
+        envio.setLongitudDestino(datosNuevos.getLongitudDestino());
 
         if (datosNuevos.getDetalles() != null) {
             List<DetalleEnvio> detallesActuales = envio.getDetalles();
@@ -189,13 +196,22 @@ public class EnvioService {
     }
 
     @Transactional
-    public Envio actualizarEstado(String id, EstadoEnvio nuevoEstado, String usuario, String repartidorId) {
+    public Envio actualizarEstado(String id, EstadoEnvio nuevoEstado, String usuario, String repartidorId, String tipoIncidencia, String descripcionIncidencia) {
         Envio envio = buscarPorId(id);
         if (nuevoEstado == EstadoEnvio.ASIGNADO) {
             envio.setRepartidorId(repartidorId);
         }
         envio.setEstado(nuevoEstado);
-        registrarHistorial(envio, "CAMBIO_ESTADO", nuevoEstado, "Cambio a " + nuevoEstado, LocalDate.now().toString(), LocalTime.now().toString().substring(0, 5), usuario);
+        
+        String tipoHistorial = "CAMBIO_ESTADO";
+        String detalleHistorial = "Cambio a " + nuevoEstado;
+        
+        if (nuevoEstado == EstadoEnvio.INCIDENTE_REPORTADO) {
+            tipoHistorial = tipoIncidencia;
+            detalleHistorial = descripcionIncidencia;
+        }
+        
+        registrarHistorial(envio, tipoHistorial, nuevoEstado, detalleHistorial, LocalDate.now().toString(), LocalTime.now().toString().substring(0, 5), usuario);
         return envioRepository.save(envio);
     }
 

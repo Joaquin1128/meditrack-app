@@ -125,6 +125,7 @@ export async function getEnvioById(id) {
 }
 
 export async function createEnvio(data) {
+  console.log("a")
   const res = await fetch(`${BASE_URL}/api/envios`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
@@ -146,6 +147,10 @@ export async function updateEnvio(id, data) {
     fechaEstimada: data.fechaEstimada,
     prioridad: data.prioridad,
     observaciones: data.observaciones,
+    latitudOrigen: data.latitudOrigen,
+    longitudOrigen: data.longitudOrigen,
+    latitudDestino: data.latitudDestino,
+    longitudDestino: data.longitudDestino,
     detalles: data.detalles.map(d => ({
       id: d.id,
       medicamento: d.medicamento,
@@ -162,14 +167,22 @@ export async function updateEnvio(id, data) {
   });
 
   await handleResponse(res);
-  if (!res.ok) throw new Error('Error al actualizar envío');
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    console.log(err);
+    throw new Error(err.error || err.message || 'Error al actualizar envío');
+  }
   return res.json();
 }
 
-export async function updateEstadoEnvio(id, estado, fecha, hora, usuario, repartidorId = null) {
+export async function updateEstadoEnvio(id, estado, fecha, hora, usuario, repartidorId = null,tipoIncidencia = null, descripcionIncidencia = null) {
   const bodyData = { estado, fecha, hora, usuario };
   if (repartidorId) {
     bodyData.repartidorId = repartidorId;
+  }
+  if (estado === 'INCIDENTE_REPORTADO') {
+    bodyData.tipoIncidencia = tipoIncidencia;
+    bodyData.descripcionIncidencia = descripcionIncidencia;
   }
   const res = await fetch(`${BASE_URL}/api/envios/${id}/estado`, {
     method: 'PUT',
@@ -441,4 +454,99 @@ export async function getTrackingPublico(id) {
   }
 
   return data;
+}
+
+//Clientes
+export async function getClientes() {
+    const response = await fetch(`${BASE_URL}/api/clientes`,{
+            headers: { ...getAuthHeaders() },
+        }
+    );
+
+    if (!response.ok) 
+        throw new Error('Error al obtener clientes');
+    
+    return response.json();
+}
+
+export async function getClienteById(id) {
+    const response = await fetch(`${BASE_URL}/api/clientes/${id}`,
+        {
+            headers: { ...getAuthHeaders() },
+        }
+    );
+
+    if (!response.ok) 
+        throw new Error('Error al obtener cliente');
+    
+    return response.json();
+}
+
+export async function createCliente(cliente) {
+    const response = await fetch(`${BASE_URL}/api/clientes`,
+        {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+        body: JSON.stringify(cliente)
+      }
+    );
+
+  if (!response.ok) {
+    const error = await response.json();
+        throw new Error(error.error || 'Error al crear cliente');
+    }
+
+    return response.json();
+}
+
+export async function updateCliente(id, cliente) {
+    const response = await fetch(`${BASE_URL}/api/clientes/${id}`,
+        {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+            body: JSON.stringify(cliente)
+        }
+    );
+
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error ||'Error al actualizar cliente');
+    }
+
+    return response.json();
+}
+
+export async function cambiarEstadoCliente(id) {
+    const response = await fetch(`${BASE_URL}/api/clientes/${id}/cambiarEstado`,
+        {
+            method: 'PUT',
+            headers: { ...getAuthHeaders() },
+        }
+    );
+
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Error al cambiar estado');
+    }
+
+    return response.json();
+}
+
+export async function getReporte({ tema, fechaInicio, fechaFin, granularidad }) {
+  const params = new URLSearchParams({
+    tema,
+    fechaInicio,
+    fechaFin,
+    granularidad
+  });
+  const res = await fetch(`${BASE_URL}/api/reportes?${params.toString()}`, {
+    method: 'GET',
+    headers: { ...getAuthHeaders() }
+  });
+  await handleResponse(res);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Error al generar el reporte operativo');
+  }
+  return res.json();
 }
