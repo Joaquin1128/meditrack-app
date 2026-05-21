@@ -125,6 +125,7 @@ export async function getEnvioById(id) {
 }
 
 export async function createEnvio(data) {
+  console.log("a")
   const res = await fetch(`${BASE_URL}/api/envios`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
@@ -145,7 +146,18 @@ export async function updateEnvio(id, data) {
     destino: data.destino,
     fechaEstimada: data.fechaEstimada,
     prioridad: data.prioridad,
-    observaciones: data.observaciones
+    observaciones: data.observaciones,
+    latitudOrigen: data.latitudOrigen,
+    longitudOrigen: data.longitudOrigen,
+    latitudDestino: data.latitudDestino,
+    longitudDestino: data.longitudDestino,
+    detalles: data.detalles.map(d => ({
+      id: d.id,
+      medicamento: d.medicamento,
+      cantidad: d.cantidad,
+      lote: d.lote,
+      fechaVencimiento: d.fechaVencimiento
+    }))
   };
 
   const res = await fetch(`${BASE_URL}/api/envios/${id}`, {
@@ -155,7 +167,11 @@ export async function updateEnvio(id, data) {
   });
 
   await handleResponse(res);
-  if (!res.ok) throw new Error('Error al actualizar envío');
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    console.log(err);
+    throw new Error(err.error || err.message || 'Error al actualizar envío');
+  }
   return res.json();
 }
 
@@ -439,4 +455,79 @@ export async function desactivarTransporte(id) {
   const body = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(body.error || "Error al desactivar transporte");
   return body;
+}
+//Clientes
+export async function getClientes() {
+    const response = await fetch(`${BASE_URL}/api/clientes`,{
+            headers: { ...getAuthHeaders() },
+        }
+    );
+
+    if (!response.ok)
+        throw new Error('Error al obtener clientes');
+    
+    return response.json();
+}
+
+export async function getClienteById(id) {
+    const response = await fetch(`${BASE_URL}/api/clientes/${id}`,
+        {
+            headers: { ...getAuthHeaders() },
+        }
+    );
+
+    if (!response.ok)
+        throw new Error('Error al obtener cliente');
+    
+    return response.json();
+}
+
+export async function createCliente(cliente) {
+    const response = await fetch(`${BASE_URL}/api/clientes`,
+        {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+        body: JSON.stringify(cliente)
+      }
+    );
+
+  if (!response.ok) {
+    const error = await response.json();
+        throw new Error(error.error || 'Error al crear cliente');
+    }
+
+    return response.json();
+}
+
+export async function updateCliente(id, cliente) {
+    const response = await fetch(`${BASE_URL}/api/clientes/${id}`,
+        {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+            body: JSON.stringify(cliente)
+        }
+    );
+
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error ||'Error al actualizar cliente');
+    }
+
+    return response.json();
+}
+
+export async function cambiarEstadoCliente(id) {
+    const response = await fetch(`${BASE_URL}/api/clientes/${id}/cambiarEstado`,
+        {
+            method: 'PUT',
+            headers: { ...getAuthHeaders() },
+        }
+    );
+
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Error al cambiar estado');
+    }
+
+    return response.json();
 }
