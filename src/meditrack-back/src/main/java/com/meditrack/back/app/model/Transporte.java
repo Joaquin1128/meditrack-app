@@ -1,7 +1,17 @@
 package com.meditrack.back.app.model;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(
@@ -33,6 +43,11 @@ public class Transporte {
     @Enumerated(EnumType.STRING)
     @Column(name = "estado_operativo", nullable = false, length = 20)
     private EstadoOperativo estadoOperativo = EstadoOperativo.ACTIVO;
+
+    @NotNull(message = "La capacidad de volumen es obligatoria")
+    @Min(value = 1, message = "La capacidad de volumen debe ser mayor a 0")
+    @Column(name = "capacidad_litros", nullable = false)
+    private Integer capacidadLitros;
 
     public Transporte () {}
     
@@ -68,6 +83,13 @@ public class Transporte {
     }
     public void setEstadoOperativo(EstadoOperativo estadoOperativo) {
         this.estadoOperativo = estadoOperativo;
+    }
+
+    public Integer getCapacidadLitros() {
+        return capacidadLitros;
+    }
+    public void setCapacidadLitros(Integer capacidadLitros) {
+        this.capacidadLitros = capacidadLitros;
     }
 
 }
