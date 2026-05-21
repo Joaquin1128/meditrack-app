@@ -52,6 +52,14 @@ public class TransporteService {
             t.setEstadoOperativo(EstadoOperativo.ACTIVO);
         }
 
+        if(t.getCapacidadKg() != null && t.getCapacidadKg() <= 0) {
+            throw new IllegalArgumentException("La capacidad debe ser mayor a 0");
+        }
+
+        if(t.getCapacidadLitros() != null && t.getCapacidadLitros() <= 0) {
+            throw new IllegalArgumentException("La capacidad de volumen debe ser mayor a 0");
+        }
+
         return transporteRepository.save(t);
     }
 
@@ -84,6 +92,13 @@ public class TransporteService {
 
         if (cambios.getEstadoOperativo() != null) {
             t.setEstadoOperativo(cambios.getEstadoOperativo());
+        }
+
+        if (cambios.getCapacidadLitros() != null) {
+            if (cambios.getCapacidadLitros() <= 0) {
+                throw new IllegalArgumentException("La capacidad de volumen debe ser mayor a 0");
+            }
+            t.setCapacidadLitros(cambios.getCapacidadLitros());
         }
 
         return transporteRepository.save(t);
