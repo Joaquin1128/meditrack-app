@@ -145,14 +145,7 @@ export async function updateEnvio(id, data) {
     destino: data.destino,
     fechaEstimada: data.fechaEstimada,
     prioridad: data.prioridad,
-    observaciones: data.observaciones,
-    detalles: data.detalles.map(d => ({
-      id: d.id,
-      medicamento: d.medicamento,
-      cantidad: d.cantidad,
-      lote: d.lote,
-      fechaVencimiento: d.fechaVencimiento
-    }))
+    observaciones: data.observaciones
   };
 
   const res = await fetch(`${BASE_URL}/api/envios/${id}`, {
@@ -272,6 +265,7 @@ export async function updateUsuario(id, data) {
   return res.json(); 
 }
 
+// --- Medicamentos (stubs — conectar cuando exista el modelo) ---
 export async function getMedicamentos() {
   const res = await fetch(`${BASE_URL}/api/medicamentos`, {
     headers: { ...getAuthHeaders() },
@@ -361,51 +355,6 @@ export async function toggleEstadoUsuario(id) {
   }
 }
 
-export async function getRutas() {
-  const res = await fetch(`${BASE_URL}/api/rutas`, {
-    headers: { ...getAuthHeaders() },
-  });
-  await handleResponse(res);
-  if (!res.ok) throw new Error('Error al obtener rutas');
-  return res.json();
-}
-
-export async function getRutaById(id) {
-  const res = await fetch(`${BASE_URL}/api/rutas/${id}`, {
-    headers: { ...getAuthHeaders() },
-  });
-  await handleResponse(res);
-  if (!res.ok) throw new Error('Ruta no encontrada');
-  return res.json();
-}
-
-export async function createRuta(data) {
-  const res = await fetch(`${BASE_URL}/api/rutas`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-    body: JSON.stringify(data),
-  });
-  await handleResponse(res);
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.error || 'Error al crear ruta');
-  }
-  return res.json();
-}
-
-export async function finalizarRuta(id) {
-  const res = await fetch(`${BASE_URL}/api/rutas/${id}/finalizar`, {
-    method: 'PUT',
-    headers: { ...getAuthHeaders() },
-  });
-  await handleResponse(res);
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.error || 'Error al finalizar ruta');
-  }
-  return res.json();
-}
-
 export async function getTrackingPublico(id) {
   const trackingId = (id || "").trim();
   if (!trackingId) throw new Error("Ingresá un Tracking ID");
@@ -433,6 +382,7 @@ export async function getTrackingPublico(id) {
           ? "Tracking ID inválido"
           : "Error al consultar tracking";
 
+
     const limpio =
     !msgFromJson || msgFromJson.toLowerCase() === "not found"
     ? null: msgFromJson;
@@ -441,4 +391,52 @@ export async function getTrackingPublico(id) {
   }
 
   return data;
+}
+
+export async function getTransportes(q, estado) {
+  const params = new URLSearchParams();
+  if (q) params.set("q", q);
+  if (estado) params.set("estado", estado);
+
+  const res = await fetch(`${BASE_URL}/api/transportes?${params.toString()}`, {
+    headers: { ...getAuthHeaders() }
+  });
+  await handleResponse(res);
+  if (!res.ok) throw new Error("Error al obtener transportes");
+  return res.json();
+}
+
+export async function createTransporte(data) {
+  const res = await fetch(`${BASE_URL}/api/transportes`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    body: JSON.stringify(data)
+  });
+  await handleResponse(res);
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body.error || "Error al crear transporte");
+  return body;
+}
+
+export async function updateTransporte(id, data) {
+  const res = await fetch(`${BASE_URL}/api/transportes/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    body: JSON.stringify(data)
+  });
+  await handleResponse(res);
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body.error || "Error al actualizar transporte");
+  return body;
+}
+
+export async function desactivarTransporte(id) {
+  const res = await fetch(`${BASE_URL}/api/transportes/${id}/desactivar`, {
+    method: "PATCH",
+    headers: { ...getAuthHeaders() }
+  });
+  await handleResponse(res);
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body.error || "Error al desactivar transporte");
+  return body;
 }
