@@ -38,9 +38,8 @@ function Transportes() {
 
     const puedeEditar = user?.role === 'ADMINISTRADOR'; // HU: "Como administrador"
 
-
     const cargar = async () => {
-        try {
+        try{
             setLoading(true);
             setError('');
             const data = await getTransportes(busqueda, filtroEstado);
@@ -65,7 +64,9 @@ function Transportes() {
             }
         };
         fetchInitial();
+
     },[]);
+
 
 
     const transportesFiltrados = useMemo(() => {
