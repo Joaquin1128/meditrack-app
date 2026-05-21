@@ -9,9 +9,12 @@ const FORM_INICIAL = {
   destinatario: '',
   origen: '',
   destino: '',
-  direccionEntrega: '',
   fechaEstimada: '',
   observaciones: '',
+  latitudOrigen: null,
+  longitudOrigen: null,
+  latitudDestino: null,
+  longitudDestino: null,
 };
 
 function NuevoEnvio() {
@@ -127,9 +130,9 @@ function NuevoEnvio() {
       (m.idMedicamento === idMedicamento && m.lote === lote) ? { ...m, cantidad: val } : m
     ));
   };
-
+console.log("asd")
   const handleGuardar = async () => {
-    const camposAValidar = ['remitente', 'destinatario', 'origen', 'destino', 'direccionEntrega', 'fechaEstimada'];
+    const camposAValidar = ['remitente', 'destinatario', 'origen', 'destino', 'fechaEstimada'];
     const hayCamposVacios = camposAValidar.some(key => !form[key]?.trim());
 
     if (hayCamposVacios) {
@@ -171,7 +174,9 @@ function NuevoEnvio() {
     setForm(prev => ({
       ...prev,
       remitente: cliente.nombre,
-      origen: cliente.direccion
+      origen: cliente.direccion,
+      latitudOrigen: cliente.latitud,
+      longitudOrigen: cliente.longitud
     }));
 
     setBusquedaRemitente(cliente.nombre);
@@ -183,7 +188,8 @@ function NuevoEnvio() {
       ...prev,
       destinatario: cliente.nombre,
       destino: cliente.direccion,
-      direccionEntrega: cliente.direccion
+      latitudDestino: cliente.latitud,
+      longitudDestino: cliente.longitud
     }));
 
     setBusquedaDestinatario(cliente.nombre);
@@ -382,10 +388,6 @@ function NuevoEnvio() {
           <div className="form-group">
             <label>Destino *</label>
             <input name="destino" value={form.destino} onChange={handleChange} />
-          </div>
-          <div className="form-group">
-            <label>Dirección de entrega *</label>
-            <input name="direccionEntrega" value={form.direccionEntrega} onChange={handleChange} />
           </div>
           <div className="form-group">
             <label>Fecha de entrega estimada *</label>

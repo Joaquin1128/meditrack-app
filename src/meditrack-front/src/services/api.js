@@ -125,6 +125,7 @@ export async function getEnvioById(id) {
 }
 
 export async function createEnvio(data) {
+  console.log("a")
   const res = await fetch(`${BASE_URL}/api/envios`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
@@ -146,6 +147,10 @@ export async function updateEnvio(id, data) {
     fechaEstimada: data.fechaEstimada,
     prioridad: data.prioridad,
     observaciones: data.observaciones,
+    latitudOrigen: data.latitudOrigen,
+    longitudOrigen: data.longitudOrigen,
+    latitudDestino: data.latitudDestino,
+    longitudDestino: data.longitudDestino,
     detalles: data.detalles.map(d => ({
       id: d.id,
       medicamento: d.medicamento,
@@ -162,7 +167,11 @@ export async function updateEnvio(id, data) {
   });
 
   await handleResponse(res);
-  if (!res.ok) throw new Error('Error al actualizar envío');
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    console.log(err);
+    throw new Error(err.error || err.message || 'Error al actualizar envío');
+  }
   return res.json();
 }
 

@@ -55,8 +55,11 @@ function EditarEnvio() {
           remitente: data.remitente || '',
           destinatario: data.destinatario || '',
           origen: data.origen || '',
+          latitudOrigen: data.latitud,
+          longitudOrigen: data.longitud,
           destino: data.destino || '',
-          direccionEntrega: data.direccionEntrega || '',
+          latitudDestino: data.latitud,
+          longitudDestino: data.longitud,
           fechaEstimada: data.fechaEstimada || '',
           observaciones: data.observaciones || '',
           prioridad: data.prioridad || 'MEDIA'
@@ -64,7 +67,6 @@ function EditarEnvio() {
 
         setBusquedaRemitente(data.remitente || '');
         setBusquedaDestinatario(data.destinatario || '');
-
 
         setItemsCarga(itemsParseados);
       })
@@ -153,7 +155,9 @@ function EditarEnvio() {
     setForm(prev => ({
       ...prev,
       remitente: cliente.nombre,
-      origen: cliente.direccion
+      origen: cliente.direccion,
+      latitudOrigen: cliente.latitud,
+      longitudOrigen: cliente.longitud,
     }));
 
     setBusquedaRemitente(cliente.nombre);
@@ -165,7 +169,8 @@ function EditarEnvio() {
       ...prev,
       destinatario: cliente.nombre,
       destino: cliente.direccion,
-      direccionEntrega: cliente.direccion
+      latitudDestino: cliente.latitud,
+      longitudDestino: cliente.longitud,
     }));
 
     setBusquedaDestinatario(cliente.nombre);
@@ -335,10 +340,6 @@ function EditarEnvio() {
           <div className="form-group">
             <label>Destino *</label>
             <input name="destino" value={form.destino} onChange={handleChange} />
-          </div>
-          <div className="form-group">
-            <label>Dirección de entrega *</label>
-            <input name="direccionEntrega" value={form.direccionEntrega} onChange={handleChange} />
           </div>
           <div className="form-group">
             <label>Fecha de entrega estimada *</label>
