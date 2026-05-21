@@ -436,7 +436,6 @@ export async function finalizarRuta(id) {
   return res.json();
 }
 
-
 export async function getTrackingPublico(id) {
   const trackingId = (id || "").trim();
   if (!trackingId) throw new Error("Ingresá un Tracking ID");

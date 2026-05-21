@@ -17,7 +17,9 @@ function Transportes() {
     const [filtroEstado, setFiltroEstado] = useState('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+
     const [errorModal, setErrorModal] = useState('');
+
 
     // modal alta/edición
     const [modalAbierto, setModalAbierto] = useState(false);
@@ -35,6 +37,7 @@ function Transportes() {
     const { user } = useAuth();
 
     const puedeEditar = user?.role === 'ADMINISTRADOR'; // HU: "Como administrador"
+
 
     const cargar = async () => {
         try {
@@ -62,8 +65,8 @@ function Transportes() {
             }
         };
         fetchInitial();
-        
-    }, []);
+    },[]);
+
 
     const transportesFiltrados = useMemo(() => {
         const term = busqueda.toLowerCase().trim();

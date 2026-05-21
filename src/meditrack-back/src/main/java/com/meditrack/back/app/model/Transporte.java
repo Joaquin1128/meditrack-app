@@ -1,6 +1,5 @@
 package com.meditrack.back.app.model;
 
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -44,7 +43,6 @@ public class Transporte {
     @Enumerated(EnumType.STRING)
     @Column(name = "estado_operativo", nullable = false, length = 20)
     private EstadoOperativo estadoOperativo = EstadoOperativo.ACTIVO;
-
 
     @NotNull(message = "La capacidad de volumen es obligatoria")
     @Min(value = 1, message = "La capacidad de volumen debe ser mayor a 0")
