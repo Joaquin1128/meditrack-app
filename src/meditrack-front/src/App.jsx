@@ -29,9 +29,9 @@ function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
+          <Route path="/" element={<TrackingPublico />} />
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/" element={<TrackingPublico />} />
           <Route element={<ProtectedLayout />}>
             <Route path="/menu" element={<MainMenu />} />
             <Route path="/envios" element={<Home />} />
