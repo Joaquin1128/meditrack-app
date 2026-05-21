@@ -94,7 +94,6 @@ public class TransporteService {
             t.setEstadoOperativo(cambios.getEstadoOperativo());
         }
 
-<<<<<<< HEAD
         if (cambios.getCapacidadLitros() != null) {
             if (cambios.getCapacidadLitros() <= 0) {
                 throw new IllegalArgumentException("La capacidad de volumen debe ser mayor a 0");
@@ -102,8 +101,6 @@ public class TransporteService {
             t.setCapacidadLitros(cambios.getCapacidadLitros());
         }
 
-=======
->>>>>>> 5699373 (B)
         return transporteRepository.save(t);
     }
 

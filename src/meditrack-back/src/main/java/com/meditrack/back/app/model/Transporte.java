@@ -1,6 +1,6 @@
 package com.meditrack.back.app.model;
 
-<<<<<<< HEAD
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -13,10 +13,6 @@ import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-=======
-import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
->>>>>>> 5699373 (B)
 
 @Entity
 @Table(
@@ -49,14 +45,12 @@ public class Transporte {
     @Column(name = "estado_operativo", nullable = false, length = 20)
     private EstadoOperativo estadoOperativo = EstadoOperativo.ACTIVO;
 
-<<<<<<< HEAD
+
     @NotNull(message = "La capacidad de volumen es obligatoria")
     @Min(value = 1, message = "La capacidad de volumen debe ser mayor a 0")
     @Column(name = "capacidad_litros", nullable = false)
     private Integer capacidadLitros;
 
-=======
->>>>>>> 5699373 (B)
     public Transporte () {}
     
     // Getters y Setters

@@ -388,7 +388,7 @@ export async function toggleEstadoUsuario(id) {
   }
 }
 
-<<<<<<< HEAD
+
 export async function getRutas() {
   const res = await fetch(`${BASE_URL}/api/rutas?_t=${Date.now()}`, {
     headers: { ...getAuthHeaders() },
@@ -436,8 +436,7 @@ export async function finalizarRuta(id) {
   return res.json();
 }
 
-=======
->>>>>>> d615bf1 (B)
+
 export async function getTrackingPublico(id) {
   const trackingId = (id || "").trim();
   if (!trackingId) throw new Error("Ingresá un Tracking ID");
