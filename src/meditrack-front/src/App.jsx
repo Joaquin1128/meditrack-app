@@ -19,6 +19,8 @@ import TrackingPublico from './pages/TrackingPublico';
 import Rutas from './pages/Rutas/Rutas';
 import NuevaRuta from './pages/Rutas/NuevaRuta';
 import DetalleRuta from './pages/Rutas/DetalleRuta';
+import Viajes from './pages/Viajes';
+import DetalleViaje from './pages/DetalleViaje';
 
 function App() {
   return (
@@ -43,6 +45,8 @@ function App() {
             <Route path="/medicamentos" element={<Medicamentos />} />
             <Route path="/medicamentos/editar/:id" element={<EditarMedicamento />} />
             <Route path="/medicamentos/nuevoMedicamento" element={<NuevoMedicamento />} />
+            <Route path="/viajes" element={<ProtectedRoute roles={['REPARTIDOR']}><Viajes /></ProtectedRoute>} />
+            <Route path="/viajes/detalle" element={<ProtectedRoute roles={['REPARTIDOR']}><DetalleViaje /></ProtectedRoute>} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
