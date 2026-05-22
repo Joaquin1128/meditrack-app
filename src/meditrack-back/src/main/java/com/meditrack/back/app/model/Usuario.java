@@ -1,9 +1,10 @@
 package com.meditrack.back.app.model;
 
-import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "usuarios")
