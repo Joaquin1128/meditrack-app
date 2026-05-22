@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
-import { getUsuarios, toggleEstadoUsuario } from '../services/api';
-import { useAuth } from '../context/AuthContext';
-import ModalHistorialUsuario from '../components/ModalHistorialUsuario';
+import { getUsuarios, toggleEstadoUsuario } from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
+import ModalHistorialUsuario from '../../components/ModalHistorialUsuario';
 
 const ROLE_COLORS = {
 ADMINISTRADOR: '#8b5cf6',
@@ -93,7 +93,7 @@ const usuariosFiltrados = [...usuarios].filter(u => {
 return (
 <div className="container">
     <div className="page-header-row" style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '24px' }}>
-    <button className="btn btn-secondary" onClick={() => navigate('/')}>VOLVER</button>
+    <button className="btn btn-secondary" onClick={() => navigate('/menu')}>VOLVER</button>
     <h1 style={{ fontSize: '24px', fontWeight: '800', color: '#111827' }}>Gestión del personal</h1>
     </div>
 

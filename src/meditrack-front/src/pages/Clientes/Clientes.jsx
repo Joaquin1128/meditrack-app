@@ -1,55 +1,56 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search } from 'lucide-react';
-import { inactivarMedicamento, getMedicamentos } from '../../services/api';
+import { cambiarEstadoCliente, getClientes } from '../../services/api';
+import { getTipoStyles, iconos } from '../../util/Util';
 
 const Skeleton = ({ width = '100%', height = '20px', borderRadius = '4px' }) => (
     <div style={{ width, height, borderRadius, backgroundColor: '#E5E7EB', animation: 'pulse 1.5s infinite' }} />
 );
 
-function Medicamentos() {
-    const [medicamentos, setMedicamentos] = useState([]);
+function Clientes() {
+    const [clientes, setClientes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [busqueda, setBusqueda] = useState('');
     const [paginaActual, setPaginaActual] = useState(1);
-    const medicamentosPorPagina = 10;
+    const clientesPorPagina = 10;
     const navigate = useNavigate();
 
     useEffect(() => {
-        getMedicamentos()
-            .then(data => {
-                setMedicamentos(data);
-                setLoading(false);
-            })
-            .catch(err => {
-                console.error(err);
-                setLoading(false);
-            });
-    }, []);
+  getClientes()
+    .then(data => {
+      setClientes(data);
+      setLoading(false);
+    })
+    .catch(err => {
+      console.error(err);
+      setLoading(false);
+    });
+}, []);
 
     const handleInactivar = async (id) => {
         try {
-            await inactivarMedicamento(id);
-            const data = await getMedicamentos();
-            setMedicamentos(data);
+            await cambiarEstadoCliente(id);
+            const data = await getClientes();
+            setClientes(data);
         } catch (error) {
             console.error(error);
         }
     };
 
-    const filtrados = medicamentos.filter(m => {
+    const filtrados = clientes.filter(c => {
         const term = busqueda.toLowerCase();
         return (
-            m.nombre?.toLowerCase().includes(term) ||
-            m.monodroga?.toLowerCase().includes(term) ||
-            m.laboratorio?.toLowerCase().includes(term)
+            c.nombre?.toLowerCase().includes(term) ||
+            c.tipoEstablecimiento?.toLowerCase().includes(term) ||
+            c.direccion?.toLowerCase().includes(term)
         );
     });
 
-    const totalPaginas = Math.ceil(filtrados.length / medicamentosPorPagina);
-    const indiceUltimo = paginaActual * medicamentosPorPagina;
-    const indicePrimero = indiceUltimo - medicamentosPorPagina;
-    const medicamentosPagina = filtrados.slice(indicePrimero, indiceUltimo);
+    const totalPaginas = Math.ceil(filtrados.length / clientesPorPagina);
+    const indiceUltimo = paginaActual * clientesPorPagina;
+    const indicePrimero = indiceUltimo - clientesPorPagina;
+    const clientesPagina = filtrados.slice(indicePrimero, indiceUltimo);
 
     const cambiarPagina = (numero) => {
         if (numero >= 1 && numero <= totalPaginas) {
@@ -146,7 +147,7 @@ function Medicamentos() {
             
             <div className="page-header-row">
                 <button className="btn btn-secondary" onClick={() => navigate('/menu')}>VOLVER</button>
-                <h1 style={{ fontSize: '24px', fontWeight: '800', color: '#111827' }}>Gestión de medicamentos</h1>
+                <h1 style={{ fontSize: '24px', fontWeight: '800', color: '#111827' }}>Gestión de clientes</h1>
             </div>
 
             <div className="card">
@@ -155,7 +156,7 @@ function Medicamentos() {
                         <Search size={18} className="search-icon" />
                         <input
                             className="search-input-user search-input-with-icon"
-                            placeholder="Buscar medicamento, principio activo..."
+                            placeholder="Buscar por nombre, tipo o dirección..."
                             value={busqueda}
                             onChange={e => {
                                 setBusqueda(e.target.value);
@@ -163,7 +164,7 @@ function Medicamentos() {
                             }}
                         />
                     </div>
-                    <button className="btn-new-shipment" onClick={() => navigate('/medicamentos/nuevoMedicamento')}>
+                    <button className="btn-new-shipment" onClick={() => navigate('/clientes/nuevo')}>
                         + NUEVO
                     </button>
                 </div>
@@ -172,10 +173,8 @@ function Medicamentos() {
                     <table>
                         <thead>
                             <tr>
-                                <th>Medicamento</th>
-                                <th>Laboratorio</th>
-                                <th className="mobile-hidden">Presentación</th>
-                                <th className="mobile-hidden">Cantidad</th>
+                                <th>Cliente</th>
+                                <th className="mobile-hidden">Tipo</th>
                                 <th className="mobile-hidden">Estado</th>
                                 <th style={{ textAlign: 'center' }}>Acciones</th>
                             </tr>
@@ -186,84 +185,82 @@ function Medicamentos() {
                                     <tr key={i}>
                                         <td style={{ padding: '15px' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                                <Skeleton width="42px" height="42px" borderRadius="10px" />
+                                                <Skeleton width="42px" height="42px" borderRadius="50%" />
                                                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                                    <Skeleton width="120px" height="16px" />
-                                                    <Skeleton width="80px" height="12px" />
+                                                    <Skeleton width="140px" height="16px" />
+                                                    <Skeleton width="200px" height="12px" />
                                                 </div>
                                             </div>
                                         </td>
-                                        <td style={{ padding: '15px' }}><Skeleton width="100px" /></td>
-                                        <td className="mobile-hidden" style={{ padding: '15px' }}><Skeleton width="90px" /></td>
-                                        <td className="mobile-hidden" style={{ padding: '15px' }}><Skeleton width="70px" /></td>
+                                        <td className="mobile-hidden" style={{ padding: '15px' }}><Skeleton width="90px" height="24px" borderRadius="999px" /></td>
                                         <td className="mobile-hidden" style={{ padding: '15px' }}><Skeleton width="80px" /></td>
                                         <td style={{ padding: '15px' }}><Skeleton width="40px" /></td>
                                     </tr>
                                 ))
                             ) : (
                                 <>
-                                    {medicamentosPagina.map(m => (
-                                        <tr key={m.id}
+                                    {clientesPagina.map(c => (
+                                        <tr key={c.id}
                                             style={{ transition: 'background 0.2s' }}
-                                            onMouseEnter={(e) => { e.currentTarget.style.background = '#deffe4'; }}
+                                            onMouseEnter={(e) => { e.currentTarget.style.background = '#f8fafc'; }}
                                             onMouseLeave={(e) => { e.currentTarget.style.background = 'white'; }}
                                         >
                                             <td>
-                                                <div style={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: '12px'
-                                                }}>
-                                                    <img
-                                                        src={
-                                                            m.imagenUrl
-                                                                ? (m.imagenUrl.startsWith('http') 
-                                                                    ? m.imagenUrl 
-                                                                    : `http://localhost:8080${m.imagenUrl}`)
-                                                                : '/placeholder-medicamento.png'
-                                                        }
-                                                        alt={m.nombre}
-                                                        style={{
-                                                            width: '42px',
-                                                            height: '42px',
-                                                            borderRadius: '10px',
-                                                            objectFit: 'cover',
-                                                            border: '1px solid #E5E7EB',
-                                                            background: '#F9FAFB'
-                                                        }}
-                                                    />
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                                    <div style={{
+                                                        width: '42px',
+                                                        height: '42px',
+                                                        borderRadius: '50%',
+                                                        background: '#DCFCE7',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        fontWeight: '700',
+                                                        ...getTipoStyles(c.tipoEstablecimiento),
+                                                        border: '1px solid #E5E7EB'
+                                                    }}>
+                                                        {iconos[c.tipoEstablecimiento] || '🏢'}
+                                                    </div>
                                                     <div>
-                                                        <div style={{
-                                                            fontWeight: '700',
-                                                            color: '#111827'
-                                                        }}>
-                                                            {m.nombre}
+                                                        <div style={{ fontWeight: '700', color: '#111827' }}>
+                                                            {c.nombre}
                                                         </div>
-
                                                         <div style={{
                                                             fontSize: '13px',
-                                                            color: '#6B7280'
+                                                            color: '#6B7280',
+                                                            maxWidth: '320px',
+                                                            whiteSpace: 'nowrap',
+                                                            overflow: 'hidden',
+                                                            textOverflow: 'ellipsis'
                                                         }}>
-                                                            {m.monodroga}
+                                                            {c.direccion}
                                                         </div>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td>{m.laboratorio}</td>
-                                            <td className="mobile-hidden">{m.presentacion}</td>
-                                            <td className="mobile-hidden">{m.cantidad} {m.unidadMedida}</td>
+                                            <td className="mobile-hidden">
+                                                <span style={{
+                                                    padding: '6px 10px',
+                                                    borderRadius: '999px',
+                                                    fontWeight: '600',
+                                                    fontSize: '12px',
+                                                    ...getTipoStyles(c.tipoEstablecimiento)
+                                                }}>
+                                                    {c.tipoEstablecimiento}
+                                                </span>
+                                            </td>
                                             <td className="mobile-hidden">
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                                     <label className="switch">
                                                         <input
                                                             type="checkbox"
-                                                            checked={m.estadoActivo}
-                                                            onChange={() => handleInactivar(m.id)}
+                                                            checked={c.estadoActivo}
+                                                            onChange={() => handleInactivar(c.id)}
                                                         />
                                                         <span className="slider"></span>
                                                     </label>
-                                                    <span className={`user-status-label ${m.estadoActivo ? 'status-active' : 'status-inactive'}`}>
-                                                        {m.estadoActivo ? 'ACTIVO' : 'INACTIVO'}
+                                                    <span className={`user-status-label ${c.estadoActivo ? 'status-active' : 'status-inactive'}`}>
+                                                        {c.estadoActivo ? 'ACTIVO' : 'INACTIVO'}
                                                     </span>
                                                 </div>
                                             </td>
@@ -271,8 +268,8 @@ function Medicamentos() {
                                                 <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
                                                     <button
                                                         className="action-icon-btn"
-                                                        title="Editar medicamento"
-                                                        onClick={() => navigate(`/medicamentos/editar/${m.id}`)}
+                                                        title="Editar cliente"
+                                                        onClick={() => navigate(`/clientes/editar/${c.id}`)}
                                                     >
                                                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
@@ -285,8 +282,8 @@ function Medicamentos() {
                                     ))}
                                     {filtrados.length === 0 && (
                                         <tr>
-                                            <td colSpan="6" style={{ textAlign: 'center', color: '#6B7280', padding: '30px' }}>
-                                                No se encontraron medicamentos.
+                                            <td colSpan="4" style={{ textAlign: 'center', color: '#6B7280', padding: '30px' }}>
+                                                No se encontraron clientes.
                                             </td>
                                         </tr>
                                     )}
@@ -322,4 +319,4 @@ function Medicamentos() {
     );
 }
 
-export default Medicamentos;
+export default Clientes;

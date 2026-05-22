@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 import {
   Package,
   Users,
@@ -10,7 +10,8 @@ import {
   Pill,
   Hospital,
   NotepadText,
-  History
+  History,
+  CircleAlert
 } from 'lucide-react';
 
 const MainMenu = () => {
@@ -32,7 +33,7 @@ const MainMenu = () => {
       rolesPermitidos: ['ADMINISTRADOR', 'SUPERVISOR', 'OPERADOR'],
       items: [
         { label: "Medicamentos", icon: <Pill size={32} />, path: "/medicamentos", color: "#00A86B" },
-        { label: "Clientes", icon: <Hospital size={32} />, path: "/farmacias", color: "#00A86B" },
+        { label: "Clientes", icon: <Users size={32} />, path: "/clientes", color: "#00A86B" },
       ]
     },
     {
@@ -44,10 +45,9 @@ const MainMenu = () => {
     },
     {
       title: "Reportes",
-      rolesPermitidos: ['ADMINISTRADOR', 'SUPERVISOR', 'OPERADOR'],
+      rolesPermitidos: ['ADMINISTRADOR', 'SUPERVISOR'],
       items: [
-        { label: "Incidencias", icon: <ShieldAlert size={32} />, path: "/incidencias", color: "#4338CA" },
-        { label: "Volumen", icon: <TriangleRight size={32} />, path: "/volumen", color: "#4338CA" },
+        { label: "Reportes", icon: <ShieldAlert size={32} />, path: "/reportes", color: "#4338CA" },
       ]
     },
     {
