@@ -41,6 +41,7 @@ function DetalleEnvio() {
   const { user } = useAuth();
   
   const [envio, setEnvio] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [repartidores, setRepartidores] = useState([]);
   const [catalogo, setCatalogo] = useState([]);
@@ -60,6 +61,7 @@ function DetalleEnvio() {
   const [descripcionIncidencia, setDescripcionIncidencia] = useState('');
 
   useEffect(() => {
+    setLoading(true);
     getMedicamentos()
       .then(setCatalogo)
       .catch(() => {});
@@ -194,7 +196,8 @@ function DetalleEnvio() {
           setItemsCarga(itemsParseados);
         }
       })
-      .catch(() => setError('Envío no encontrado.'));
+      .catch(() => setError('Envío no encontrado.'))
+      .finally(() => setLoading(false));
 
     getUsuarios()
       .then(data => {
@@ -340,7 +343,97 @@ function DetalleEnvio() {
     };
   };
 
-  if (!envio) return <div className="container"><p>{error || 'Cargando...'}</p></div>;
+  if (loading) {
+    return (
+      <div className="container">
+        <style>
+          {`
+            .skeleton-box {
+              background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+              background-size: 200% 100%;
+              animation: skeleton-loading 1.5s infinite linear;
+              border-radius: 4px;
+            }
+            @keyframes skeleton-loading {
+              0% { background-position: 200% 0; }
+              100% { background-position: -200% 0; }
+            }
+            .info-row-grid {
+              display: grid;
+              grid-template-columns: repeat(3, 1fr);
+              gap: 20px;
+              margin-bottom: 25px;
+            }
+          `}
+        </style>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '24px' }}>
+          <div className="skeleton-box" style={{ width: '90px', height: '38px', borderRadius: '6px' }}></div>
+          <div className="skeleton-box" style={{ width: '220px', height: '32px' }}></div>
+        </div>
+        <div className="skeleton-box" style={{ width: '100%', height: '70px', borderRadius: '8px', marginBottom: '24px' }}></div>
+        <div className="card" style={{ padding: '30px 25px 80px 25px', border: '1px solid #e5e7eb', borderRadius: '8px' }}>
+          <div className="info-row-grid">
+            <div>
+              <div className="skeleton-box" style={{ width: '80px', height: '14px', marginBottom: '8px' }}></div>
+              <div className="skeleton-box" style={{ width: '150px', height: '20px' }}></div>
+            </div>
+            <div>
+              <div className="skeleton-box" style={{ width: '60px', height: '14px', marginBottom: '8px' }}></div>
+              <div className="skeleton-box" style={{ width: '120px', height: '28px', borderRadius: '20px' }}></div>
+            </div>
+          </div>
+          <div className="info-row-grid">
+            <div>
+              <div className="skeleton-box" style={{ width: '90px', height: '14px', marginBottom: '8px' }}></div>
+              <div className="skeleton-box" style={{ width: '180px', height: '18px' }}></div>
+            </div>
+            <div>
+              <div className="skeleton-box" style={{ width: '110px', height: '14px', marginBottom: '8px' }}></div>
+              <div className="skeleton-box" style={{ width: '160px', height: '18px' }}></div>
+            </div>
+            <div>
+              <div className="skeleton-box" style={{ width: '140px', height: '14px', marginBottom: '8px' }}></div>
+              <div className="skeleton-box" style={{ width: '220px', height: '18px' }}></div>
+            </div>
+          </div>
+          <div className="info-row-grid">
+            <div>
+              <div className="skeleton-box" style={{ width: '70px', height: '14px', marginBottom: '8px' }}></div>
+              <div className="skeleton-box" style={{ width: '130px', height: '18px' }}></div>
+            </div>
+            <div>
+              <div className="skeleton-box" style={{ width: '70px', height: '14px', marginBottom: '8px' }}></div>
+              <div className="skeleton-box" style={{ width: '130px', height: '18px' }}></div>
+            </div>
+            <div>
+              <div className="skeleton-box" style={{ width: '120px', height: '14px', marginBottom: '8px' }}></div>
+              <div className="skeleton-box" style={{ width: '100px', height: '18px' }}></div>
+            </div>
+          </div>
+          <div style={{ marginTop: '10px', borderTop: '1px solid #E5E7EB', paddingTop: '20px' }}>
+            <div className="skeleton-box" style={{ width: '180px', height: '14px', marginBottom: '12px' }}></div>
+            <div style={{ display: 'flex', gap: '16px', alignItems: 'center', padding: '14px', border: '1px solid #E5E7EB', borderRadius: '8px', background: '#F9FAFB', marginBottom: '12px' }}>
+              <div className="skeleton-box" style={{ width: '50px', height: '50px', borderRadius: '8px' }}></div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flex: 1 }}>
+                <div className="skeleton-box" style={{ width: '40%', height: '18px' }}></div>
+                <div className="skeleton-box" style={{ width: '25%', height: '14px' }}></div>
+              </div>
+            </div>
+          </div>
+          <div style={{ marginTop: '20px', borderTop: '1px solid #E5E7EB', paddingTop: '20px' }}>
+            <div className="skeleton-box" style={{ width: '160px', height: '14px', marginBottom: '8px' }}></div>
+            <div className="skeleton-box" style={{ width: '200px', height: '18px' }}></div>
+          </div>
+          <div style={{ marginTop: '20px', borderTop: '1px solid #E5E7EB', paddingTop: '20px' }}>
+            <div className="skeleton-box" style={{ width: '120px', height: '14px', marginBottom: '8px' }}></div>
+            <div className="skeleton-box" style={{ width: '90%', height: '18px' }}></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !envio) return <div className="container"><p>{error || 'Envío no encontrado.'}</p></div>;
 
   return (
     <div className="container">

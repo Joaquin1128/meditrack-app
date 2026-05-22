@@ -52,7 +52,7 @@ function App() {
             <Route path="/clientes/editar/:id" element={<ProtectedRoute roles={['SUPERVISOR', 'ADMINISTRADOR']}> <EditarCliente /></ProtectedRoute>} />
             <Route path="/reportes" element={<ProtectedRoute roles={['SUPERVISOR', 'ADMINISTRADOR']}><Reportes/></ProtectedRoute>} />
           </Route>
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<Navigate to="/menu" replace />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
