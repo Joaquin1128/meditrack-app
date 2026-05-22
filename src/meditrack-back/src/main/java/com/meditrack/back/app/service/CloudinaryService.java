@@ -37,4 +37,5 @@ public class CloudinaryService {
         Map uploadResult = cloudinary.uploader().upload(archivo.getBytes(), ObjectUtils.emptyMap());
         return uploadResult.get("secure_url").toString();
     }
+
 }

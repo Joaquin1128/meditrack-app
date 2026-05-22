@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface MedicamentoRepository extends JpaRepository<Medicamento, String> {
+    
     Optional<Medicamento> findByNombre(String nombre);
 
     List<Medicamento> findByEstadoActivoTrue();
@@ -21,4 +22,5 @@ public interface MedicamentoRepository extends JpaRepository<Medicamento, String
     List<Medicamento> findByMonodroga(String monodroga);
 
     List<Medicamento> findByLaboratorio(String laboratorio);
+
 }

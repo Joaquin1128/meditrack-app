@@ -100,4 +100,5 @@ public class HistorialUsuario {
     public void setAutor(Usuario autor) {
         this.autor = autor;
     }
+
 }

@@ -178,4 +178,5 @@ class EnvioServiceTest {
         service.actualizarEstado("ENV-999", EstadoEnvio.INCIDENTE_REPORTADO, USUARIO_TEST, null, "ACCIDENTE", "Colisión menor");
         assertEquals(EstadoEnvio.INCIDENTE_REPORTADO, envioExistente.getEstado());
     }
+
 }

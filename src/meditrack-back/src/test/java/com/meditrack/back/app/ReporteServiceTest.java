@@ -113,4 +113,5 @@ class ReporteServiceTest {
             reporteService.generarReporteOperativo("tema_invalido", "2026-05-01", "2026-05-31", "diaria")
         );
     }
+
 }

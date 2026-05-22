@@ -137,4 +137,5 @@ public class Usuario {
     public void addHistorial(HistorialUsuario historial) {
         this.historial.add(historial);
     }
+
 }
