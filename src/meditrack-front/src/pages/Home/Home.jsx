@@ -48,20 +48,27 @@ function Home() {
   const location = useLocation();
   const { user } = useAuth();
   const menuRef = useRef(null);
+  const hasProcessedSuccess = useRef(false);
 
   useEffect(() => {
-    setLoading(true);
-    getEnvios().then(data => {
+    getEnvios()
+      .then(data => {
         setEnvios(data);
         setLoading(false);
-    }).catch(err => {
+      })
+      .catch(err => {
         console.error(err);
         setLoading(false);
-    });
-    if (location.state?.success) {
+      });
+  }, []);
+
+  useEffect(() => {
+    if (location.state?.success && !hasProcessedSuccess.current) {
+      hasProcessedSuccess.current = true;
       setShowSnackbar(true);
-      setTimeout(() => setShowSnackbar(false), 3000);
+      const timer = setTimeout(() => setShowSnackbar(false), 3000);
       window.history.replaceState({}, document.title);
+      return () => clearTimeout(timer);
     }
   }, [location.state]);
 

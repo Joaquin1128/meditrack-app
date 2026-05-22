@@ -17,17 +17,16 @@ function Clientes() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        setLoading(true);
-        getClientes()
-            .then(data => {
-                setClientes(data);
-                setLoading(false);
-            })
-            .catch(err => {
-                console.error(err);
-                setLoading(false);
-            });
-    }, []);
+  getClientes()
+    .then(data => {
+      setClientes(data);
+      setLoading(false);
+    })
+    .catch(err => {
+      console.error(err);
+      setLoading(false);
+    });
+}, []);
 
     const handleInactivar = async (id) => {
         try {

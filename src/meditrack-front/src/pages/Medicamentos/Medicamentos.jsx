@@ -16,7 +16,6 @@ function Medicamentos() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        setLoading(true);
         getMedicamentos()
             .then(data => {
                 setMedicamentos(data);
