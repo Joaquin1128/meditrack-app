@@ -89,11 +89,9 @@ function MapaRuta({ paradas }) {
   }, [paradasConCoords]);
 
   useEffect(() => {
-    if (!isLoaded || paradasConCoords.length < 2) {
-      setDirectionsResult(null);
-      return;
-    }
+    if (!isLoaded || paradasConCoords.length < 2) return;
 
+    let cancelled = false;
     const service = new window.google.maps.DirectionsService();
     const ultimo = paradasConCoords.length - 1;
 
@@ -107,8 +105,10 @@ function MapaRuta({ paradas }) {
       travelMode: window.google.maps.TravelMode.DRIVING,
       optimizeWaypoints: false,
     }, (result, status) => {
-      setDirectionsResult(status === 'OK' ? result : null);
+      if (!cancelled) setDirectionsResult(status === 'OK' ? result : null);
     });
+
+    return () => { cancelled = true; };
   }, [isLoaded, paradasConCoords]);
 
   if (!isLoaded) {
@@ -136,7 +136,7 @@ function MapaRuta({ paradas }) {
         options={MAP_OPTIONS}
         onClick={() => setParadaSeleccionada(null)}
       >
-        {directionsResult && (
+        {directionsResult && paradasConCoords.length >= 2 && (
           <DirectionsRenderer
             directions={directionsResult}
             options={DIRECTIONS_OPTIONS}
