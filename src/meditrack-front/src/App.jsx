@@ -24,7 +24,7 @@ import NuevoCliente from './pages/Clientes/NuevoCliente';
 import EditarCliente from './pages/Clientes/EditarCliente';
 import Transportes from './pages/Transportes/Transportes';
 import Reportes from './pages/Reportes/Reportes';
-import Transportes from './pages/Transportes/Transportes';
+
 
 function App() {
   return (
