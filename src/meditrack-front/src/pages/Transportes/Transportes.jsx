@@ -17,6 +17,7 @@ function Transportes() {
     const [filtroEstado, setFiltroEstado] = useState('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [errorModal, setErrorModal] = useState('');
 
     const [errorModal, setErrorModal] = useState('');
 
@@ -39,7 +40,7 @@ function Transportes() {
     const puedeEditar = user?.role === 'ADMINISTRADOR'; // HU: "Como administrador"
 
     const cargar = async () => {
-        try{
+        try {
             setLoading(true);
             setError('');
             const data = await getTransportes(busqueda, filtroEstado);
@@ -53,21 +54,25 @@ function Transportes() {
 
     useEffect(() => {
         const fetchInitial = async () => {
-            try{
-                const data = await getTransportes("","");
+            try {
+                const data = await getTransportes("", "");
                 setTransportes(data);
             } catch (e) {
                 setError(e.message || 'Error al cargar transportes');
             }
-            finally{
+            finally {
                 setLoading(false);
             }
         };
         fetchInitial();
 
+<<<<<<< HEAD
     },[]);
 
 
+=======
+    }, []);
+>>>>>>> 4690252 (mejoras en UI)
 
     const transportesFiltrados = useMemo(() => {
         const term = busqueda.toLowerCase().trim();
@@ -188,6 +193,38 @@ function Transportes() {
             setError(e.message || 'Error al actualizar estado');
         }
     };
+<<<<<<< HEAD
+=======
+    const toggleActivo = async (t) => {
+        if (!puedeEditar) return;
+        if (t.estadoOperativo === 'MANTENIMIENTO') return;
+
+        const anterior = t.estadoOperativo;
+        const nuevoEstado = anterior === 'ACTIVO' ? 'INACTIVO' : 'ACTIVO';
+
+        // ✅ 1) cambia UI al instante
+        setTransportes(prev =>
+            prev.map(x => (x.id === t.id ? { ...x, estadoOperativo: nuevoEstado } : x))
+        );
+
+        try {
+            setError('');
+            await updateTransporte(t.id, {
+                patente: t.patente,
+                tipoVehiculo: t.tipoVehiculo,
+                capacidadKg: t.capacidadKg,
+                capacidadLitros: t.capacidadLitros,
+                estadoOperativo: nuevoEstado,
+            });
+        } catch (e) {
+
+            setTransportes(prev =>
+                prev.map(x => (x.id === t.id ? { ...x, estadoOperativo: anterior } : x))
+            );
+            setError(e.message || 'Error al actualizar estado');
+        }
+    };
+>>>>>>> 4690252 (mejoras en UI)
     const getEstadoStyle = (estado) => {
         const color = ESTADO_COLORS[estado] || '#6b7280';
         return {
