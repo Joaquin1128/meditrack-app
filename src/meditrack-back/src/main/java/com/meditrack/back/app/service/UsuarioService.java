@@ -2,12 +2,13 @@ package com.meditrack.back.app.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.meditrack.back.app.dto.ActualizarUsuarioRequest;
+import com.meditrack.back.app.dto.CrearUsuarioRequest;
 import com.meditrack.back.app.model.Role;
 import com.meditrack.back.app.model.Usuario;
 import com.meditrack.back.app.model.HistorialUsuario;
@@ -40,28 +41,26 @@ public class UsuarioService {
         return false;
     }
 
-    public Usuario crear(Map<String, String> datos, Usuario autorDelCambio) {
-        Role rolNuevoUsuario = Role.valueOf(datos.get("role"));
+    public Usuario crear(CrearUsuarioRequest datos, Usuario autorDelCambio) {
+        Role rolNuevoUsuario = Role.valueOf(datos.getRole());
 
         if (!tienePermisoSobreRol(autorDelCambio.getRole(), rolNuevoUsuario)) {
             throw new RuntimeException("Tu rol no tiene permisos para crear un " + rolNuevoUsuario);
         }
 
-        if (usuarioRepository.existsByEmail(datos.get("email"))) {
+        if (usuarioRepository.existsByEmail(datos.getEmail())) {
             throw new RuntimeException("El email ya está registrado");
         }
 
-        if (usuarioRepository.existsByDni(datos.get("dni"))) {
+        if (usuarioRepository.existsByDni(datos.getDni())) {
             throw new RuntimeException("El DNI ya está registrado");
         }
 
-        String passwordHasheada = passwordEncoder.encode(datos.get("password"));
-
         Usuario nuevo = new Usuario(
-            datos.get("email"),
-            datos.get("nombre"),
-            datos.get("dni"),
-            passwordHasheada,
+            datos.getEmail(),
+            datos.getNombre(),
+            datos.getDni(),
+            passwordEncoder.encode(datos.getPassword()),
             rolNuevoUsuario
         );
 
@@ -70,11 +69,11 @@ public class UsuarioService {
         return usuarioRepository.save(nuevo);
     }
 
-    public Usuario actualizar(String id, Map<String, String> datos, Usuario autorDelCambio) {
+    public Usuario actualizar(String id, ActualizarUsuarioRequest datos, Usuario autorDelCambio) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        Role rolObjetivo = datos.containsKey("role") ? Role.valueOf(datos.get("role")) : usuario.getRole();
+        Role rolObjetivo = datos.tieneRole() ? Role.valueOf(datos.getRole()) : usuario.getRole();
 
         if (!tienePermisoSobreRol(autorDelCambio.getRole(), rolObjetivo)) {
             throw new RuntimeException("No tienes jerarquía suficiente para modificar o asignar este rol.");
@@ -82,38 +81,36 @@ public class UsuarioService {
 
         String fechaModificacion = LocalDateTime.now().toString();
 
-        if (datos.containsKey("nombre") && !usuario.getNombre().equals(datos.get("nombre"))) {
-            agregarHistorial(usuario, "Nombre", usuario.getNombre(), datos.get("nombre"), fechaModificacion, autorDelCambio);
-            usuario.setNombre(datos.get("nombre"));
+        if (datos.tieneNombre() && !usuario.getNombre().equals(datos.getNombre())) {
+            agregarHistorial(usuario, "Nombre", usuario.getNombre(), datos.getNombre(), fechaModificacion, autorDelCambio);
+            usuario.setNombre(datos.getNombre());
         }
 
-        if (datos.containsKey("email") && !usuario.getEmail().equals(datos.get("email"))) {
-            if (usuarioRepository.existsByEmail(datos.get("email"))) {
+        if (datos.tieneEmail() && !usuario.getEmail().equals(datos.getEmail())) {
+            if (usuarioRepository.existsByEmail(datos.getEmail())) {
                 throw new RuntimeException("El email ya está registrado en otra cuenta");
             }
-            agregarHistorial(usuario, "Email", usuario.getEmail(), datos.get("email"), fechaModificacion, autorDelCambio);
-            usuario.setEmail(datos.get("email"));
+            agregarHistorial(usuario, "Email", usuario.getEmail(), datos.getEmail(), fechaModificacion, autorDelCambio);
+            usuario.setEmail(datos.getEmail());
         }
 
-        if (datos.containsKey("dni") && !usuario.getDni().equals(datos.get("dni"))) {
-            if (usuarioRepository.existsByDni(datos.get("dni"))) {
+        if (datos.tieneDni() && !usuario.getDni().equals(datos.getDni())) {
+            if (usuarioRepository.existsByDni(datos.getDni())) {
                 throw new RuntimeException("El DNI ya está registrado en otra cuenta");
             }
-            agregarHistorial(usuario, "DNI", usuario.getDni(), datos.get("dni"), fechaModificacion, autorDelCambio);
-            usuario.setDni(datos.get("dni"));
+            agregarHistorial(usuario, "DNI", usuario.getDni(), datos.getDni(), fechaModificacion, autorDelCambio);
+            usuario.setDni(datos.getDni());
         }
 
-        if (datos.containsKey("role") && usuario.getRole() != rolObjetivo) {
+        if (datos.tieneRole() && usuario.getRole() != rolObjetivo) {
             agregarHistorial(usuario, "Role", usuario.getRole().toString(), rolObjetivo.toString(), fechaModificacion, autorDelCambio);
             usuario.setRole(rolObjetivo);
         }
 
-        if (datos.containsKey("password") && !datos.get("password").trim().isEmpty()) {
-            // Verificamos que la nueva password no sea igual a la actual (comparación BCrypt)
-            if (!passwordEncoder.matches(datos.get("password"), usuario.getPassword())) {
-                // En auditoría nunca se registra el valor real de la password
+        if (datos.tienePassword()) {
+            if (!passwordEncoder.matches(datos.getPassword(), usuario.getPassword())) {
                 agregarHistorial(usuario, "Password", "[protegida]", "[protegida]", fechaModificacion, autorDelCambio);
-                usuario.setPassword(passwordEncoder.encode(datos.get("password")));
+                usuario.setPassword(passwordEncoder.encode(datos.getPassword()));
             }
         }
 

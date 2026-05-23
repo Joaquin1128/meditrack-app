@@ -1,11 +1,16 @@
 package com.meditrack.back.app.controller;
 
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import com.meditrack.back.app.dto.ActualizarUsuarioRequest;
+import com.meditrack.back.app.dto.CrearUsuarioRequest;
 import com.meditrack.back.app.model.Sesion;
 import com.meditrack.back.app.model.Usuario;
 import com.meditrack.back.app.service.AuthService;
@@ -36,6 +41,15 @@ public class UsuarioController {
                 .orElseThrow(() -> new RuntimeException("Usuario autor no encontrado en la base de datos"));
     }
 
+    private Map<String, String> erroresDeValidacion(BindingResult bindingResult) {
+        return bindingResult.getFieldErrors().stream()
+                .collect(Collectors.toMap(
+                        e -> e.getField(),
+                        e -> e.getDefaultMessage(),
+                        (msg1, msg2) -> msg1  // si hay dos errores en el mismo campo, queda el primero
+                ));
+    }
+
     @GetMapping
     public ResponseEntity<?> listarTodos(@RequestHeader(value = "Authorization", required = false) String authHeader) {
         try {
@@ -47,7 +61,9 @@ public class UsuarioController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> obtenerPorId(@PathVariable String id, @RequestHeader(value = "Authorization", required = false) String authHeader) {
+    public ResponseEntity<?> obtenerPorId(
+            @PathVariable String id,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
         try {
             autenticar(authHeader);
             Usuario usuario = usuarioService.listarTodos().stream()
@@ -61,8 +77,15 @@ public class UsuarioController {
     }
 
     @PostMapping
-    public ResponseEntity<?> crear(@RequestBody Map<String, String> body, @RequestHeader(value = "Authorization", required = false) String authHeader) {
+    public ResponseEntity<?> crear(
+            @Valid @RequestBody CrearUsuarioRequest body,
+            BindingResult bindingResult,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
         try {
+            if (bindingResult.hasErrors()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("errores", erroresDeValidacion(bindingResult)));
+            }
             Sesion sesion = autenticar(authHeader);
             Usuario autorCompleto = obtenerAutorDesdeSesion(sesion);
             Usuario nuevo = usuarioService.crear(body, autorCompleto);
@@ -73,8 +96,16 @@ public class UsuarioController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> actualizar(@PathVariable String id, @RequestBody Map<String, String> body, @RequestHeader(value = "Authorization", required = false) String authHeader) {
+    public ResponseEntity<?> actualizar(
+            @PathVariable String id,
+            @Valid @RequestBody ActualizarUsuarioRequest body,
+            BindingResult bindingResult,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
         try {
+            if (bindingResult.hasErrors()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("errores", erroresDeValidacion(bindingResult)));
+            }
             Sesion sesion = autenticar(authHeader);
             Usuario autorCompleto = obtenerAutorDesdeSesion(sesion);
             Usuario actualizado = usuarioService.actualizar(id, body, autorCompleto);
@@ -85,7 +116,9 @@ public class UsuarioController {
     }
 
     @PatchMapping("/{id}/estado")
-    public ResponseEntity<?> toggleEstado(@PathVariable String id, @RequestHeader(value = "Authorization", required = false) String authHeader) {
+    public ResponseEntity<?> toggleEstado(
+            @PathVariable String id,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
         try {
             Sesion sesion = autenticar(authHeader);
             Usuario autorCompleto = obtenerAutorDesdeSesion(sesion);

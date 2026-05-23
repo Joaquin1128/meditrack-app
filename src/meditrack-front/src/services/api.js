@@ -252,6 +252,7 @@ export async function createUsuario(data) {
   await handleResponse(res);
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
+    if (err.errores) throw { type: 'validation', errores: err.errores };
     throw new Error(err.error || 'Error al crear usuario');
   }
   return res.json();
@@ -264,25 +265,26 @@ export async function updateUsuario(id, data) {
     email: data.email,
     role: data.role
   };
-  
+ 
   if (data.password && data.password.trim() !== '') {
     dataLimpia.password = data.password;
   }
-
+ 
   const res = await fetch(`${BASE_URL}/api/usuarios/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
     body: JSON.stringify(dataLimpia),
   });
-
+ 
   await handleResponse(res);
-  
+ 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
+    if (err.errores) throw { type: 'validation', errores: err.errores };
     throw new Error(err.error || 'Error al actualizar usuario');
   }
-  
-  return res.json(); 
+ 
+  return res.json();
 }
 
 export async function getMedicamentos() {
