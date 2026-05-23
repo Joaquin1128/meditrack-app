@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getTransportes, createTransporte, updateTransporte, desactivarTransporte } from '../../services/api';
+import { getTransportes, createTransporte, updateTransporte} from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 
 const ESTADO_COLORS = {
@@ -153,16 +153,6 @@ function Transportes() {
         }
     };
 
-    const desactivar = async (t) => {
-        if (!puedeEditar) return;
-        try {
-            setError('');
-            await desactivarTransporte(t.id);
-            await cargar();
-        } catch (e) {
-            setError(e.message || 'Error al desactivar transporte');
-        }
-    };
     const toggleActivo = async (t) => {
         if (!puedeEditar) return;
         if (t.estadoOperativo === 'MANTENIMIENTO') return;
