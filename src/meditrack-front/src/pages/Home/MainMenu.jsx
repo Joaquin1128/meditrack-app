@@ -11,7 +11,8 @@ import {
   Hospital,
   NotepadText,
   History,
-  CircleAlert
+  CircleAlert,
+  LayoutDashboard
 } from 'lucide-react';
 
 const MainMenu = () => {
@@ -48,6 +49,7 @@ const MainMenu = () => {
       rolesPermitidos: ['ADMINISTRADOR', 'SUPERVISOR'],
       items: [
         { label: "Reportes", icon: <ShieldAlert size={32} />, path: "/reportes", color: "#4338CA" },
+        { label: "KPIs", icon: <LayoutDashboard size={32} />, path: "/kpis", color: "#4338CA" },
       ]
     },
     {
