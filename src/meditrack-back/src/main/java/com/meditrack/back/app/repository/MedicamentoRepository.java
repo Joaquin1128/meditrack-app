@@ -12,12 +12,14 @@ import com.meditrack.back.app.model.Medicamento;
 public interface MedicamentoRepository extends JpaRepository<Medicamento, String> {
 
     Optional<Medicamento> findByNombre(String nombre);
+    Optional<Medicamento> findByGtin(String gtin);
 
     List<Medicamento> findByEstadoActivoTrue();
 
     List<Medicamento> findByCadenaFrioTrue();
 
     boolean existsByNombre(String nombre);
+    boolean existsByGtin(String gtin);
 
     List<Medicamento> findByMonodroga(String monodroga);
 
