@@ -482,38 +482,32 @@ export async function getClienteById(id) {
     return response.json();
 }
 
-export async function createCliente(cliente) {
-    const response = await fetch(`${BASE_URL}/api/clientes`,
-        {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-        body: JSON.stringify(cliente)
-      }
-    );
-
-  if (!response.ok) {
-    const error = await response.json();
-        throw new Error(error.error || 'Error al crear cliente');
-    }
-
-    return response.json();
+export async function createCliente(data) {
+  const res = await fetch(`${BASE_URL}/api/clientes`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    if (err.errores) throw { type: 'validation', errores: err.errores };
+    throw new Error(err.error || 'Error al crear cliente');
+  }
+  return res.json();
 }
 
-export async function updateCliente(id, cliente) {
-    const response = await fetch(`${BASE_URL}/api/clientes/${id}`,
-        {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-            body: JSON.stringify(cliente)
-        }
-    );
-
-    if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error ||'Error al actualizar cliente');
-    }
-
-    return response.json();
+export async function updateCliente(id, data) {
+  const res = await fetch(`${BASE_URL}/api/clientes/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    if (err.errores) throw { type: 'validation', errores: err.errores };
+    throw new Error(err.error || 'Error al actualizar cliente');
+  }
+  return res.json();
 }
 
 export async function cambiarEstadoCliente(id) {

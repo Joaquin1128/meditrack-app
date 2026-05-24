@@ -21,6 +21,18 @@ public class Cliente {
     @Column(nullable = false, length = 500)
     private String direccion;
 
+    @Column(nullable = false)
+    private String cuit;
+
+    @Column(nullable = false)
+    private String gln;
+
+    @Column(nullable = false)
+    private String telefono;
+
+    @Column(nullable = false)
+    private String email;
+
     @Column(precision = 10, scale = 7)
     private BigDecimal latitud;
 
@@ -52,21 +64,22 @@ public class Cliente {
         this.horaCreacion = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"));
     }
 
-    public Cliente(String nombre,String direccion,BigDecimal latitud,BigDecimal longitud,
-        String placeId,TipoEstablecimiento tipoEstablecimiento,String usuarioResponsable)
-    {
+    public Cliente(String nombre, String direccion, String cuit, String gln, String telefono, String email,
+            BigDecimal latitud, BigDecimal longitud, String placeId,
+            TipoEstablecimiento tipoEstablecimiento, String usuarioResponsable) {
         this.id = "CLI-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-
         this.nombre = nombre;
         this.direccion = direccion;
+        this.cuit = cuit;
+        this.gln = gln;
+        this.telefono = telefono;
+        this.email = email;
         this.latitud = latitud;
         this.longitud = longitud;
         this.placeId = placeId;
         this.tipoEstablecimiento = tipoEstablecimiento;
         this.usuarioResponsable = usuarioResponsable;
-
         this.estadoActivo = true;
-
         this.fechaCreacion = LocalDate.now().toString();
         this.horaCreacion = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"));
     }
@@ -93,6 +106,38 @@ public class Cliente {
 
     public void setDireccion(String direccion) {
         this.direccion = direccion;
+    }
+
+    public String getCuit() {
+        return cuit;
+    }
+
+    public void setCuit(String cuit) {
+        this.cuit = cuit;
+    }
+
+    public String getGln() {
+        return gln;
+    }
+
+    public void setGln(String gln) {
+        this.gln = gln;
+    }
+
+    public String getTelefono() {
+        return telefono;
+    }
+
+    public void setTelefono(String telefono) {
+        this.telefono = telefono;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public BigDecimal getLatitud() {
@@ -131,8 +176,7 @@ public class Cliente {
         return estadoActivo;
     }
 
-    public void setEstadoActivo( boolean estadoActivo)
-    {
+    public void setEstadoActivo(boolean estadoActivo) {
         this.estadoActivo = estadoActivo;
     }
 
@@ -140,8 +184,7 @@ public class Cliente {
         return usuarioResponsable;
     }
 
-    public void setUsuarioResponsable(String usuarioResponsable)
-    {
+    public void setUsuarioResponsable(String usuarioResponsable) {
         this.usuarioResponsable = usuarioResponsable;
     }
 
@@ -149,8 +192,7 @@ public class Cliente {
         return fechaCreacion;
     }
 
-    public void setFechaCreacion(String fechaCreacion)
-    {
+    public void setFechaCreacion(String fechaCreacion) {
         this.fechaCreacion = fechaCreacion;
     }
 
@@ -158,8 +200,7 @@ public class Cliente {
         return horaCreacion;
     }
 
-    public void setHoraCreacion(String horaCreacion)
-    {
+    public void setHoraCreacion(String horaCreacion) {
         this.horaCreacion = horaCreacion;
     }
 

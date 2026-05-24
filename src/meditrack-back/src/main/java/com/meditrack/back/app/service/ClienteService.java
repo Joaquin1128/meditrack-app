@@ -2,10 +2,11 @@ package com.meditrack.back.app.service;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
+import com.meditrack.back.app.dto.ActualizarClienteRequest;
+import com.meditrack.back.app.dto.CrearClienteRequest;
 import com.meditrack.back.app.model.Cliente;
 import com.meditrack.back.app.model.TipoEstablecimiento;
 import com.meditrack.back.app.repository.ClienteRepository;
@@ -15,7 +16,7 @@ public class ClienteService {
 
     private final ClienteRepository clienteRepository;
 
-    public ClienteService(ClienteRepository clienteRepository){
+    public ClienteService(ClienteRepository clienteRepository) {
         this.clienteRepository = clienteRepository;
     }
 
@@ -24,61 +25,62 @@ public class ClienteService {
     }
 
     public Cliente obtenerPorId(String id) {
-        return clienteRepository
-                .findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException("Cliente no encontrado")
-                );
+        return clienteRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
     }
 
-    public Cliente crear(Map<String, Object> datos, String usuario) {
+    public Cliente crear(CrearClienteRequest datos, String usuario) {
         Cliente nuevo = new Cliente();
-
-        mapDataToCliente(datos, nuevo, usuario);
-
+        nuevo.setNombre(datos.getNombre().trim());
+        nuevo.setCuit(datos.getCuit().trim());
+        nuevo.setGln(datos.getGln().trim());
+        nuevo.setTelefono(datos.getTelefono().trim());
+        nuevo.setEmail(datos.getEmail().trim());
+        nuevo.setDireccion(datos.getDireccion().trim());
+        nuevo.setTipoEstablecimiento(TipoEstablecimiento.valueOf(datos.getTipoEstablecimiento()));
+        nuevo.setUsuarioResponsable(usuario);
+        if (datos.getLatitud() != null)
+            nuevo.setLatitud(BigDecimal.valueOf(datos.getLatitud()));
+        if (datos.getLongitud() != null)
+            nuevo.setLongitud(BigDecimal.valueOf(datos.getLongitud()));
+        if (datos.getPlaceId() != null)
+            nuevo.setPlaceId(datos.getPlaceId());
         return clienteRepository.save(nuevo);
     }
 
-    public Cliente actualizar(String id, Map<String, Object> body, String usuario) {
-        Cliente updateCliente = clienteRepository.findById(id)
-                                                .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
+    public Cliente actualizar(String id, ActualizarClienteRequest datos, String usuario) {
+        Cliente cliente = clienteRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
 
-        mapDataToCliente(body, updateCliente, usuario);
+        if (datos.tieneNombre())
+            cliente.setNombre(datos.getNombre().trim());
+        if (datos.tieneCuit())
+            cliente.setCuit(datos.getCuit().trim());
+        if (datos.tieneGln())
+            cliente.setGln(datos.getGln().trim());
+        if (datos.tieneTelefono())
+            cliente.setTelefono(datos.getTelefono().trim());
+        if (datos.tieneEmail())
+            cliente.setEmail(datos.getEmail().trim());
+        if (datos.tieneDireccion())
+            cliente.setDireccion(datos.getDireccion().trim());
+        if (datos.tieneTipoEstablecimiento())
+            cliente.setTipoEstablecimiento(TipoEstablecimiento.valueOf(datos.getTipoEstablecimiento()));
+        if (datos.getLatitud() != null)
+            cliente.setLatitud(BigDecimal.valueOf(datos.getLatitud()));
+        if (datos.getLongitud() != null)
+            cliente.setLongitud(BigDecimal.valueOf(datos.getLongitud()));
+        if (datos.getPlaceId() != null)
+            cliente.setPlaceId(datos.getPlaceId());
+        cliente.setUsuarioResponsable(usuario);
 
-        return clienteRepository.save(updateCliente);
+        return clienteRepository.save(cliente);
     }
 
     public Cliente cambiarEstado(String id) {
-        Cliente updateCliente = clienteRepository.findById(id)
-                                                .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
-
-        Boolean isActivo = updateCliente.isEstadoActivo();
-
-        updateCliente.setEstadoActivo(!isActivo);
-
-        return clienteRepository.save(updateCliente);
+        Cliente cliente = clienteRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
+        cliente.setEstadoActivo(!cliente.isEstadoActivo());
+        return clienteRepository.save(cliente);
     }
-
-    private void mapDataToCliente(Map<String, Object> body, Cliente cliente, String usuario) {
-        cliente.setNombre(body.get("nombre").toString());
-        cliente.setDireccion(body.get("direccion").toString());
-        cliente.setPlaceId(body.get("placeId").toString());
-
-        cliente.setTipoEstablecimiento(
-                TipoEstablecimiento.valueOf(
-                        body.get("tipoEstablecimiento").toString()));
-
-        cliente.setUsuarioResponsable(usuario);
-
-        if (body.get("latitud") != null) {
-            cliente.setLatitud(
-                    new BigDecimal(body.get("latitud").toString()));
-        }
-
-        if (body.get("longitud") != null) {
-            cliente.setLongitud(
-                    new BigDecimal(body.get("longitud").toString()));
-        }
-    }
-
 }
