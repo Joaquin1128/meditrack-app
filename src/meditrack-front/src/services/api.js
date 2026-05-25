@@ -160,6 +160,7 @@ export async function updateEnvio(id, data) {
       lote: d.lote,
       fechaVencimiento: d.fechaVencimiento
     }))
+
   };
 
   const res = await fetch(`${BASE_URL}/api/envios/${id}`, {
@@ -295,6 +296,7 @@ export async function updateUsuario(id, data) {
   return res.json(); 
 }
 
+// --- Medicamentos (stubs — conectar cuando exista el modelo) ---
 export async function getMedicamentos() {
   const res = await fetch(`${BASE_URL}/api/medicamentos?_t=${Date.now()}`, {
     headers: { ...getAuthHeaders() },
@@ -460,6 +462,7 @@ export async function getTrackingPublico(id) {
           ? "Tracking ID inválido"
           : "Error al consultar tracking";
 
+
     const limpio =
     !msgFromJson || msgFromJson.toLowerCase() === "not found"
     ? null: msgFromJson;
@@ -470,6 +473,53 @@ export async function getTrackingPublico(id) {
   return data;
 }
 
+export async function getTransportes(q, estado) {
+  const params = new URLSearchParams();
+  if (q) params.set("q", q);
+  if (estado) params.set("estado", estado);
+
+  const res = await fetch(`${BASE_URL}/api/transportes?${params.toString()}`, {
+    headers: { ...getAuthHeaders() }
+  });
+  await handleResponse(res);
+  if (!res.ok) throw new Error("Error al obtener transportes");
+  return res.json();
+}
+
+export async function createTransporte(data) {
+  const res = await fetch(`${BASE_URL}/api/transportes`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    body: JSON.stringify(data)
+  });
+  await handleResponse(res);
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body.error || "Error al crear transporte");
+  return body;
+}
+
+export async function updateTransporte(id, data) {
+  const res = await fetch(`${BASE_URL}/api/transportes/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    body: JSON.stringify(data)
+  });
+  await handleResponse(res);
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body.error || "Error al actualizar transporte");
+  return body;
+}
+
+export async function desactivarTransporte(id) {
+  const res = await fetch(`${BASE_URL}/api/transportes/${id}/desactivar`, {
+    method: "PATCH",
+    headers: { ...getAuthHeaders() }
+  });
+  await handleResponse(res);
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body.error || "Error al desactivar transporte");
+  return body;
+}
 //Clientes
 export async function getClientes() {
     const response = await fetch(`${BASE_URL}/api/clientes`,{
@@ -477,7 +527,7 @@ export async function getClientes() {
         }
     );
 
-    if (!response.ok) 
+    if (!response.ok)
         throw new Error('Error al obtener clientes');
     
     return response.json();
@@ -490,7 +540,7 @@ export async function getClienteById(id) {
         }
     );
 
-    if (!response.ok) 
+    if (!response.ok)
         throw new Error('Error al obtener cliente');
     
     return response.json();
@@ -564,3 +614,4 @@ export async function getReporte({ tema, fechaInicio, fechaFin, granularidad }) 
   }
   return res.json();
 }
+
