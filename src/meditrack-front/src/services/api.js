@@ -731,3 +731,42 @@ export async function createMail(mail) {
   return response.json();
 }
 
+export async function getNotificaciones() {
+  const res = await fetch(`${BASE_URL}/api/notificaciones?_t=${Date.now()}`, {
+    headers: { ...getAuthHeaders() },
+    cache: 'no-store'
+  });
+  await handleResponse(res);
+  if (!res.ok) throw new Error('Error al obtener notificaciones');
+  return res.json();
+}
+
+export async function getNotificacionesUnreadCount() {
+  const res = await fetch(`${BASE_URL}/api/notificaciones/sin-leer/cantidad?_t=${Date.now()}`, {
+    headers: { ...getAuthHeaders() },
+    cache: 'no-store'
+  });
+  await handleResponse(res);
+  if (!res.ok) throw new Error('Error al obtener conteo de notificaciones');
+  return res.json();
+}
+
+export async function marcarNotificacionLeida(id) {
+  const res = await fetch(`${BASE_URL}/api/notificaciones/${id}/leer`, {
+    method: 'PUT',
+    headers: { ...getAuthHeaders() }
+  });
+  await handleResponse(res);
+  if (!res.ok) throw new Error('Error al marcar notificación como leída');
+  return res.json();
+}
+
+export async function marcarTodasNotificacionesLeidas() {
+  const res = await fetch(`${BASE_URL}/api/notificaciones/leer-todas`, {
+    method: 'PUT',
+    headers: { ...getAuthHeaders() }
+  });
+  await handleResponse(res);
+  if (!res.ok) throw new Error('Error al marcar todas las notificaciones como leídas');
+  return res.json();
+}
