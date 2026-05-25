@@ -9,8 +9,6 @@ import {
 } from 'lucide-react';
 import DetalleMail from './DetalleMail';
 import { getMails } from '../../services/api';
-import { crearMailSistema } from '../../util/Util';
-
 
 const Mails = () => {
 
@@ -23,10 +21,6 @@ const Mails = () => {
 
     const isMobile = window.innerWidth < 768;
 
-    useEffect(() => {
-        obtenerMails();
-    }, []);
-
     const obtenerMails = async () => {
         try {
             setLoading(true);
@@ -38,6 +32,10 @@ const Mails = () => {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        obtenerMails();
+    }, []);
 
     const mailsFiltrados = mails.filter(x =>
         x.asunto?.toLowerCase().includes(busqueda.toLowerCase()) ||

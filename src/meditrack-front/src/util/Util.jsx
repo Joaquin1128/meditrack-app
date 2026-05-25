@@ -43,17 +43,13 @@ export const iconos = {
 export const DefaultIcon = Building2;
 export const PinIcon = MapPin;
 
-export async function crearMailSistema({asunto,remitente,destinatario,contenido,estado = 'Enviado'}) {
-    try {
-        const mail = {
-            asunto,
-            remitente,
-            destinatario,
-            contenido,
-            estado,
-        };
-        return await createMail(mail);
-    } catch (error) {
-        throw error;
-    }
+export async function crearMailSistema({ asunto, remitente, destinatario, contenido, estado = 'Enviado' }) {
+    const mail = {
+        asunto,
+        remitente,
+        destinatario,
+        contenido,
+        estado,
+    };
+    return await createMail(mail);
 }
