@@ -25,7 +25,7 @@ public class DetalleEnvio {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "envio_id", nullable = false)
-    @JsonIgnoreProperties({"detalles", "historial"})
+    @JsonIgnoreProperties({ "detalles", "historial" })
     private Envio envio;
 
     @ManyToOne(fetch = FetchType.EAGER)
@@ -38,6 +38,10 @@ public class DetalleEnvio {
     @Column(name = "lote")
     @JsonProperty("lote")
     private String lote;
+
+    @Column(name = "numero_serie")
+    @JsonProperty("numeroSerie")
+    private String numeroSerie;
 
     @Column(name = "fecha_vencimiento")
     @JsonProperty("fechaVencimiento")
@@ -84,6 +88,14 @@ public class DetalleEnvio {
 
     public void setLote(String lote) {
         this.lote = lote;
+    }
+
+    public String getNumeroSerie() {
+        return numeroSerie;
+    }
+
+    public void setNumeroSerie(String numeroSerie) {
+        this.numeroSerie = numeroSerie;
     }
 
     public String getFechaVencimiento() {

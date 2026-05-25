@@ -60,7 +60,8 @@ public class EnvioController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> obtenerPorId(@PathVariable String id, @RequestHeader(value = "Authorization", required = false) String authHeader) {
+    public ResponseEntity<?> obtenerPorId(@PathVariable String id,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
         try {
             autenticar(authHeader);
             Envio envio = envioService.buscarPorId(id);
@@ -74,25 +75,29 @@ public class EnvioController {
     }
 
     @PostMapping
-    public ResponseEntity<?> crear(@RequestBody Envio body, @RequestHeader(value = "Authorization", required = false) String authHeader) {
+    public ResponseEntity<?> crear(@RequestBody Envio body,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
         try {
             Sesion sesion = autenticar(authHeader);
-            if (sesion.getRole() != Role.SUPERVISOR) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Sin permisos para esta acción"));
+            if (sesion.getRole() != Role.OPERADOR && sesion.getRole() != Role.SUPERVISOR) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("error", "Sin permisos para crear envíos"));
             }
             Envio nuevo = envioService.crear(body, sesion.getNombre());
             return ResponseEntity.status(HttpStatus.CREATED).body(nuevo);
         } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
         }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> actualizar(@PathVariable String id, @RequestBody Envio body, @RequestHeader(value = "Authorization", required = false) String authHeader) {
+    public ResponseEntity<?> actualizar(@PathVariable String id, @RequestBody Envio body,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
         try {
             Sesion sesion = autenticar(authHeader);
             if (sesion.getRole() != Role.SUPERVISOR) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Solo supervisores pueden editar datos"));
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("error", "Solo supervisores pueden editar datos"));
             }
             Envio actualizado = envioService.actualizar(id, body, sesion.getNombre());
             return ResponseEntity.ok(actualizado);
@@ -101,12 +106,14 @@ public class EnvioController {
         }
     }
 
-@PutMapping("/{id}/estado")
-    public ResponseEntity<?> cambiarEstado(@PathVariable String id, @RequestBody Map<String, String> body, @RequestHeader(value = "Authorization", required = false) String authHeader) {
+    @PutMapping("/{id}/estado")
+    public ResponseEntity<?> cambiarEstado(@PathVariable String id, @RequestBody Map<String, String> body,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
         try {
             Sesion sesion = autenticar(authHeader);
             if (sesion.getRole() == Role.OPERADOR) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Sin permisos para actualizar estados"));
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("error", "Sin permisos para actualizar estados"));
             }
             EstadoEnvio nuevoEstado = EstadoEnvio.valueOf(body.get("estado"));
             String repartidorId = body.get("repartidorId");
@@ -114,7 +121,8 @@ public class EnvioController {
             String descripcionIncidencia = body.get("descripcionIncidencia");
             String receptorNombre = body.get("receptorNombre");
             String receptorDni = body.get("receptorDni");
-            return ResponseEntity.ok(envioService.actualizarEstado(id, nuevoEstado, sesion.getNombre(), repartidorId, tipoIncidencia, descripcionIncidencia, receptorNombre, receptorDni));
+            return ResponseEntity.ok(envioService.actualizarEstado(id, nuevoEstado, sesion.getNombre(), repartidorId,
+                    tipoIncidencia, descripcionIncidencia, receptorNombre, receptorDni));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "Estado no válido"));
         } catch (RuntimeException e) {
@@ -124,12 +132,15 @@ public class EnvioController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", e.getMessage()));
         }
     }
+
     @PutMapping("/{id}/reasignar")
-    public ResponseEntity<?> reasignarRepartidor(@PathVariable String id, @RequestBody Map<String, String> body, @RequestHeader(value = "Authorization", required = false) String authHeader) {
+    public ResponseEntity<?> reasignarRepartidor(@PathVariable String id, @RequestBody Map<String, String> body,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
         try {
             Sesion sesion = autenticar(authHeader);
             if (sesion.getRole() == Role.REPARTIDOR) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Los repartidores no pueden reasignar envíos"));
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("error", "Los repartidores no pueden reasignar envíos"));
             }
             String nuevoRepartidorId = body.get("repartidorId");
             return ResponseEntity.ok(envioService.reasignarRepartidor(id, nuevoRepartidorId, sesion.getNombre()));
@@ -141,7 +152,8 @@ public class EnvioController {
     }
 
     @GetMapping("/{id}/etiqueta")
-    public ResponseEntity<?> descargarEtiqueta(@PathVariable String id, @RequestHeader(value = "Authorization", required = false) String authHeader) {
+    public ResponseEntity<?> descargarEtiqueta(@PathVariable String id,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
         try {
             autenticar(authHeader);
             Envio envio = envioService.buscarPorId(id);
@@ -160,11 +172,13 @@ public class EnvioController {
     }
 
     @PutMapping("/{id}/cancelar")
-    public ResponseEntity<?> cancelar(@PathVariable String id, @RequestBody Map<String, String> body, @RequestHeader(value = "Authorization", required = false) String authHeader) {
+    public ResponseEntity<?> cancelar(@PathVariable String id, @RequestBody Map<String, String> body,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
         try {
             Sesion sesion = autenticar(authHeader);
             if (sesion.getRole() != Role.SUPERVISOR) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Sin permisos para cancelar envíos"));
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("error", "Sin permisos para cancelar envíos"));
             }
             String fecha = body.getOrDefault("fecha", LocalDate.now().toString());
             String hora = body.getOrDefault("hora", LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm")));

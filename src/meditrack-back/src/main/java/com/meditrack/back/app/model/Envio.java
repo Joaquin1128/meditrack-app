@@ -31,6 +31,22 @@ public class Envio {
     @Column(nullable = false)
     private String destino;
 
+    // IDs de cliente para poder acceder a GLN, CUIT, etc. cuando se necesite
+    @Column(name = "remitente_cliente_id")
+    private String remitenteClienteId;
+
+    @Column(name = "destinatario_cliente_id")
+    private String destinatarioClienteId;
+
+    @Column(name = "tipo_evento")
+    private String tipoEvento; // Distribución, Devolución, Cuarentena, Muestra médica, Exportación
+
+    @Column(name = "numero_remito")
+    private String numeroRemito;
+
+    @Column(name = "numero_factura")
+    private String numeroFactura;
+
     @Column(name = "fecha_estimada")
     private String fechaEstimada;
 
@@ -38,13 +54,13 @@ public class Envio {
     private String descripcionCarga;
 
     private String observaciones;
-    
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private EstadoEnvio estado;
 
     private String prioridad;
-    
+
     @Column(name = "motivo_cancelacion")
     private String motivoCancelacion;
 
@@ -97,7 +113,7 @@ public class Envio {
     }
 
     public Envio(String id, String remitente, String destinatario, String origen, String destino,
-                 String fechaEstimada, String descripcionCarga, String observaciones, EstadoEnvio estado, String usuario) {
+            String fechaEstimada, String descripcionCarga, String observaciones, EstadoEnvio estado, String usuario) {
         this.id = id;
         this.remitente = remitente;
         this.destinatario = destinatario;
@@ -110,89 +126,129 @@ public class Envio {
         this.usuarioResponsable = usuario;
     }
 
-    public String getId() { 
-        return id; 
+    public String getId() {
+        return id;
     }
 
-    public void setId(String id) { 
-        this.id = id; 
+    public void setId(String id) {
+        this.id = id;
     }
 
-    public String getRemitente() { 
-        return remitente; 
+    public String getRemitente() {
+        return remitente;
     }
 
-    public void setRemitente(String v) { 
-        this.remitente = v; 
+    public void setRemitente(String v) {
+        this.remitente = v;
     }
 
-    public String getDestinatario() { 
-        return destinatario; 
+    public String getDestinatario() {
+        return destinatario;
     }
 
-    public void setDestinatario(String v) { 
-        this.destinatario = v; 
+    public void setDestinatario(String v) {
+        this.destinatario = v;
     }
 
-    public String getOrigen() { 
-        return origen; 
+    public String getOrigen() {
+        return origen;
     }
 
-    public void setOrigen(String v) { 
-        this.origen = v; 
+    public void setOrigen(String v) {
+        this.origen = v;
     }
 
-    public String getDestino() { 
-        return destino; 
+    public String getDestino() {
+        return destino;
     }
 
-    public void setDestino(String v) { 
-        this.destino = v; 
+    public void setDestino(String v) {
+        this.destino = v;
     }
 
-    public String getFechaEstimada() { 
-        return fechaEstimada; 
+    public String getRemitenteClienteId() {
+        return remitenteClienteId;
     }
 
-    public void setFechaEstimada(String v) { 
-        this.fechaEstimada = v; 
+    public void setRemitenteClienteId(String remitenteClienteId) {
+        this.remitenteClienteId = remitenteClienteId;
     }
 
-    public String getDescripcionCarga(){
+    public String getDestinatarioClienteId() {
+        return destinatarioClienteId;
+    }
+
+    public void setDestinatarioClienteId(String destinatarioClienteId) {
+        this.destinatarioClienteId = destinatarioClienteId;
+    }
+
+    public String getTipoEvento() {
+        return tipoEvento;
+    }
+
+    public void setTipoEvento(String tipoEvento) {
+        this.tipoEvento = tipoEvento;
+    }
+
+    public String getNumeroRemito() {
+        return numeroRemito;
+    }
+
+    public void setNumeroRemito(String numeroRemito) {
+        this.numeroRemito = numeroRemito;
+    }
+
+    public String getNumeroFactura() {
+        return numeroFactura;
+    }
+
+    public void setNumeroFactura(String numeroFactura) {
+        this.numeroFactura = numeroFactura;
+    }
+
+    public String getFechaEstimada() {
+        return fechaEstimada;
+    }
+
+    public void setFechaEstimada(String v) {
+        this.fechaEstimada = v;
+    }
+
+    public String getDescripcionCarga() {
         return descripcionCarga;
     }
 
-    public void setDescripcionCarga(String v){
+    public void setDescripcionCarga(String v) {
         this.descripcionCarga = v;
     }
 
-    public String getObservaciones() { 
-        return observaciones; 
+    public String getObservaciones() {
+        return observaciones;
     }
 
-    public void setObservaciones(String v) { 
-        this.observaciones = v; 
+    public void setObservaciones(String v) {
+        this.observaciones = v;
     }
 
-    public EstadoEnvio getEstado() { 
-        return estado; 
+    public EstadoEnvio getEstado() {
+        return estado;
     }
 
-    public void setEstado(EstadoEnvio v) { 
-        this.estado = v; 
+    public void setEstado(EstadoEnvio v) {
+        this.estado = v;
     }
 
-    public List<HistorialEstado> getHistorial() { 
-        return historial; 
+    public List<HistorialEstado> getHistorial() {
+        return historial;
     }
 
-    public void setHistorial(List<HistorialEstado> historial) { 
-        this.historial = historial; 
+    public void setHistorial(List<HistorialEstado> historial) {
+        this.historial = historial;
     }
 
-    public void agregarHistorial(HistorialEstado entrada) { 
+    public void agregarHistorial(HistorialEstado entrada) {
         entrada.setEnvio(this);
-        this.historial.add(entrada); 
+        this.historial.add(entrada);
     }
 
     public List<DetalleEnvio> getDetalles() {
@@ -203,9 +259,8 @@ public class Envio {
         if (this.detalles != null) {
             this.detalles.clear();
             if (detalles != null) {
-                for (DetalleEnvio d : detalles) {
-                    this.agregarDetalle(d);
-                }
+                for (DetalleEnvio d : detalles)
+                    agregarDetalle(d);
             }
         } else {
             this.detalles = detalles;
@@ -234,68 +289,84 @@ public class Envio {
         }
     }
 
-    public String getPrioridad() { 
-        return prioridad; 
+    public String getPrioridad() {
+        return prioridad;
     }
 
-    public void setPrioridad(String prioridad) { 
-        this.prioridad = prioridad; 
+    public void setPrioridad(String prioridad) {
+        this.prioridad = prioridad;
     }
 
-    public String getUsuarioResponsable() { 
-        return usuarioResponsable; 
+    public String getUsuarioResponsable() {
+        return usuarioResponsable;
     }
 
-    public void setUsuarioResponsable(String usuarioResponsable) { 
-        this.usuarioResponsable = usuarioResponsable; 
+    public void setUsuarioResponsable(String usuarioResponsable) {
+        this.usuarioResponsable = usuarioResponsable;
     }
 
-    public String getRepartidorId() { 
-        return repartidorId; 
+    public String getRepartidorId() {
+        return repartidorId;
     }
 
-    public void setRepartidorId(String repartidorId) { 
-        this.repartidorId = repartidorId; 
+    public void setRepartidorId(String repartidorId) {
+        this.repartidorId = repartidorId;
     }
 
-    public String getFechaCreacion() { 
-        return fechaCreacion; 
+    public String getReceptorNombre() {
+        return receptorNombre;
     }
 
-    public void setFechaCreacion(String fechaCreacion) { 
-        this.fechaCreacion = fechaCreacion; 
+    public void setReceptorNombre(String receptorNombre) {
+        this.receptorNombre = receptorNombre;
     }
 
-    public String getHoraCreacion() { 
-        return horaCreacion; 
+    public String getReceptorDni() {
+        return receptorDni;
     }
 
-    public void setHoraCreacion(String horaCreacion) { 
-        this.horaCreacion = horaCreacion; 
+    public void setReceptorDni(String receptorDni) {
+        this.receptorDni = receptorDni;
     }
 
-    public String getMotivoCancelacion() { 
-        return motivoCancelacion; 
+    public String getFechaCreacion() {
+        return fechaCreacion;
     }
 
-    public void setMotivoCancelacion(String motivoCancelacion) { 
-        this.motivoCancelacion = motivoCancelacion; 
+    public void setFechaCreacion(String fechaCreacion) {
+        this.fechaCreacion = fechaCreacion;
     }
 
-    public String getFirmaCancelacion() { 
-        return firmaCancelacion; 
+    public String getHoraCreacion() {
+        return horaCreacion;
     }
 
-    public void setFirmaCancelacion(String firmaCancelacion) { 
-        this.firmaCancelacion = firmaCancelacion; 
+    public void setHoraCreacion(String horaCreacion) {
+        this.horaCreacion = horaCreacion;
     }
 
-    public String getFechaCancelacion() { 
-        return fechaCancelacion; 
+    public String getMotivoCancelacion() {
+        return motivoCancelacion;
     }
 
-    public void setFechaCancelacion(String fechaCancelacion) { 
-        this.fechaCancelacion = fechaCancelacion; 
+    public void setMotivoCancelacion(String motivoCancelacion) {
+        this.motivoCancelacion = motivoCancelacion;
+    }
+
+    public String getFirmaCancelacion() {
+        return firmaCancelacion;
+    }
+
+    public void setFirmaCancelacion(String firmaCancelacion) {
+        this.firmaCancelacion = firmaCancelacion;
+    }
+
+    public String getFechaCancelacion() {
+        return fechaCancelacion;
+    }
+
+    public void setFechaCancelacion(String fechaCancelacion) {
+        this.fechaCancelacion = fechaCancelacion;
     }
 
     public Double getLatitudOrigen() {
@@ -328,22 +399,6 @@ public class Envio {
 
     public void setLongitudDestino(Double longitudDestino) {
         this.longitudDestino = longitudDestino;
-    }
-
-    public String getReceptorNombre() {
-        return receptorNombre;
-    }
-
-    public void setReceptorNombre(String receptorNombre) {
-        this.receptorNombre = receptorNombre;
-    }
-
-    public String getReceptorDni() {
-        return receptorDni;
-    }
-
-    public void setReceptorDni(String receptorDni) {
-        this.receptorDni = receptorDni;
     }
 
 }

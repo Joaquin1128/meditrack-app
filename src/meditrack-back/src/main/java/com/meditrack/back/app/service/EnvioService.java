@@ -34,7 +34,8 @@ public class EnvioService {
         this.medicamentoRepository = medicamentoRepository;
     }
 
-    private void registrarHistorial(Envio e, String tipo, EstadoEnvio estado, String detalle, String f, String h, String u) {
+    private void registrarHistorial(Envio e, String tipo, EstadoEnvio estado, String detalle, String f, String h,
+            String u) {
         HistorialEstado evento = new HistorialEstado();
         evento.setTipo(tipo);
         evento.setEstado(estado);
@@ -68,17 +69,19 @@ public class EnvioService {
 
         if (nuevo.getDetalles() != null) {
             for (DetalleEnvio detalle : nuevo.getDetalles()) {
-                detalle.setEnvio(nuevo); 
-                
+                detalle.setEnvio(nuevo);
+
                 if (detalle.getMedicamento() != null && detalle.getMedicamento().getId() != null) {
                     Medicamento medReal = medicamentoRepository.findById(detalle.getMedicamento().getId())
-                            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Medicamento no encontrado"));
+                            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                                    "Medicamento no encontrado"));
                     detalle.setMedicamento(medReal);
                 }
             }
         }
 
-        registrarHistorial(nuevo, "CREACION", EstadoEnvio.PENDIENTE, "Creación del envío", nuevo.getFechaCreacion(), nuevo.getHoraCreacion(), usuario);
+        registrarHistorial(nuevo, "CREACION", EstadoEnvio.PENDIENTE, "Creación del envío", nuevo.getFechaCreacion(),
+                nuevo.getHoraCreacion(), usuario);
         return envioRepository.save(nuevo);
     }
 
@@ -109,6 +112,14 @@ public class EnvioService {
         envio.setLongitudOrigen(datosNuevos.getLongitudOrigen());
         envio.setLatitudDestino(datosNuevos.getLatitudDestino());
         envio.setLongitudDestino(datosNuevos.getLongitudDestino());
+        envio.setTipoEvento(datosNuevos.getTipoEvento());
+        envio.setNumeroRemito(datosNuevos.getNumeroRemito());
+        envio.setNumeroFactura(datosNuevos.getNumeroFactura());
+        
+        if (datosNuevos.getRemitenteClienteId() != null)
+            envio.setRemitenteClienteId(datosNuevos.getRemitenteClienteId());
+        if (datosNuevos.getDestinatarioClienteId() != null)
+            envio.setDestinatarioClienteId(datosNuevos.getDestinatarioClienteId());
 
         if (datosNuevos.getDetalles() != null) {
             List<DetalleEnvio> detallesActuales = envio.getDetalles();
@@ -117,7 +128,8 @@ public class EnvioService {
             for (DetalleEnvio detalleNuevo : datosNuevos.getDetalles()) {
                 if (detalleNuevo.getMedicamento() != null && detalleNuevo.getMedicamento().getId() != null) {
                     Medicamento medReal = medicamentoRepository.findById(detalleNuevo.getMedicamento().getId())
-                            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Medicamento no encontrado"));
+                            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                                    "Medicamento no encontrado"));
                     detalleNuevo.setMedicamento(medReal);
                 }
 
@@ -171,12 +183,14 @@ public class EnvioService {
             Integer cantNueva = entry.getValue();
 
             if (!medicamentosAntes.containsKey(nombreMed)) {
-                registrarHistorial(envio, "EDICION", envio.getEstado(), "+ " + nombreMed + " x" + cantNueva, fecha, hora, usuario);
+                registrarHistorial(envio, "EDICION", envio.getEstado(), "+ " + nombreMed + " x" + cantNueva, fecha,
+                        hora, usuario);
                 huboCambiosMedicamentos = true;
             } else {
                 Integer cantAntigua = medicamentosAntes.get(nombreMed);
                 if (!cantAntigua.equals(cantNueva)) {
-                    registrarHistorial(envio, "EDICION", envio.getEstado(), nombreMed + " x" + cantAntigua + " → " + cantNueva, fecha, hora, usuario);
+                    registrarHistorial(envio, "EDICION", envio.getEstado(),
+                            nombreMed + " x" + cantAntigua + " → " + cantNueva, fecha, hora, usuario);
                     huboCambiosMedicamentos = true;
                 }
             }
@@ -197,42 +211,45 @@ public class EnvioService {
     }
 
     @Transactional
-    public Envio actualizarEstado(String id, EstadoEnvio nuevoEstado, String usuario, String repartidorId, String tipoIncidencia, String descripcionIncidencia) {
-        return actualizarEstado(id, nuevoEstado, usuario, repartidorId, tipoIncidencia, descripcionIncidencia, null, null);
+    public Envio actualizarEstado(String id, EstadoEnvio nuevoEstado, String usuario, String repartidorId,
+            String tipoIncidencia, String descripcionIncidencia) {
+        return actualizarEstado(id, nuevoEstado, usuario, repartidorId, tipoIncidencia, descripcionIncidencia, null,
+                null);
     }
 
     @Transactional
-    public Envio actualizarEstado(String id, EstadoEnvio nuevoEstado, String usuario, String repartidorId, String tipoIncidencia, String descripcionIncidencia, String receptorNombre, String receptorDni) {
+    public Envio actualizarEstado(String id, EstadoEnvio nuevoEstado, String usuario, String repartidorId,
+            String tipoIncidencia, String descripcionIncidencia, String receptorNombre, String receptorDni) {
         Envio envio = buscarPorId(id);
         if (nuevoEstado == EstadoEnvio.ASIGNADO) {
             envio.setRepartidorId(repartidorId);
         }
         envio.setEstado(nuevoEstado);
-        
+
         if (nuevoEstado == EstadoEnvio.ENTREGADO) {
             envio.setReceptorNombre(receptorNombre);
             envio.setReceptorDni(receptorDni);
         }
-        
+
         String tipoHistorial = "CAMBIO_ESTADO";
         String detalleHistorial = "Cambio a " + nuevoEstado;
-        
+
         if (nuevoEstado == EstadoEnvio.INCIDENTE_REPORTADO) {
             tipoHistorial = tipoIncidencia;
             detalleHistorial = descripcionIncidencia;
-            
+
             Incidente incidente = new Incidente(
-                envio, 
-                tipoIncidencia != null ? tipoIncidencia : "Incidente Reportado", 
-                descripcionIncidencia != null ? descripcionIncidencia : "Sin descripción", 
-                LocalDate.now().toString(), 
-                LocalTime.now().toString().substring(0, 5), 
-                usuario
-            );
+                    envio,
+                    tipoIncidencia != null ? tipoIncidencia : "Incidente Reportado",
+                    descripcionIncidencia != null ? descripcionIncidencia : "Sin descripción",
+                    LocalDate.now().toString(),
+                    LocalTime.now().toString().substring(0, 5),
+                    usuario);
             envio.agregarIncidente(incidente);
         }
-        
-        registrarHistorial(envio, tipoHistorial, nuevoEstado, detalleHistorial, LocalDate.now().toString(), LocalTime.now().toString().substring(0, 5), usuario);
+
+        registrarHistorial(envio, tipoHistorial, nuevoEstado, detalleHistorial, LocalDate.now().toString(),
+                LocalTime.now().toString().substring(0, 5), usuario);
         return envioRepository.save(envio);
     }
 
@@ -244,7 +261,9 @@ public class EnvioService {
         }
         String repartidorAnterior = envio.getRepartidorId() != null ? envio.getRepartidorId() : "Sin asignar";
         envio.setRepartidorId(nuevoRepartidorId);
-        registrarHistorial(envio, "REASIGNACION", envio.getEstado(), "Cambio de repartidor: " + repartidorAnterior + " → " + nuevoRepartidorId, LocalDate.now().toString(), LocalTime.now().toString().substring(0, 5), usuario);
+        registrarHistorial(envio, "REASIGNACION", envio.getEstado(),
+                "Cambio de repartidor: " + repartidorAnterior + " → " + nuevoRepartidorId, LocalDate.now().toString(),
+                LocalTime.now().toString().substring(0, 5), usuario);
         return envioRepository.save(envio);
     }
 
@@ -265,7 +284,8 @@ public class EnvioService {
 
     public TrackingPublicoDTO obtenerTrackingPublico(String id) {
         Envio envio = buscarPorId(id);
-        return new TrackingPublicoDTO(envio.getId(), envio.getEstado().name(), envio.getFechaCreacion(), envio.getHoraCreacion());
+        return new TrackingPublicoDTO(envio.getId(), envio.getEstado().name(), envio.getFechaCreacion(),
+                envio.getHoraCreacion());
     }
 
 }
