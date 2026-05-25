@@ -623,3 +623,151 @@ export const getKpisDashboard = async (historico = false) => {
     if (!response.ok) throw new Error('Error al obtener las métricas');
     return await response.json();
 };
+
+//Mails
+export async function getMails() {
+  const response = await fetch(
+    `${BASE_URL}/api/mails?_t=${Date.now()}`,
+    {
+      headers: {
+        ...getAuthHeaders()
+      },
+      cache: 'no-store'
+    }
+  );
+
+  await handleResponse(response);
+
+  if (!response.ok) {
+    throw new Error('Error al obtener mails');
+  }
+
+  return response.json();
+}
+
+export async function getMailById(id) {
+  const response = await fetch(
+    `${BASE_URL}/api/mails/${id}?_t=${Date.now()}`,
+    {
+      headers: {
+        ...getAuthHeaders()
+      },
+      cache: 'no-store'
+    }
+  );
+
+  await handleResponse(response);
+
+  if (!response.ok) {
+    throw new Error('Mail no encontrado');
+  }
+
+  return response.json();
+}
+
+export async function buscarMails(texto) {
+  const response = await fetch(
+    `${BASE_URL}/api/mails/buscar?texto=${encodeURIComponent(texto)}`,
+    {
+      headers: {
+        ...getAuthHeaders()
+      }
+    }
+  );
+
+  await handleResponse(response);
+
+  if (!response.ok) {
+    throw new Error('Error al buscar mails');
+  }
+
+  return response.json();
+}
+
+export async function getMailsPorEstado(estado) {
+  const response = await fetch(
+    `${BASE_URL}/api/mails/estado/${estado}`,
+    {
+      headers: {
+        ...getAuthHeaders()
+      }
+    }
+  );
+
+  await handleResponse(response);
+
+  if (!response.ok) {
+    throw new Error('Error al obtener mails');
+  }
+
+  return response.json();
+}
+
+export async function createMail(mail) {
+  const response = await fetch(
+    `${BASE_URL}/api/mails`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAuthHeaders()
+      },
+      body: JSON.stringify(mail)
+    }
+  );
+
+  await handleResponse(response);
+
+  if (!response.ok) {
+
+    const error = await response
+      .json()
+      .catch(() => ({}));
+
+    throw new Error(
+      error.error || 'Error al crear mail'
+    );
+  }
+
+  return response.json();
+}
+
+export async function getNotificaciones() {
+  const res = await fetch(`${BASE_URL}/api/notificaciones?_t=${Date.now()}`, {
+    headers: { ...getAuthHeaders() },
+    cache: 'no-store'
+  });
+  await handleResponse(res);
+  if (!res.ok) throw new Error('Error al obtener notificaciones');
+  return res.json();
+}
+
+export async function getNotificacionesUnreadCount() {
+  const res = await fetch(`${BASE_URL}/api/notificaciones/sin-leer/cantidad?_t=${Date.now()}`, {
+    headers: { ...getAuthHeaders() },
+    cache: 'no-store'
+  });
+  await handleResponse(res);
+  if (!res.ok) throw new Error('Error al obtener conteo de notificaciones');
+  return res.json();
+}
+
+export async function marcarNotificacionLeida(id) {
+  const res = await fetch(`${BASE_URL}/api/notificaciones/${id}/leer`, {
+    method: 'PUT',
+    headers: { ...getAuthHeaders() }
+  });
+  await handleResponse(res);
+  if (!res.ok) throw new Error('Error al marcar notificación como leída');
+  return res.json();
+}
+
+export async function marcarTodasNotificacionesLeidas() {
+  const res = await fetch(`${BASE_URL}/api/notificaciones/leer-todas`, {
+    method: 'PUT',
+    headers: { ...getAuthHeaders() }
+  });
+  await handleResponse(res);
+  if (!res.ok) throw new Error('Error al marcar todas las notificaciones como leídas');
+  return res.json();
+}
