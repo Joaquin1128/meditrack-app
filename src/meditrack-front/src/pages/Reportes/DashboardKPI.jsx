@@ -105,9 +105,8 @@ const DashboardKPI = () => {
     }
 
     const maxEntregasDia = Math.max((data?.entregasDia || 0) * 2, 10);
-
     const datosSemicirculo = [
-        { value: 33.33, color: '#eab308' },
+        { value: 33.33, color: '#f3d785' },
         { value: 33.33, color: '#f59e0b' },
         { value: 33.34, color: '#ef4444' }
     ];
@@ -120,9 +119,7 @@ const DashboardKPI = () => {
                     <RefreshCcw size={18} />
                 </button>
             </div>
-            
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', marginBottom: '30px' }}>
-                
                 <div style={{ flex: '1 1 300px', background: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden', minHeight: '180px' }}>
                     <h4 style={{ margin: '0 0 15px 0', color: '#64748b', fontSize: '0.95rem', fontWeight: '600', width: '100%', textAlign: 'center' }}>Volumen de Envíos</h4>
                     <div style={{ width: '100%', height: '110px' }}>
@@ -140,7 +137,6 @@ const DashboardKPI = () => {
                         <FileText size={14} />
                     </button>
                 </div>
-
                 <div style={{ flex: '1 1 300px', background: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', overflow: 'hidden' }}>
                     <h4 style={{ margin: '0 0 15px 0', color: '#64748b', fontSize: '0.95rem', fontWeight: '600', width: '100%', textAlign: 'center' }}>Entregas de Hoy</h4>
                     <div style={{ position: 'relative', width: '160px', height: '85px', overflow: 'hidden', marginBottom: '10px' }}>
@@ -149,14 +145,12 @@ const DashboardKPI = () => {
                         <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, textAlign: 'center', fontSize: '24px', fontWeight: 'bold', color: '#1e293b' }}>{data?.entregasDia || 0}</div>
                     </div>
                     <span style={{ fontSize: '11px', color: '#94a3b8', marginBottom: '15px' }}>Operaciones completadas</span>
-                    <button onClick={() => navegarAReporte('volumen')} style={{ position: 'absolute', bottom: '10px', right: '10px', background: '#f1f5f9', border: 'none', borderRadius: '6px', padding: '6px 10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: '#475569', fontSize: '12px', fontWeight: '500', transition: 'background 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.background = '#e2e8f0'} onMouseLeave={(e) => e.currentTarget.style.background = '#f1f5f9'}>
+                    <button onClick={() => navegarAReporte('entregas')} style={{ position: 'absolute', bottom: '10px', right: '10px', background: '#f1f5f9', border: 'none', borderRadius: '6px', padding: '6px 10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: '#475569', fontSize: '12px', fontWeight: '500', transition: 'background 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.background = '#e2e8f0'} onMouseLeave={(e) => e.currentTarget.style.background = '#f1f5f9'}>
                         <FileText size={14} />
                     </button>
                 </div>
-
                 <div style={{ flex: '1 1 300px', background: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', overflow: 'hidden' }}>
                     <h4 style={{ margin: '0 0 5px 0', color: '#64748b', fontSize: '0.95rem', fontWeight: '600', width: '100%', textAlign: 'center' }}>Tasa de Incidencias</h4>
-                    
                     <div style={{ width: '180px', height: '100px', position: 'relative' }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
@@ -172,36 +166,20 @@ const DashboardKPI = () => {
                             </PieChart>
                         </ResponsiveContainer>
                     </div>
-
                     <div style={{ display: 'flex', gap: '25px', fontSize: '12px', marginTop: '10px', marginBottom: '15px', justifyContent: 'center', width: '100%' }}>
                         <span style={{ color: '#eab308', fontWeight: '700' }}>Bajo</span>
                         <span style={{ color: '#f59e0b', fontWeight: '700' }}>Medio</span>
                         <span style={{ color: '#ef4444', fontWeight: '700' }}>Crítico</span>
                     </div>
-
                     <button onClick={() => navegarAReporte('incidencias')} style={{ position: 'absolute', bottom: '10px', right: '10px', background: '#f1f5f9', border: 'none', borderRadius: '6px', padding: '6px 10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: '#475569', fontSize: '12px', fontWeight: '500', transition: 'background 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.background = '#e2e8f0'} onMouseLeave={(e) => e.currentTarget.style.background = '#f1f5f9'}>
                         <FileText size={14} />
                     </button>
                 </div>
-
-            </div>
-
-            <div style={{ background: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', marginBottom: '30px', display: 'flex', flexWrap: 'wrap', gap: '20px', justifyContent: 'space-around', alignItems: 'center' }}>
-                <div style={{ textAlign: 'center' }}>
-                    <span style={{ color: '#64748b', fontSize: '0.9rem', display: 'block', marginBottom: '5px' }}>Establecimiento que más Retira</span>
-                    <strong style={{ color: '#8b5cf6', fontSize: '1.2rem' }}>{data?.tipoClienteMasRetira || ''}</strong>
-                </div>
-                <div style={{ width: '1px', height: '40px', backgroundColor: '#e2e8f0', display: 'none', sm: 'block' }}></div>
-                <div style={{ textAlign: 'center' }}>
-                    <span style={{ color: '#64748b', fontSize: '0.9rem', display: 'block', marginBottom: '5px' }}>Establecimiento al que más se Envía</span>
-                    <strong style={{ color: '#ec4899', fontSize: '1.2rem' }}>{data?.tipoClienteMasRecibe || ''}</strong>
-                </div>
             </div>
 
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', marginBottom: '20px' }}>
-                
                 <div style={{ flex: '1 1 450px', background: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', minHeight: '380px', display: 'flex', flexDirection: 'column' }}>
-                    <h3 style={{ color: '#334155', borderBottom: '2px solid #f1f5f9', paddingBottom: '10px', marginTop: 0, fontSize: '1.1rem', marginBottom: '20px' }}>Top 5 Medicamentos Solicitados</h3>
+                    <h3 style={{ color: '#334155', borderBottom: '2px solid #f1f5f9', paddingBottom: '10px', marginTop: 0, fontSize: '1.1rem', marginBottom: '20px' }}>Medicamentos mas Solicitados</h3>
                     <div style={{ width: '100%', flex: 1, minHeight: '280px' }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={data?.topMedicamentos || []} margin={{ top: 10, right: 10, left: -20, bottom: 5 }}>
@@ -214,9 +192,8 @@ const DashboardKPI = () => {
                         </ResponsiveContainer>
                     </div>
                 </div>
-
                 <div style={{ flex: '1 1 450px', background: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', minHeight: '380px', display: 'flex', flexDirection: 'column' }}>
-                    <h3 style={{ color: '#334155', borderBottom: '2px solid #f1f5f9', paddingBottom: '10px', marginTop: 0, fontSize: '1.1rem', marginBottom: '20px' }}>Top 3 Clientes Destacados</h3>
+                    <h3 style={{ color: '#334155', borderBottom: '2px solid #f1f5f9', paddingBottom: '10px', marginTop: 0, fontSize: '1.1rem', marginBottom: '20px' }}>Clientes mas Destacados</h3>
                     <div style={{ width: '100%', flex: 1, minHeight: '280px' }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={data?.topClientes || []} margin={{ top: 10, right: 10, left: -20, bottom: 5 }}>
@@ -241,7 +218,6 @@ const DashboardKPI = () => {
                         </div>
                     )}
                 </div>
-
             </div>
         </div>
     );

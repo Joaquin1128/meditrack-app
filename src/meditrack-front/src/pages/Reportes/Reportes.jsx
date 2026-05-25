@@ -1,14 +1,22 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { getReporte } from '../../services/api';
 
 function Reportes() {
-  const [tema, setTema] = useState('volumen');
-  const [fechaInicio, setFechaInicio] = useState('');
-  const [fechaFin, setFechaFin] = useState('');
-  const [granularidad, setGranularidad] = useState('diaria');
+  const location = useLocation();
+  const [tema, setTema] = useState(location.state?.tema || 'volumen');
+  const [fechaInicio, setFechaInicio] = useState(location.state?.fechaInicio || '');
+  const [fechaFin, setFechaFin] = useState(location.state?.fechaFin || '');
+  const [granularidad, setGranularidad] = useState(location.state?.granularidad || 'diaria');
   const [resultados, setResultados] = useState(null);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (location.state?.autoEjecutar) {
+      handleGenerarReporte({ preventDefault: () => {} });
+    }
+  }, [location.state]);
 
   const handleGenerarReporte = async (e) => {
     e.preventDefault();
@@ -85,7 +93,6 @@ function Reportes() {
       <div className="card" style={{ padding: '20px', backgroundColor: '#fff', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
         <form onSubmit={handleGenerarReporte}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            
             <div className="form-group">
               <label style={{ fontWeight: '600', color: '#4B5563', fontSize: '14px' }}>Tema del Reporte *</label>
               <div style={buttonGroupStyle}>
