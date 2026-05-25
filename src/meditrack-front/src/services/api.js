@@ -177,7 +177,7 @@ export async function updateEnvio(id, data) {
   return res.json();
 }
 
-export async function updateEstadoEnvio(id, estado, fecha, hora, usuario, repartidorId = null,tipoIncidencia = null, descripcionIncidencia = null) {
+export async function updateEstadoEnvio(id, estado, fecha, hora, usuario, repartidorId = null,tipoIncidencia = null, descripcionIncidencia = null, receptorNombre = null, receptorDni = null) {
   const bodyData = { estado, fecha, hora, usuario };
   if (repartidorId) {
     bodyData.repartidorId = repartidorId;
@@ -185,6 +185,12 @@ export async function updateEstadoEnvio(id, estado, fecha, hora, usuario, repart
   if (estado === 'INCIDENTE_REPORTADO') {
     bodyData.tipoIncidencia = tipoIncidencia;
     bodyData.descripcionIncidencia = descripcionIncidencia;
+  }
+  if (receptorNombre) {
+    bodyData.receptorNombre = receptorNombre;
+  }
+  if (receptorDni) {
+    bodyData.receptorDni = receptorDni;
   }
   const res = await fetch(`${BASE_URL}/api/envios/${id}/estado`, {
     method: 'PUT',

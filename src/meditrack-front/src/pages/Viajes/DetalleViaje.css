@@ -2,21 +2,49 @@
 
 /* Animaciones y Transiciones */
 @keyframes pulseActive {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.08); }
-    100% { transform: scale(1); }
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.08);
+    }
+
+    100% {
+        transform: scale(1);
+    }
 }
+
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
+
 @keyframes slideUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
+
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 .animate-slide-up {
@@ -30,12 +58,15 @@
 .timeline-node-active-emerald {
     animation: pulseActive 2s infinite ease-in-out;
 }
+
 .timeline-node-active-blue {
     animation: pulseActive 2s infinite ease-in-out;
 }
+
 .timeline-node-active-purple {
     animation: pulseActive 2s infinite ease-in-out;
 }
+
 .timeline-node-active-amber {
     animation: pulseActive 2s infinite ease-in-out;
 }
@@ -121,7 +152,7 @@
     background-color: white;
     padding: 40px 32px;
     border-radius: 24px;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.04);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
     max-width: 440px;
     width: 100%;
     display: flex;
@@ -236,7 +267,7 @@
     background-color: white;
     border-radius: 24px;
     padding: 24px 16px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -304,7 +335,7 @@
     background-color: white;
     border-radius: 24px;
     padding: 24px;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.03);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.03);
 }
 
 .detalle-establishment-row {
@@ -464,7 +495,7 @@
     background-color: white;
     border-radius: 24px;
     padding: 24px;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.03);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.03);
 }
 
 .detalle-carga-title-row {
@@ -654,7 +685,7 @@
     padding: 40px 24px;
     text-align: center;
     margin-top: 20px;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.03);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.03);
 }
 
 .detalle-fin-jornada-icon {
@@ -705,12 +736,12 @@
 .modal-sheet-container {
     background-color: white;
     width: 100%;
-    maxWidth: 600px;
+    max-width: 800px;
     border-top-left-radius: 28px;
     border-top-right-radius: 28px;
     padding: 30px 24px;
     box-sizing: border-box;
-    box-shadow: 0 -10px 30px rgba(0,0,0,0.15);
+    box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.15);
 }
 
 .modal-drag-indicator {
@@ -809,5 +840,5 @@
     font-weight: bold;
     font-size: 15px;
     cursor: pointer;
-    box-shadow: 0 4px 12px rgba(16,185,129,0.2);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
 }
