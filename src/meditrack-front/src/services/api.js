@@ -649,7 +649,7 @@ export async function exportReporteCsv({ tema, fechaInicio, fechaFin, granularid
   }
 
   return await res.blob();
-
+}
 //Mails
 export async function getMails() {
   const response = await fetch(
