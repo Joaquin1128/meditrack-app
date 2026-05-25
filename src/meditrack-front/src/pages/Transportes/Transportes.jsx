@@ -19,9 +19,6 @@ function Transportes() {
     const [error, setError] = useState('');
     const [errorModal, setErrorModal] = useState('');
 
-    const [errorModal, setErrorModal] = useState('');
-
-
     // modal alta/edición
     const [modalAbierto, setModalAbierto] = useState(false);
     const [modoEdicion, setModoEdicion] = useState(false);
@@ -66,13 +63,9 @@ function Transportes() {
         };
         fetchInitial();
 
-<<<<<<< HEAD
     },[]);
 
 
-=======
-    }, []);
->>>>>>> 4690252 (mejoras en UI)
 
     const transportesFiltrados = useMemo(() => {
         const term = busqueda.toLowerCase().trim();
@@ -193,38 +186,7 @@ function Transportes() {
             setError(e.message || 'Error al actualizar estado');
         }
     };
-<<<<<<< HEAD
-=======
-    const toggleActivo = async (t) => {
-        if (!puedeEditar) return;
-        if (t.estadoOperativo === 'MANTENIMIENTO') return;
 
-        const anterior = t.estadoOperativo;
-        const nuevoEstado = anterior === 'ACTIVO' ? 'INACTIVO' : 'ACTIVO';
-
-        // ✅ 1) cambia UI al instante
-        setTransportes(prev =>
-            prev.map(x => (x.id === t.id ? { ...x, estadoOperativo: nuevoEstado } : x))
-        );
-
-        try {
-            setError('');
-            await updateTransporte(t.id, {
-                patente: t.patente,
-                tipoVehiculo: t.tipoVehiculo,
-                capacidadKg: t.capacidadKg,
-                capacidadLitros: t.capacidadLitros,
-                estadoOperativo: nuevoEstado,
-            });
-        } catch (e) {
-
-            setTransportes(prev =>
-                prev.map(x => (x.id === t.id ? { ...x, estadoOperativo: anterior } : x))
-            );
-            setError(e.message || 'Error al actualizar estado');
-        }
-    };
->>>>>>> 4690252 (mejoras en UI)
     const getEstadoStyle = (estado) => {
         const color = ESTADO_COLORS[estado] || '#6b7280';
         return {
