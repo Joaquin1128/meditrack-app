@@ -17,7 +17,7 @@ const DashboardKPI = () => {
             setError(null);
             const respuesta = await getKpisDashboard(modoHistorico);
             setData(respuesta);
-        } catch (err) {
+        } catch {
             setError('No se pudieron sincronizar los indicadores con la base de datos.');
         } finally {
             setLoading(false);
@@ -124,7 +124,7 @@ const DashboardKPI = () => {
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
-                    <button onClick={() => navegarAReporte('volumen')} style={{ position: 'absolute', bottom: '10px', right: '10px', background: '#f1f5f9', border: 'none', borderRadius: '6px', padding: '6px 10px', cursor: 'pointer', color: '#475569' }}>
+                    <button onClick={() => navegarAReporte('volumen')} style={{ position: 'absolute', bottom: '3px', right: '10px', background: '#f1f5f9', border: 'none', borderRadius: '6px', padding: '6px 10px', cursor: 'pointer', color: '#475569' }}>
                         <FileText size={14} />
                     </button>
                 </div>
@@ -135,7 +135,7 @@ const DashboardKPI = () => {
                         <div style={{ width: '160px', height: '160px', borderRadius: '50%', border: '20px solid transparent', borderTopColor: '#10b981', borderRightColor: '#10b981', boxSizing: 'border-box', position: 'absolute', top: 0, left: 0, transform: `rotate(${calcularRotacionCalibre(data?.entregasDia || 0, maxEntregasDia)}deg)`, transformOrigin: 'center center' }}></div>
                         <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, textAlign: 'center', fontSize: '24px', fontWeight: 'bold', color: '#1e293b' }}>{data?.entregasDia || 0}</div>
                     </div>
-                    <button onClick={() => navegarAReporte('entregas')} style={{ position: 'absolute', bottom: '10px', right: '10px', background: '#f1f5f9', border: 'none', borderRadius: '6px', padding: '6px 10px', cursor: 'pointer', color: '#475569' }}>
+                    <button onClick={() => navegarAReporte('entregas')} style={{ position: 'absolute', bottom: '3px', right: '10px', background: '#f1f5f9', border: 'none', borderRadius: '6px', padding: '6px 10px', cursor: 'pointer', color: '#475569' }}>
                         <FileText size={14} />
                     </button>
                 </div>
@@ -156,7 +156,7 @@ const DashboardKPI = () => {
                             </PieChart>
                         </ResponsiveContainer>
                     </div>
-                    <button onClick={() => navegarAReporte('incidencias')} style={{ position: 'absolute', bottom: '10px', right: '10px', background: '#f1f5f9', border: 'none', borderRadius: '6px', padding: '6px 10px', cursor: 'pointer', color: '#475569' }}>
+                    <button onClick={() => navegarAReporte('incidencias')} style={{ position: 'absolute', bottom: '3px', right: '10px', background: '#f1f5f9', border: 'none', borderRadius: '6px', padding: '6px 10px', cursor: 'pointer', color: '#475569' }}>
                         <FileText size={14} />
                     </button>
                 </div>
@@ -178,7 +178,7 @@ const DashboardKPI = () => {
                     </div>
                 </div>
                 <div style={{ flex: '1 1 450px', background: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', minHeight: '380px', display: 'flex', flexDirection: 'column' }}>
-                    <h3 style={{ color: '#334155', borderBottom: '2px solid #f1f5f9', paddingBottom: '10px', marginTop: 0, fontSize: '1.1rem', marginBottom: '20px' }}>Clientes mas Destacados</h3>
+                    <h3 style={{ color: '#334155', borderBottom: '2px solid #f1f5f9', paddingBottom: '10px', marginTop: 0, fontSize: '1.1rem', marginBottom: '20px' }}>Clientes Destacados</h3>
                     <div style={{ width: '100%', flex: 1, minHeight: '280px' }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={data?.topClientes || []} margin={{ top: 10, right: 10, left: -20, bottom: 5 }}>

@@ -12,14 +12,8 @@ function Reportes() {
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    if (location.state?.autoEjecutar) {
-      handleGenerarReporte({ preventDefault: () => {} });
-    }
-  }, [location.state]);
-
   const handleGenerarReporte = async (e) => {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
     if (!fechaInicio || !fechaFin) {
       setError('Por favor, seleccione un rango de fechas válido.');
       return;
@@ -36,6 +30,12 @@ function Reportes() {
       setCargando(false);
     }
   };
+
+  useEffect(() => {
+    if (location.state?.autoEjecutar) {
+      handleGenerarReporte();
+    }
+  }, [location.state]);
 
   const skeletonStyle = { backgroundColor: '#E5E7EB', borderRadius: '8px', height: '42px', width: '100%', marginBottom: '10px' };
   
