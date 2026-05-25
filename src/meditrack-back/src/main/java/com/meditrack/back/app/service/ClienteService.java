@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.meditrack.back.app.dto.ActualizarClienteRequest;
 import com.meditrack.back.app.dto.CrearClienteRequest;
+
 import com.meditrack.back.app.model.Cliente;
 import com.meditrack.back.app.model.TipoEstablecimiento;
 import com.meditrack.back.app.repository.ClienteRepository;
@@ -83,4 +84,5 @@ public class ClienteService {
         cliente.setEstadoActivo(!cliente.isEstadoActivo());
         return clienteRepository.save(cliente);
     }
+    
 }
