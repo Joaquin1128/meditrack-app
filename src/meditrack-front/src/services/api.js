@@ -621,7 +621,8 @@ export const getKpisDashboard = async (historico = false) => {
     const response = await fetch(`${BASE_URL}/api/kpis/dashboard?historico=${historico}`);
     if (!response.ok) throw new Error('Error al obtener las métricas');
     return await response.json();
-};
+}
+
 export async function exportReporteCsv({ tema, fechaInicio, fechaFin, granularidad }) {
   const params = new URLSearchParams({
     tema,
@@ -630,13 +631,13 @@ export async function exportReporteCsv({ tema, fechaInicio, fechaFin, granularid
     granularidad: granularidad || "diaria",
   });
 
-  const url = `${BASE_URL}/api/reportes/export/csv?${params.toString()}`;
+  const url = (`${BASE_URL}/api/reportes/export/csv?${params.toString()}`);
 
   const res = await fetch(url, {
-    method: "GET",
+    method: 'GET',
     headers: {
       ...getAuthHeaders(),
-      Accept: "text/csv",
+      Accept: 'text/csv',
     },
   });
 
