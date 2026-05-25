@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createEnvio, getMedicamentos, getClientes } from '../../services/api';
+import { crearMailSistema } from '../../util/Util';
 
 const FORM_INICIAL = {
   remitente: '',
@@ -128,7 +129,7 @@ function NuevoEnvio() {
       (m.idMedicamento === idMedicamento && m.lote === lote) ? { ...m, cantidad: val } : m
     ));
   };
-console.log("asd")
+
   const handleGuardar = async () => {
     const camposAValidar = ['remitente', 'destinatario', 'origen', 'destino', 'fechaEstimada'];
     const hayCamposVacios = camposAValidar.some(key => !form[key]?.trim());
@@ -162,6 +163,23 @@ console.log("asd")
       };
 
       await createEnvio(payload);
+
+      await crearMailSistema({
+        asunto: 'Nuevo envío creado',
+        remitente: 'sistema@meditrack.com',
+        destinatario: form.destinatario,
+        contenido: `Se creó un nuevo envío.
+
+        Remitente: ${form.remitente}
+        Destinatario: ${form.destinatario}
+        Dirección destino: ${form.destino}
+        Fecha estimada: ${form.fechaEstimada}
+
+        Medicamentos:
+        ${descripcionGenerada}
+      `
+      });
+
       navigate('/envios', { state: { success: true } });
     } catch (err) {
       setError(err.message || 'Error de conexión con el servidor.');
@@ -194,9 +212,15 @@ console.log("asd")
     setOpenDestinatario(false);
   };
 
-  const clientesFiltradosRemitente = busquedaRemitente.trim() ? clientes.filter(c => c.nombre?.toLowerCase().includes(busquedaRemitente.toLowerCase())) : clientes;
+  const clientesFiltradosRemitente = clientes.filter(c =>
+    c.estadoActivo &&
+    c.nombre?.toLowerCase().includes(busquedaRemitente.toLowerCase())
+  );
 
-  const clientesFiltradosDestinatario = clientes.filter(c => c.nombre?.toLowerCase().includes(busquedaDestinatario.toLowerCase()));
+  const clientesFiltradosDestinatario = clientes.filter(c =>
+    c.estadoActivo &&
+    c.nombre?.toLowerCase().includes(busquedaDestinatario.toLowerCase())
+  );
 
   const opcionesFiltradas = catalogo.filter(m =>
     m.estadoActivo &&

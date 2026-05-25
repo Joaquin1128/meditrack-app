@@ -86,6 +86,8 @@ function NuevaRuta() {
   const [fecha, setFecha] = useState(new Date().toISOString().split('T')[0]);
   const [repartidorId, setRepartidorId] = useState('');
   const [repartidores, setRepartidores] = useState([]);
+  const [todosRepartidores, setTodosRepartidores] = useState([]);
+  const [todasRutas, setTodasRutas] = useState([]);
 
   const [enviosDisponibles, setEnviosDisponibles] = useState([]);
   const [seleccionados, setSeleccionados] = useState([]);
@@ -95,12 +97,29 @@ function NuevaRuta() {
   const [paradas, setParadas] = useState([]);
 
   useEffect(() => {
-    getUsuarios()
-      .then(data => {
-        setRepartidores(data.filter(u => u.role === 'REPARTIDOR' && u.estadoActivo && !u.haciendoEntrega));
+    Promise.all([getUsuarios(), getRutas()])
+      .then(([usuarios, rutas]) => {
+        setTodosRepartidores(usuarios.filter(u => u.role === 'REPARTIDOR' && u.estadoActivo));
+        setTodasRutas(rutas);
       })
       .catch(console.error);
   }, []);
+
+  useEffect(() => {
+    const filtrados = todosRepartidores.filter(repartidor => {
+      const tieneRutaAsignada = todasRutas.some(r => 
+        r.repartidorId === repartidor.id && 
+        r.fecha === fecha && 
+        r.estado !== 'COMPLETADA'
+      );
+      return !tieneRutaAsignada;
+    });
+    setRepartidores(filtrados);
+
+    if (repartidorId && !filtrados.some(r => r.id === repartidorId)) {
+      setRepartidorId('');
+    }
+  }, [fecha, todosRepartidores, todasRutas]);
 
   const cargarEnviosDisponibles = async () => {
     setLoadingEnvios(true);
@@ -160,16 +179,23 @@ function NuevaRuta() {
     setGuardando(true);
     setError('');
     try {
-      // Cada envío recibe el número de parada de su última ocurrencia (la entrega).
-      // Si solo tiene retiro, se usa ese número. El orden refleja la posición en la ruta completa.
-      const ordenPorEnvio = {};
+      const retiroOrdenPorEnvio = {};
+      const entregaOrdenPorEnvio = {};
       paradas.forEach((p, idx) => {
-        ordenPorEnvio[p.envio.id] = idx + 1;
+        if (p.tipo === 'RETIRO') {
+          retiroOrdenPorEnvio[p.envio.id] = idx + 1;
+        } else if (p.tipo === 'ENTREGA') {
+          entregaOrdenPorEnvio[p.envio.id] = idx + 1;
+        }
       });
       await createRuta({
         fecha,
         repartidorId,
-        envios: seleccionados.map(e => ({ envioId: e.id, orden: ordenPorEnvio[e.id] ?? 999 })),
+        envios: seleccionados.map(e => ({
+          envioId: e.id,
+          retiroOrden: retiroOrdenPorEnvio[e.id] ?? 999,
+          entregaOrden: entregaOrdenPorEnvio[e.id] ?? 999,
+        })),
       });
       navigate('/rutas', { state: { success: true } });
     } catch (e) {

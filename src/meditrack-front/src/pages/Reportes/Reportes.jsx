@@ -1,17 +1,19 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { getReporte } from '../../services/api';
 
 function Reportes() {
-  const [tema, setTema] = useState('volumen');
-  const [fechaInicio, setFechaInicio] = useState('');
-  const [fechaFin, setFechaFin] = useState('');
-  const [granularidad, setGranularidad] = useState('diaria');
+  const location = useLocation();
+  const [tema, setTema] = useState(location.state?.tema || 'volumen');
+  const [fechaInicio, setFechaInicio] = useState(location.state?.fechaInicio || '');
+  const [fechaFin, setFechaFin] = useState(location.state?.fechaFin || '');
+  const [granularidad, setGranularidad] = useState(location.state?.granularidad || 'diaria');
   const [resultados, setResultados] = useState(null);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState('');
 
   const handleGenerarReporte = async (e) => {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
     if (!fechaInicio || !fechaFin) {
       setError('Por favor, seleccione un rango de fechas válido.');
       return;
@@ -28,6 +30,12 @@ function Reportes() {
       setCargando(false);
     }
   };
+
+  useEffect(() => {
+    if (location.state?.autoEjecutar) {
+      handleGenerarReporte();
+    }
+  }, [location.state]);
 
   const skeletonStyle = { backgroundColor: '#E5E7EB', borderRadius: '8px', height: '42px', width: '100%', marginBottom: '10px' };
   
@@ -85,7 +93,6 @@ function Reportes() {
       <div className="card" style={{ padding: '20px', backgroundColor: '#fff', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
         <form onSubmit={handleGenerarReporte}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            
             <div className="form-group">
               <label style={{ fontWeight: '600', color: '#4B5563', fontSize: '14px' }}>Tema del Reporte *</label>
               <div style={buttonGroupStyle}>
@@ -206,6 +213,7 @@ function Reportes() {
                     <tr>
                       <th style={{ padding: '12px 10px', textAlign: 'left' }}>Período</th>
                       <th style={{ padding: '12px 10px', textAlign: 'left' }}>Tipo de Incidencia</th>
+                      <th style={{ padding: '12px 10px', textAlign: 'left' }}>Descripción</th>
                       <th style={{ padding: '12px 10px', textAlign: 'left' }}>Repartidor Asignado</th>
                       <th style={{ padding: '12px 10px', textAlign: 'center' }}>Estado</th>
                     </tr>
@@ -214,9 +222,10 @@ function Reportes() {
                     {resultados.data.map((item, idx) => (
                       <tr key={idx} style={{ borderBottom: '1px solid #E5E7EB' }}>
                         <td style={{ padding: '10px', color: '#6B7280' }}>{item.periodo}</td>
-                        <td style={{ padding: '10px', fontWeight: '600' }}>{item.tipo}</td>
+                        <td style={{ padding: '10px', fontWeight: '600' }}>{item.tipo?.replaceAll('_', ' ')}</td>
+                        <td style={{ padding: '10px', color: '#4B5563', maxWidth: '300px', wordBreak: 'break-word' }}>{item.descripcion}</td>
                         <td style={{ padding: '10px' }}>{item.repartidor}</td>
-                        <td style={{ padding: '10px', textAlign: 'center' }}>{item.estado}</td>
+                        <td style={{ padding: '10px', textAlign: 'center' }}><span style={{ color: '#F59E0B', fontWeight: 'bold' }}>{item.estado?.replaceAll('_', ' ')}</span></td>
                       </tr>
                     ))}
                   </tbody>

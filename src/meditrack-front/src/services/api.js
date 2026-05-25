@@ -44,18 +44,18 @@ export async function logout() {
 }
 
 export const verify2fa = async (email, codigo) => {
-    const response = await fetch(`${BASE_URL}/auth/verify-2fa`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, codigo }),
-    });
+  const response = await fetch(`${BASE_URL}/auth/verify-2fa`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, codigo }),
+  });
 
-    if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Error al verificar el código 2FA');
-    }
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || 'Error al verificar el código 2FA');
+  }
 
-    return response.json();
+  return response.json();
 };
 
 export async function forgotPassword(email) {
@@ -107,8 +107,9 @@ export async function descargarEtiqueta(id) {
 }
 
 export async function getEnvios() {
-  const res = await fetch(`${BASE_URL}/api/envios`, {
+  const res = await fetch(`${BASE_URL}/api/envios?_t=${Date.now()}`, {
     headers: { ...getAuthHeaders() },
+    cache: 'no-store'
   });
   await handleResponse(res);
   if (!res.ok) throw new Error('Error al obtener envíos');
@@ -116,8 +117,9 @@ export async function getEnvios() {
 }
 
 export async function getEnvioById(id) {
-  const res = await fetch(`${BASE_URL}/api/envios/${id}`, {
+  const res = await fetch(`${BASE_URL}/api/envios/${id}?_t=${Date.now()}`, {
     headers: { ...getAuthHeaders() },
+    cache: 'no-store'
   });
   await handleResponse(res);
   if (!res.ok) throw new Error('Envío no encontrado');
@@ -158,6 +160,7 @@ export async function updateEnvio(id, data) {
       lote: d.lote,
       fechaVencimiento: d.fechaVencimiento
     }))
+
   };
 
   const res = await fetch(`${BASE_URL}/api/envios/${id}`, {
@@ -175,7 +178,7 @@ export async function updateEnvio(id, data) {
   return res.json();
 }
 
-export async function updateEstadoEnvio(id, estado, fecha, hora, usuario, repartidorId = null,tipoIncidencia = null, descripcionIncidencia = null) {
+export async function updateEstadoEnvio(id, estado, fecha, hora, usuario, repartidorId = null, tipoIncidencia = null, descripcionIncidencia = null, receptorNombre = null, receptorDni = null) {
   const bodyData = { estado, fecha, hora, usuario };
   if (repartidorId) {
     bodyData.repartidorId = repartidorId;
@@ -183,6 +186,12 @@ export async function updateEstadoEnvio(id, estado, fecha, hora, usuario, repart
   if (estado === 'INCIDENTE_REPORTADO') {
     bodyData.tipoIncidencia = tipoIncidencia;
     bodyData.descripcionIncidencia = descripcionIncidencia;
+  }
+  if (receptorNombre) {
+    bodyData.receptorNombre = receptorNombre;
+  }
+  if (receptorDni) {
+    bodyData.receptorDni = receptorDni;
   }
   const res = await fetch(`${BASE_URL}/api/envios/${id}/estado`, {
     method: 'PUT',
@@ -226,8 +235,9 @@ export async function cancelarEnvio(id, motivo, firma) {
 }
 
 export async function getUsuarios() {
-  const res = await fetch(`${BASE_URL}/api/usuarios`, {
+  const res = await fetch(`${BASE_URL}/api/usuarios?_t=${Date.now()}`, {
     headers: { ...getAuthHeaders() },
+    cache: 'no-store'
   });
   await handleResponse(res);
   if (!res.ok) throw new Error('Error al obtener usuarios');
@@ -235,8 +245,9 @@ export async function getUsuarios() {
 }
 
 export async function getUsuarioById(id) {
-  const res = await fetch(`${BASE_URL}/api/usuarios/${id}`, {
+  const res = await fetch(`${BASE_URL}/api/usuarios/${id}?_t=${Date.now()}`, {
     headers: { ...getAuthHeaders() },
+    cache: 'no-store'
   });
   await handleResponse(res);
   if (!res.ok) throw new Error('Usuario no encontrado');
@@ -265,31 +276,33 @@ export async function updateUsuario(id, data) {
     email: data.email,
     role: data.role
   };
- 
+
   if (data.password && data.password.trim() !== '') {
     dataLimpia.password = data.password;
   }
- 
+
   const res = await fetch(`${BASE_URL}/api/usuarios/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
     body: JSON.stringify(dataLimpia),
   });
- 
+
   await handleResponse(res);
- 
+
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     if (err.errores) throw { type: 'validation', errores: err.errores };
     throw new Error(err.error || 'Error al actualizar usuario');
   }
- 
+
   return res.json();
 }
 
+// --- Medicamentos ---
 export async function getMedicamentos() {
-  const res = await fetch(`${BASE_URL}/api/medicamentos`, {
+  const res = await fetch(`${BASE_URL}/api/medicamentos?_t=${Date.now()}`, {
     headers: { ...getAuthHeaders() },
+    cache: 'no-store'
   });
   await handleResponse(res);
   if (!res.ok) throw new Error('Error al obtener medicamentos');
@@ -297,8 +310,9 @@ export async function getMedicamentos() {
 }
 
 export async function getMedicamentoById(id) {
-  const res = await fetch(`${BASE_URL}/api/medicamentos/${id}`, {
+  const res = await fetch(`${BASE_URL}/api/medicamentos/${id}?_t=${Date.now()}`, {
     headers: { ...getAuthHeaders() },
+    cache: 'no-store'
   });
 
   await handleResponse(res);
@@ -351,7 +365,7 @@ export async function inactivarMedicamento(id) {
       'Content-Type': 'application/json',
       ...getAuthHeaders(),
     },
-    body: JSON.stringify({}) 
+    body: JSON.stringify({})
   });
 
   await handleResponse(res);
@@ -376,9 +390,11 @@ export async function toggleEstadoUsuario(id) {
   }
 }
 
+
 export async function getRutas() {
-  const res = await fetch(`${BASE_URL}/api/rutas`, {
+  const res = await fetch(`${BASE_URL}/api/rutas?_t=${Date.now()}`, {
     headers: { ...getAuthHeaders() },
+    cache: 'no-store'
   });
   await handleResponse(res);
   if (!res.ok) throw new Error('Error al obtener rutas');
@@ -386,8 +402,9 @@ export async function getRutas() {
 }
 
 export async function getRutaById(id) {
-  const res = await fetch(`${BASE_URL}/api/rutas/${id}`, {
+  const res = await fetch(`${BASE_URL}/api/rutas/${id}?_t=${Date.now()}`, {
     headers: { ...getAuthHeaders() },
+    cache: 'no-store'
   });
   await handleResponse(res);
   if (!res.ok) throw new Error('Ruta no encontrada');
@@ -448,9 +465,10 @@ export async function getTrackingPublico(id) {
           ? "Tracking ID inválido"
           : "Error al consultar tracking";
 
+
     const limpio =
-    !msgFromJson || msgFromJson.toLowerCase() === "not found"
-    ? null: msgFromJson;
+      !msgFromJson || msgFromJson.toLowerCase() === "not found"
+        ? null : msgFromJson;
 
     throw new Error(limpio || msgByStatus);
   }
@@ -458,80 +476,128 @@ export async function getTrackingPublico(id) {
   return data;
 }
 
+export async function getTransportes(q, estado) {
+  const params = new URLSearchParams();
+  if (q) params.set("q", q);
+  if (estado) params.set("estado", estado);
+
+  const res = await fetch(`${BASE_URL}/api/transportes?${params.toString()}`, {
+    headers: { ...getAuthHeaders() }
+  });
+  await handleResponse(res);
+  if (!res.ok) throw new Error("Error al obtener transportes");
+  return res.json();
+}
+
+export async function createTransporte(data) {
+  const res = await fetch(`${BASE_URL}/api/transportes`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    body: JSON.stringify(data)
+  });
+  await handleResponse(res);
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body.error || "Error al crear transporte");
+  return body;
+}
+
+export async function updateTransporte(id, data) {
+  const res = await fetch(`${BASE_URL}/api/transportes/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    body: JSON.stringify(data)
+  });
+  await handleResponse(res);
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body.error || "Error al actualizar transporte");
+  return body;
+}
+
+export async function desactivarTransporte(id) {
+  const res = await fetch(`${BASE_URL}/api/transportes/${id}/desactivar`, {
+    method: "PATCH",
+    headers: { ...getAuthHeaders() }
+  });
+  await handleResponse(res);
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body.error || "Error al desactivar transporte");
+  return body;
+}
+
 //Clientes
 export async function getClientes() {
-    const response = await fetch(`${BASE_URL}/api/clientes`,{
-            headers: { ...getAuthHeaders() },
-        }
-    );
+  const response = await fetch(`${BASE_URL}/api/clientes`, {
+    headers: { ...getAuthHeaders() },
+  }
+  );
 
-    if (!response.ok) 
-        throw new Error('Error al obtener clientes');
-    
-    return response.json();
+  if (!response.ok)
+    throw new Error('Error al obtener clientes');
+
+  return response.json();
 }
 
 export async function getClienteById(id) {
-    const response = await fetch(`${BASE_URL}/api/clientes/${id}`,
-        {
-            headers: { ...getAuthHeaders() },
-        }
-    );
+  const response = await fetch(`${BASE_URL}/api/clientes/${id}`,
+    {
+      headers: { ...getAuthHeaders() },
+    }
+  );
 
-    if (!response.ok) 
-        throw new Error('Error al obtener cliente');
-    
-    return response.json();
+  if (!response.ok)
+    throw new Error('Error al obtener cliente');
+
+  return response.json();
 }
 
 export async function createCliente(cliente) {
-    const response = await fetch(`${BASE_URL}/api/clientes`,
-        {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-        body: JSON.stringify(cliente)
-      }
-    );
+  const response = await fetch(`${BASE_URL}/api/clientes`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+      body: JSON.stringify(cliente)
+    }
+  );
 
   if (!response.ok) {
     const error = await response.json();
-        throw new Error(error.error || 'Error al crear cliente');
-    }
+    throw new Error(error.error || 'Error al crear cliente');
+  }
 
-    return response.json();
+  return response.json();
 }
 
 export async function updateCliente(id, cliente) {
-    const response = await fetch(`${BASE_URL}/api/clientes/${id}`,
-        {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-            body: JSON.stringify(cliente)
-        }
-    );
-
-    if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error ||'Error al actualizar cliente');
+  const response = await fetch(`${BASE_URL}/api/clientes/${id}`,
+    {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+      body: JSON.stringify(cliente)
     }
+  );
 
-    return response.json();
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Error al actualizar cliente');
+  }
+
+  return response.json();
 }
 
 export async function cambiarEstadoCliente(id) {
-    const response = await fetch(`${BASE_URL}/api/clientes/${id}/cambiarEstado`,
-        {
-            method: 'PUT',
-            headers: { ...getAuthHeaders() },
-        }
-    );
-
-    if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Error al cambiar estado');
+  const response = await fetch(`${BASE_URL}/api/clientes/${id}/cambiarEstado`,
+    {
+      method: 'PUT',
+      headers: { ...getAuthHeaders() },
     }
+  );
 
-    return response.json();
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Error al cambiar estado');
+  }
+
+  return response.json();
 }
 
 export async function getReporte({ tema, fechaInicio, fechaFin, granularidad }) {
@@ -550,5 +616,159 @@ export async function getReporte({ tema, fechaInicio, fechaFin, granularidad }) 
     const err = await res.json().catch(() => ({}));
     throw new Error(err.error || 'Error al generar el reporte operativo');
   }
+  return res.json();
+}
+
+export const getKpisDashboard = async (historico = false) => {
+  const response = await fetch(`${BASE_URL}/api/kpis/dashboard?historico=${historico}`);
+  if (!response.ok) throw new Error('Error al obtener las métricas');
+  return await response.json();
+};
+
+//Mails
+export async function getMails() {
+  const response = await fetch(
+    `${BASE_URL}/api/mails?_t=${Date.now()}`,
+    {
+      headers: {
+        ...getAuthHeaders()
+      },
+      cache: 'no-store'
+    }
+  );
+
+  await handleResponse(response);
+
+  if (!response.ok) {
+    throw new Error('Error al obtener mails');
+  }
+
+  return response.json();
+}
+
+export async function getMailById(id) {
+  const response = await fetch(
+    `${BASE_URL}/api/mails/${id}?_t=${Date.now()}`,
+    {
+      headers: {
+        ...getAuthHeaders()
+      },
+      cache: 'no-store'
+    }
+  );
+
+  await handleResponse(response);
+
+  if (!response.ok) {
+    throw new Error('Mail no encontrado');
+  }
+
+  return response.json();
+}
+
+export async function buscarMails(texto) {
+  const response = await fetch(
+    `${BASE_URL}/api/mails/buscar?texto=${encodeURIComponent(texto)}`,
+    {
+      headers: {
+        ...getAuthHeaders()
+      }
+    }
+  );
+
+  await handleResponse(response);
+
+  if (!response.ok) {
+    throw new Error('Error al buscar mails');
+  }
+
+  return response.json();
+}
+
+export async function getMailsPorEstado(estado) {
+  const response = await fetch(
+    `${BASE_URL}/api/mails/estado/${estado}`,
+    {
+      headers: {
+        ...getAuthHeaders()
+      }
+    }
+  );
+
+  await handleResponse(response);
+
+  if (!response.ok) {
+    throw new Error('Error al obtener mails');
+  }
+
+  return response.json();
+}
+
+export async function createMail(mail) {
+  const response = await fetch(
+    `${BASE_URL}/api/mails`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAuthHeaders()
+      },
+      body: JSON.stringify(mail)
+    }
+  );
+
+  await handleResponse(response);
+
+  if (!response.ok) {
+
+    const error = await response
+      .json()
+      .catch(() => ({}));
+
+    throw new Error(
+      error.error || 'Error al crear mail'
+    );
+  }
+
+  return response.json();
+}
+
+export async function getNotificaciones() {
+  const res = await fetch(`${BASE_URL}/api/notificaciones?_t=${Date.now()}`, {
+    headers: { ...getAuthHeaders() },
+    cache: 'no-store'
+  });
+  await handleResponse(res);
+  if (!res.ok) throw new Error('Error al obtener notificaciones');
+  return res.json();
+}
+
+export async function getNotificacionesUnreadCount() {
+  const res = await fetch(`${BASE_URL}/api/notificaciones/sin-leer/cantidad?_t=${Date.now()}`, {
+    headers: { ...getAuthHeaders() },
+    cache: 'no-store'
+  });
+  await handleResponse(res);
+  if (!res.ok) throw new Error('Error al obtener conteo de notificaciones');
+  return res.json();
+}
+
+export async function marcarNotificacionLeida(id) {
+  const res = await fetch(`${BASE_URL}/api/notificaciones/${id}/leer`, {
+    method: 'PUT',
+    headers: { ...getAuthHeaders() }
+  });
+  await handleResponse(res);
+  if (!res.ok) throw new Error('Error al marcar notificación como leída');
+  return res.json();
+}
+
+export async function marcarTodasNotificacionesLeidas() {
+  const res = await fetch(`${BASE_URL}/api/notificaciones/leer-todas`, {
+    method: 'PUT',
+    headers: { ...getAuthHeaders() }
+  });
+  await handleResponse(res);
+  if (!res.ok) throw new Error('Error al marcar todas las notificaciones como leídas');
   return res.json();
 }
