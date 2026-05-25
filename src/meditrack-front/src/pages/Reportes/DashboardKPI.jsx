@@ -9,12 +9,13 @@ const DashboardKPI = () => {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [historico, setHistorico] = useState(false);
 
-    const cargarDatos = async () => {
+    const cargarDatos = async (modoHistorico = false) => {
         try {
             setLoading(true);
             setError(null);
-            const respuesta = await getKpisDashboard();
+            const respuesta = await getKpisDashboard(modoHistorico);
             setData(respuesta);
         } catch (err) {
             setError('No se pudieron sincronizar los indicadores con la base de datos.');
@@ -24,8 +25,12 @@ const DashboardKPI = () => {
     };
 
     useEffect(() => {
-        cargarDatos();
-    }, []);
+        cargarDatos(historico);
+    }, [historico]);
+
+    const obtenerDatosFiltrados = (volumen) => {
+        return (volumen || []).filter(item => item.cantidad > 0);
+    };
 
     const calcularRotacionCalibre = (valor, maximo) => {
         const porcentaje = Math.min(Math.max(valor / maximo, 0), 1);
@@ -34,10 +39,12 @@ const DashboardKPI = () => {
 
     const navegarAReporte = (temaReporte) => {
         const hoy = new Date().toISOString().split('T')[0];
+        const fechaInicio = historico ? '2020-01-01' : hoy;
+        
         navigate('/reportes', {
             state: {
                 tema: temaReporte,
-                fechaInicio: hoy,
+                fechaInicio: fechaInicio,
                 fechaFin: hoy,
                 granularidad: 'diaria',
                 autoEjecutar: true
@@ -68,29 +75,6 @@ const DashboardKPI = () => {
                     <div style={{ height: '32px', width: '250px', backgroundColor: '#cbd5e1', borderRadius: '6px', animation: 'pulse 1.5s infinite ease-in-out' }}></div>
                     <div style={{ height: '38px', width: '38px', backgroundColor: '#cbd5e1', borderRadius: '50%', animation: 'pulse 1.5s infinite ease-in-out' }}></div>
                 </div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', marginBottom: '30px' }}>
-                    {[1, 2, 3].map((i) => (
-                        <div key={i} style={{ flex: '1 1 300px', background: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', minHeight: '180px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                            <div style={{ height: '80px', width: '160px', backgroundColor: '#e2e8f0', borderRadius: '80px 80px 0 0', marginBottom: '10px' }}></div>
-                            <div style={{ height: '16px', width: '40%', backgroundColor: '#cbd5e1', borderRadius: '4px' }}></div>
-                        </div>
-                    ))}
-                </div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px' }}>
-                    {[1, 2].map((i) => (
-                        <div key={i} style={{ flex: '1 1 400px', background: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', minHeight: '350px' }}>
-                            <div style={{ height: '24px', width: '40%', backgroundColor: '#cbd5e1', borderRadius: '4px', marginBottom: '25px' }}></div>
-                            <div style={{ height: '250px', backgroundColor: '#f1f5f9', borderRadius: '6px' }}></div>
-                        </div>
-                    ))}
-                </div>
-                <style>{`
-                    @keyframes pulse {
-                        0% { opacity: 0.6; }
-                        50% { opacity: 1; }
-                        100% { opacity: 0.6; }
-                    }
-                `}</style>
             </div>
         );
     }
@@ -99,7 +83,7 @@ const DashboardKPI = () => {
         return (
             <div style={{ padding: '20px', color: '#ef4444', textAlign: 'center', fontFamily: 'sans-serif', backgroundColor: '#f8fafc', minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
                 <p style={{ fontWeight: '500', fontSize: '16px' }}>{error}</p>
-                <button onClick={cargarDatos} style={{ marginTop: '10px', padding: '8px 16px', background: '#10b981', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>Reintentar</button>
+                <button onClick={() => cargarDatos(historico)} style={{ marginTop: '10px', padding: '8px 16px', background: '#10b981', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Reintentar</button>
             </div>
         );
     }
@@ -115,16 +99,23 @@ const DashboardKPI = () => {
         <div style={{ padding: '20px', fontFamily: 'sans-serif', backgroundColor: '#f8fafc', minHeight: '100vh' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px', flexWrap: 'wrap', gap: '10px' }}>
                 <h2 style={{ color: '#1e293b', margin: 0, fontSize: '1.5rem' }}>Panel de Control Meditrack</h2>
-                <button onClick={cargarDatos} style={{ background: 'white', color: '#64748b', border: '1px solid #e2e8f0', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', transition: 'all 0.2s' }} onMouseEnter={(e) => { e.currentTarget.style.color = '#10b981'; e.currentTarget.style.borderColor = '#10b981'; }} onMouseLeave={(e) => { e.currentTarget.style.color = '#64748b'; e.currentTarget.style.borderColor = '#e2e8f0'; }}>
-                    <RefreshCcw size={18} />
-                </button>
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', background: '#e2e8f0', borderRadius: '6px', padding: '2px' }}>
+                        <button onClick={() => setHistorico(false)} style={{ padding: '6px 12px', borderRadius: '4px', border: 'none', background: !historico ? 'white' : 'transparent', color: !historico ? '#1e293b' : '#64748b', cursor: 'pointer', fontSize: '12px', fontWeight: '600' }}>Hoy</button>
+                        <button onClick={() => setHistorico(true)} style={{ padding: '6px 12px', borderRadius: '4px', border: 'none', background: historico ? 'white' : 'transparent', color: historico ? '#1e293b' : '#64748b', cursor: 'pointer', fontSize: '12px', fontWeight: '600' }}>Histórico</button>
+                    </div>
+                    <button onClick={() => cargarDatos(historico)} style={{ background: 'white', color: '#64748b', border: '1px solid #e2e8f0', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                        <RefreshCcw size={18} />
+                    </button>
+                </div>
             </div>
+            
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', marginBottom: '30px' }}>
                 <div style={{ flex: '1 1 300px', background: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden', minHeight: '180px' }}>
                     <h4 style={{ margin: '0 0 15px 0', color: '#64748b', fontSize: '0.95rem', fontWeight: '600', width: '100%', textAlign: 'center' }}>Volumen de Envíos</h4>
                     <div style={{ width: '100%', height: '110px' }}>
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={data?.volumenEnvios || []} margin={{ top: 5, right: 10, left: -30, bottom: 0 }}>
+                            <BarChart data={obtenerDatosFiltrados(data?.volumenEnvios)} margin={{ top: 5, right: 10, left: -30, bottom: 0 }}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                                 <XAxis dataKey="estado" stroke="#94a3b8" fontSize={10} tickLine={false} />
                                 <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} allowDecimals={false} />
@@ -133,19 +124,18 @@ const DashboardKPI = () => {
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
-                    <button onClick={() => navegarAReporte('volumen')} style={{ position: 'absolute', bottom: '10px', right: '10px', background: '#f1f5f9', border: 'none', borderRadius: '6px', padding: '6px 10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: '#475569', fontSize: '12px', fontWeight: '500', transition: 'background 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.background = '#e2e8f0'} onMouseLeave={(e) => e.currentTarget.style.background = '#f1f5f9'}>
+                    <button onClick={() => navegarAReporte('volumen')} style={{ position: 'absolute', bottom: '10px', right: '10px', background: '#f1f5f9', border: 'none', borderRadius: '6px', padding: '6px 10px', cursor: 'pointer', color: '#475569' }}>
                         <FileText size={14} />
                     </button>
                 </div>
                 <div style={{ flex: '1 1 300px', background: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', overflow: 'hidden' }}>
-                    <h4 style={{ margin: '0 0 15px 0', color: '#64748b', fontSize: '0.95rem', fontWeight: '600', width: '100%', textAlign: 'center' }}>Entregas de Hoy</h4>
+                    <h4 style={{ margin: '0 0 15px 0', color: '#64748b', fontSize: '0.95rem', fontWeight: '600', width: '100%', textAlign: 'center' }}>Entregas {historico ? 'Totales' : 'de Hoy'}</h4>
                     <div style={{ position: 'relative', width: '160px', height: '85px', overflow: 'hidden', marginBottom: '10px' }}>
                         <div style={{ width: '160px', height: '160px', borderRadius: '50%', border: '20px solid #e2e8f0', boxSizing: 'border-box', position: 'absolute', top: 0, left: 0 }}></div>
                         <div style={{ width: '160px', height: '160px', borderRadius: '50%', border: '20px solid transparent', borderTopColor: '#10b981', borderRightColor: '#10b981', boxSizing: 'border-box', position: 'absolute', top: 0, left: 0, transform: `rotate(${calcularRotacionCalibre(data?.entregasDia || 0, maxEntregasDia)}deg)`, transformOrigin: 'center center' }}></div>
                         <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, textAlign: 'center', fontSize: '24px', fontWeight: 'bold', color: '#1e293b' }}>{data?.entregasDia || 0}</div>
                     </div>
-                    <span style={{ fontSize: '11px', color: '#94a3b8', marginBottom: '15px' }}>Operaciones completadas</span>
-                    <button onClick={() => navegarAReporte('entregas')} style={{ position: 'absolute', bottom: '10px', right: '10px', background: '#f1f5f9', border: 'none', borderRadius: '6px', padding: '6px 10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: '#475569', fontSize: '12px', fontWeight: '500', transition: 'background 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.background = '#e2e8f0'} onMouseLeave={(e) => e.currentTarget.style.background = '#f1f5f9'}>
+                    <button onClick={() => navegarAReporte('entregas')} style={{ position: 'absolute', bottom: '10px', right: '10px', background: '#f1f5f9', border: 'none', borderRadius: '6px', padding: '6px 10px', cursor: 'pointer', color: '#475569' }}>
                         <FileText size={14} />
                     </button>
                 </div>
@@ -166,12 +156,7 @@ const DashboardKPI = () => {
                             </PieChart>
                         </ResponsiveContainer>
                     </div>
-                    <div style={{ display: 'flex', gap: '25px', fontSize: '12px', marginTop: '10px', marginBottom: '15px', justifyContent: 'center', width: '100%' }}>
-                        <span style={{ color: '#eab308', fontWeight: '700' }}>Bajo</span>
-                        <span style={{ color: '#f59e0b', fontWeight: '700' }}>Medio</span>
-                        <span style={{ color: '#ef4444', fontWeight: '700' }}>Crítico</span>
-                    </div>
-                    <button onClick={() => navegarAReporte('incidencias')} style={{ position: 'absolute', bottom: '10px', right: '10px', background: '#f1f5f9', border: 'none', borderRadius: '6px', padding: '6px 10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: '#475569', fontSize: '12px', fontWeight: '500', transition: 'background 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.background = '#e2e8f0'} onMouseLeave={(e) => e.currentTarget.style.background = '#f1f5f9'}>
+                    <button onClick={() => navegarAReporte('incidencias')} style={{ position: 'absolute', bottom: '10px', right: '10px', background: '#f1f5f9', border: 'none', borderRadius: '6px', padding: '6px 10px', cursor: 'pointer', color: '#475569' }}>
                         <FileText size={14} />
                     </button>
                 </div>
@@ -205,18 +190,6 @@ const DashboardKPI = () => {
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
-                    {data?.topClientes && data.topClientes.length > 0 && (
-                        <div style={{ marginTop: '15px', borderTop: '1px solid #f1f5f9', paddingTop: '10px' }}>
-                            <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '600', display: 'block', marginBottom: '5px' }}>Detalle de Consumos Líderes:</span>
-                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'space-between' }}>
-                                {data.topClientes.map((cli, i) => (
-                                    <div key={i} style={{ fontSize: '11px', color: '#475569', background: '#f8fafc', padding: '6px 10px', borderRadius: '4px', flex: '1 1 30%' }}>
-                                        <strong>{cli.nombre}</strong> ({cli.porcentaje}%): <span style={{ color: '#16a34a', fontStyle: 'italic' }}>{cli.medicamentoTop}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
                 </div>
             </div>
         </div>
