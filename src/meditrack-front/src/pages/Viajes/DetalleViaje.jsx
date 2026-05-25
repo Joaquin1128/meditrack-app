@@ -262,7 +262,7 @@ function DetalleViaje() {
         setMostrarModal(false);
     };
 
-    const reportarIncidente = (envioId) => {
+    const reportarIncidente = () => {
         setMostrarModalIncidente(true);
     };
 
@@ -778,7 +778,7 @@ function DetalleViaje() {
                             </button>
                             {(paradaActual.envio.estado !== 'ASIGNADO' && paradaActual.envio.estado !== 'PENDIENTE') && (
                                 <button
-                                    onClick={() => reportarIncidente(paradaActual.envio.id)}
+                                    onClick={reportarIncidente}
                                     disabled={procesando}
                                     className={`detalle-btn-incidente ${procesando ? "" : "btn-sec-hover"}`}
                                     style={{
