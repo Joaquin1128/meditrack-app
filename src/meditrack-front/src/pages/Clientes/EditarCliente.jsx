@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import DireccionAutocomplete from '../../components/DireccionAutocomplete';
 import CuitInput, { limpiarCuit } from '../../components/CuitInput';
 import { getClienteById, updateCliente } from '../../services/api';
-import { getTipoStyles, iconos } from '../../util/Util';
+import { getTipoStyles, iconos, DefaultIcon, PinIcon } from '../../util/Util';
 
 function FieldError({ errores, campo }) {
     if (!errores?.[campo]) return null;
@@ -68,6 +68,33 @@ function EditarCliente() {
                     </div>
                 )}
 
+                <div
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '20px',
+                        marginBottom: '30px',
+                        paddingBottom: '20px',
+                        borderBottom: '1px solid #E5E7EB'
+                    }}
+                >
+
+                    <div
+                        style={{
+                            width: '90px',
+                            height: '90px',
+                            borderRadius: '50%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            border: '1px solid #E5E7EB',
+                            ...getTipoStyles(form.tipoEstablecimiento)
+                        }}
+                    >
+                        {(() => {
+                            const IconComponent = iconos[form.tipoEstablecimiento] || DefaultIcon;
+                            return <IconComponent size={36} />;
+                        })()}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '30px', paddingBottom: '20px', borderBottom: '1px solid #E5E7EB' }}>
                     <div style={{ width: '90px', height: '90px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '34px', fontWeight: '700', border: '1px solid #E5E7EB', ...getTipoStyles(form.tipoEstablecimiento) }}>
                         {iconos[form.tipoEstablecimiento] || '🏢'}
@@ -133,6 +160,23 @@ function EditarCliente() {
                         <label>Dirección *</label>
                         <DireccionAutocomplete onSelect={handleDireccionSeleccionada} />
                         {form.direccion && (
+
+                            <div
+                                style={{
+                                    marginTop: '12px',
+                                    padding: '12px',
+                                    background: '#F9FAFB',
+                                    border: '1px solid #E5E7EB',
+                                    borderRadius: '10px',
+                                    color: '#374151',
+                                    fontSize: '14px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px'
+                                }}
+                            >
+                                <PinIcon size={18} style={{ color: '#EF4444', flexShrink: 0 }} />
+                                <span>{form.direccion}</span>
                             <div style={{ marginTop: '12px', padding: '12px', background: '#F9FAFB', border: '1px solid #E5E7EB', borderRadius: '10px', color: '#374151', fontSize: '14px' }}>
                                 📍 {form.direccion}
                             </div>
