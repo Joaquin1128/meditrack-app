@@ -48,8 +48,8 @@ const MainMenu = () => {
       title: "Reportes",
       rolesPermitidos: ['ADMINISTRADOR', 'SUPERVISOR'],
       items: [
-        { label: "Reportes", icon: <ShieldAlert size={32} />, path: "/reportes", color: "#4338CA" },
         { label: "KPIs", icon: <LayoutDashboard size={32} />, path: "/kpis", color: "#4338CA" },
+        { label: "Reportes", icon: <ShieldAlert size={32} />, path: "/reportes", color: "#4338CA" },
       ]
     },
     {
