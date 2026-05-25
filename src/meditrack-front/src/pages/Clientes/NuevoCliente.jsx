@@ -4,7 +4,6 @@ import DireccionAutocomplete from '../../components/DireccionAutocomplete';
 import CuitInput, { limpiarCuit } from '../../components/CuitInput';
 import { createCliente } from '../../services/api';
 import { getTipoStyles, iconos, DefaultIcon } from '../../util/Util';
-import { getTipoStyles, iconos } from '../../util/Util';
 
 const FORM_INICIAL = {
     nombre: '', cuit: '', gln: '', telefono: '', email: '',
@@ -60,43 +59,43 @@ function NuevoCliente() {
                 )}
 
                 <div className="form-grid">
-
-                    <div
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '20px',
-                            marginBottom: '30px',
-                            paddingBottom: '20px',
-                            borderBottom: '1px solid #E5E7EB'
-                        }}
-                    >
-
-                        <div
-                            style={{
-                                width: '110px',
-                                height: '110px',
-                                borderRadius: '50%',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                ...getTipoStyles(form.tipoEstablecimiento),
-                                border: '1px solid #E5E7EB',
-                            }}
-                        >
+                    {/* Preview */}
+                    <div style={{ 
+                        gridColumn: '1 / -1', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '20px', 
+                        marginBottom: '30px', 
+                        paddingBottom: '20px', 
+                        borderBottom: '1px solid #E5E7EB' 
+                    }}>
+                        <div style={{ 
+                            width: '110px', 
+                            height: '110px', 
+                            borderRadius: '50%', 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'center',
+                            ...getTipoStyles(form.tipoEstablecimiento),
+                            border: '1px solid #E5E7EB'
+                        }}>
                             {(() => {
                                 const IconComponent = iconos[form.tipoEstablecimiento] || DefaultIcon;
                                 return <IconComponent size={42} />;
                             })()}
-                    {/* Preview */}
-                    <div style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '30px', paddingBottom: '20px', borderBottom: '1px solid #E5E7EB' }}>
-                        <div style={{ width: '110px', height: '110px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '34px', fontWeight: '700', border: '1px solid #E5E7EB', ...getTipoStyles(form.tipoEstablecimiento) }}>
-                            {iconos[form.tipoEstablecimiento] || '🏢'}
                         </div>
                         <div>
-                            <h2 style={{ margin: 0, fontSize: '22px', fontWeight: '700', color: '#111827' }}>{form.nombre || 'Nuevo cliente'}</h2>
+                            <h2 style={{ margin: 0, fontSize: '22px', fontWeight: '700', color: '#111827' }}>
+                                {form.nombre || 'Nuevo cliente'}
+                            </h2>
                             <p style={{ marginTop: '6px' }}>
-                                <span style={{ padding: '6px 10px', borderRadius: '999px', fontWeight: '600', fontSize: '12px', ...getTipoStyles(form.tipoEstablecimiento) }}>
+                                <span style={{ 
+                                    padding: '6px 10px', 
+                                    borderRadius: '999px', 
+                                    fontWeight: '600', 
+                                    fontSize: '12px', 
+                                    ...getTipoStyles(form.tipoEstablecimiento) 
+                                }}>
                                     {form.tipoEstablecimiento || 'SIN TIPO'}
                                 </span>
                             </p>

@@ -1,19 +1,20 @@
 package com.meditrack.back.app.controller;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.meditrack.back.app.dto.ActualizarMedicamentoRequest;
+import com.meditrack.back.app.dto.CrearMedicamentoRequest;
 import com.meditrack.back.app.model.Medicamento;
 import com.meditrack.back.app.model.Sesion;
 import com.meditrack.back.app.service.AuthService;
 import com.meditrack.back.app.service.CloudinaryService;
 import com.meditrack.back.app.service.MedicamentoService;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/medicamentos")
@@ -94,30 +95,42 @@ public class MedicamentoController {
             @RequestParam String presentacion,
             @RequestParam(required = false) String descripcion,
             @RequestParam(required = false) String detallesAdicionales,
-            @RequestParam(defaultValue = "false") boolean cadenaFrio,
+            @RequestParam(defaultValue = "false") Boolean cadenaFrio,
             @RequestParam(required = false) Double temperaturaMinima,
             @RequestParam(required = false) Double temperaturaMaxima,
-            @RequestParam(defaultValue = "false") boolean esFragil,
-            @RequestParam(defaultValue = "false") boolean esControlado,
+            @RequestParam(defaultValue = "false") Boolean esFragil,
+            @RequestParam(defaultValue = "false") Boolean esControlado,
             @RequestParam(required = false) Double volumen,
-            @RequestParam int cantidad,
+            @RequestParam(required = false) Integer cantidad,
             @RequestParam(required = false) String unidadMedida,
             @RequestParam(required = false) MultipartFile imagen,
             @RequestHeader(value = "Authorization", required = false) String authHeader) {
         try {
             Sesion sesion = autenticar(authHeader);
-            String imageUrl = (imagen != null && !imagen.isEmpty())
-                    ? cloudinaryService.subirImagen(imagen)
-                    : null;
 
-            Map<String, Object> body = buildMedicamentoBody(
-                    gtin, nombre, monodroga, laboratorio, presentacion,
-                    descripcion, detallesAdicionales, cadenaFrio,
-                    temperaturaMinima, temperaturaMaxima,
-                    esFragil, esControlado, volumen,
-                    cantidad, unidadMedida, imageUrl);
+            CrearMedicamentoRequest dto = new CrearMedicamentoRequest();
+            dto.setGtin(gtin);
+            dto.setNombre(nombre);
+            dto.setMonodroga(monodroga);
+            dto.setLaboratorio(laboratorio);
+            dto.setPresentacion(presentacion);
+            dto.setDescripcion(descripcion);
+            dto.setDetallesAdicionales(detallesAdicionales);
+            dto.setCadenaFrio(cadenaFrio);
+            dto.setTemperaturaMinima(temperaturaMinima);
+            dto.setTemperaturaMaxima(temperaturaMaxima);
+            dto.setEsFragil(esFragil);
+            dto.setEsControlado(esControlado);
+            dto.setVolumen(volumen);
+            dto.setCantidad(cantidad);
+            dto.setUnidadMedida(unidadMedida);
 
-            Medicamento nuevo = medicamentoService.crear(body, sesion.getNombre());
+            if (imagen != null && !imagen.isEmpty())
+                dto.setImagenUrl(cloudinaryService.subirImagen(imagen));
+
+            dto.validate();
+
+            Medicamento nuevo = medicamentoService.crear(dto, sesion.getNombre());
             return ResponseEntity.status(HttpStatus.CREATED).body(nuevo);
 
         } catch (IllegalArgumentException e) {
@@ -132,37 +145,49 @@ public class MedicamentoController {
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> actualizar(
             @PathVariable String id,
-            @RequestParam String gtin,
-            @RequestParam String nombre,
-            @RequestParam String monodroga,
-            @RequestParam String laboratorio,
-            @RequestParam String presentacion,
+            @RequestParam(required = false) String gtin,
+            @RequestParam(required = false) String nombre,
+            @RequestParam(required = false) String monodroga,
+            @RequestParam(required = false) String laboratorio,
+            @RequestParam(required = false) String presentacion,
             @RequestParam(required = false) String descripcion,
             @RequestParam(required = false) String detallesAdicionales,
-            @RequestParam(defaultValue = "false") boolean cadenaFrio,
+            @RequestParam(required = false) Boolean cadenaFrio,
             @RequestParam(required = false) Double temperaturaMinima,
             @RequestParam(required = false) Double temperaturaMaxima,
-            @RequestParam(defaultValue = "false") boolean esFragil,
-            @RequestParam(defaultValue = "false") boolean esControlado,
+            @RequestParam(required = false) Boolean esFragil,
+            @RequestParam(required = false) Boolean esControlado,
             @RequestParam(required = false) Double volumen,
-            @RequestParam int cantidad,
+            @RequestParam(required = false) Integer cantidad,
             @RequestParam(required = false) String unidadMedida,
             @RequestParam(required = false) MultipartFile imagen,
             @RequestHeader(value = "Authorization", required = false) String authHeader) {
         try {
             Sesion sesion = autenticar(authHeader);
-            String imageUrl = (imagen != null && !imagen.isEmpty())
-                    ? cloudinaryService.subirImagen(imagen)
-                    : null;
 
-            Map<String, Object> body = buildMedicamentoBody(
-                    gtin, nombre, monodroga, laboratorio, presentacion,
-                    descripcion, detallesAdicionales, cadenaFrio,
-                    temperaturaMinima, temperaturaMaxima,
-                    esFragil, esControlado, volumen,
-                    cantidad, unidadMedida, imageUrl);
+            ActualizarMedicamentoRequest dto = new ActualizarMedicamentoRequest();
+            dto.setGtin(gtin);
+            dto.setNombre(nombre);
+            dto.setMonodroga(monodroga);
+            dto.setLaboratorio(laboratorio);
+            dto.setPresentacion(presentacion);
+            dto.setDescripcion(descripcion);
+            dto.setDetallesAdicionales(detallesAdicionales);
+            dto.setCadenaFrio(cadenaFrio);
+            dto.setTemperaturaMinima(temperaturaMinima);
+            dto.setTemperaturaMaxima(temperaturaMaxima);
+            dto.setEsFragil(esFragil);
+            dto.setEsControlado(esControlado);
+            dto.setVolumen(volumen);
+            dto.setCantidad(cantidad);
+            dto.setUnidadMedida(unidadMedida);
 
-            Medicamento actualizado = medicamentoService.actualizar(id, body, sesion.getNombre());
+            if (imagen != null && !imagen.isEmpty())
+                dto.setImagenUrl(cloudinaryService.subirImagen(imagen));
+
+            dto.validate();
+
+            Medicamento actualizado = medicamentoService.actualizar(id, dto, sesion.getNombre());
             return ResponseEntity.ok(actualizado);
 
         } catch (IllegalArgumentException e) {
@@ -190,35 +215,6 @@ public class MedicamentoController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", e.getMessage()));
         }
-    }
-
-    // --- Builder ---
-
-    private Map<String, Object> buildMedicamentoBody(
-            String gtin, String nombre, String monodroga, String laboratorio, String presentacion,
-            String descripcion, String detallesAdicionales, boolean cadenaFrio,
-            Double temperaturaMinima, Double temperaturaMaxima,
-            boolean esFragil, boolean esControlado, Double volumen,
-            int cantidad, String unidadMedida, String imageUrl) {
-
-        Map<String, Object> body = new HashMap<>();
-        body.put("gtin", gtin);
-        body.put("nombre", nombre);
-        body.put("monodroga", monodroga);
-        body.put("laboratorio", laboratorio);
-        body.put("presentacion", presentacion);
-        body.put("descripcion", descripcion);
-        body.put("detallesAdicionales", detallesAdicionales);
-        body.put("cadenaFrio", cadenaFrio);
-        body.put("temperaturaMinima", temperaturaMinima);
-        body.put("temperaturaMaxima", temperaturaMaxima);
-        body.put("esFragil", esFragil);
-        body.put("esControlado", esControlado);
-        body.put("volumen", volumen);
-        body.put("cantidad", cantidad);
-        body.put("unidadMedida", unidadMedida);
-        if (imageUrl != null) body.put("imagenUrl", imageUrl);
-        return body;
     }
 
 }

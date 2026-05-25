@@ -25,10 +25,87 @@ const FORM_INICIAL = {
     volumen: '',
 };
 
+// --- Validación ---
+
+function validarForm(form) {
+    const errores = {};
+
+    if (!form.gtin?.trim())
+        errores.gtin = 'El GTIN es obligatorio';
+    else if (!/^\d{13,14}$/.test(form.gtin.trim()))
+        errores.gtin = 'El GTIN debe tener 13 o 14 dígitos numéricos';
+
+    if (!form.nombre?.trim())
+        errores.nombre = 'El nombre comercial es obligatorio';
+
+    if (!form.monodroga?.trim())
+        errores.monodroga = 'La monodroga es obligatoria';
+
+    if (!form.laboratorio?.trim())
+        errores.laboratorio = 'El laboratorio es obligatorio';
+
+    if (!form.presentacion)
+        errores.presentacion = 'La presentación es obligatoria';
+
+    if (form.cadenaFrio) {
+        if (form.temperaturaMinima === '' || form.temperaturaMinima === null)
+            errores.temperaturaMinima = 'La temperatura mínima es obligatoria';
+        if (form.temperaturaMaxima === '' || form.temperaturaMaxima === null)
+            errores.temperaturaMaxima = 'La temperatura máxima es obligatoria';
+        if (form.temperaturaMinima !== '' && form.temperaturaMaxima !== '' &&
+            Number(form.temperaturaMinima) >= Number(form.temperaturaMaxima))
+            errores.temperaturaMaxima = 'La temperatura máxima debe ser mayor a la mínima';
+    }
+
+    if (form.volumen !== '' && form.volumen !== null && Number(form.volumen) < 0)
+        errores.volumen = 'El volumen no puede ser negativo';
+
+    if (form.cantidad !== '' && form.cantidad !== null && Number(form.cantidad) < 0)
+        errores.cantidad = 'La cantidad no puede ser negativa';
+
+    return errores;
+}
+
+// --- Componentes auxiliares ---
+
+function FieldError({ errores, campo }) {
+    if (!errores?.[campo]) return null;
+    return (
+        <span style={{ color: '#dc3545', fontSize: '12px', marginTop: '4px', display: 'block' }}>
+            {errores[campo]}
+        </span>
+    );
+}
+
+function SectionTitle({ title }) {
+    return (
+        <h3 style={{
+            fontSize: '14px', fontWeight: '600', color: '#6B7280',
+            textTransform: 'uppercase', letterSpacing: '0.05em',
+            margin: '24px 0 12px', borderBottom: '1px solid #E5E7EB', paddingBottom: '6px'
+        }}>
+            {title}
+        </h3>
+    );
+}
+
+function CheckboxField({ name, checked, onChange, label }) {
+    return (
+        <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <input type="checkbox" id={name} name={name} checked={checked} onChange={onChange}
+                style={{ width: '18px', height: '18px', cursor: 'pointer' }} />
+            <label htmlFor={name} style={{ margin: 0, cursor: 'pointer' }}>{label}</label>
+        </div>
+    );
+}
+
+// --- Componente principal ---
+
 function NuevoMedicamento() {
     const navigate = useNavigate();
     const [form, setForm] = useState(FORM_INICIAL);
-    const [error, setError] = useState('');
+    const [erroresApi, setErroresApi] = useState({});
+    const [errorGeneral, setErrorGeneral] = useState('');
     const [preview, setPreview] = useState('');
     const [imagen, setImagen] = useState(null);
 
@@ -37,11 +114,12 @@ function NuevoMedicamento() {
         setForm(prev => ({
             ...prev,
             [name]: type === 'checkbox' ? checked : value,
-            // Limpiar temperaturas si se desactiva cadena de frío
             ...(name === 'cadenaFrio' && !checked
                 ? { temperaturaMinima: '', temperaturaMaxima: '' }
                 : {}),
         }));
+        // Limpiar error del campo al editarlo
+        if (erroresApi[name]) setErroresApi(prev => ({ ...prev, [name]: undefined }));
     };
 
     const handleImageChange = e => {
@@ -52,38 +130,28 @@ function NuevoMedicamento() {
     };
 
     const handleGuardar = async () => {
-        // Validaciones mínimas en frontend
-        if (!form.gtin?.trim())        return setError('El GTIN es obligatorio.');
-        if (!form.nombre?.trim())      return setError('El nombre comercial es obligatorio.');
-        if (!form.monodroga?.trim())   return setError('La monodroga es obligatoria.');
-        if (!form.laboratorio?.trim()) return setError('El laboratorio es obligatorio.');
-        if (!form.presentacion)        return setError('La presentación es obligatoria.');
+        setErrorGeneral('');
 
-        if (form.cadenaFrio) {
-            if (!form.temperaturaMinima && form.temperaturaMinima !== 0)
-                return setError('Debe indicar la temperatura mínima.');
-            if (!form.temperaturaMaxima && form.temperaturaMaxima !== 0)
-                return setError('Debe indicar la temperatura máxima.');
-            if (Number(form.temperaturaMinima) >= Number(form.temperaturaMaxima))
-                return setError('La temperatura mínima debe ser menor a la máxima.');
+        const errores = validarForm(form);
+        if (Object.keys(errores).length > 0) {
+            setErroresApi(errores);
+            return;
         }
-
-        setError('');
+        setErroresApi({});
 
         try {
             const formData = new FormData();
-
             Object.keys(form).forEach(key => {
                 if (form[key] != null && form[key] !== '')
                     formData.append(key, form[key]);
             });
-
             if (imagen) formData.append('imagen', imagen);
 
             await createMedicamento(formData);
             navigate('/medicamentos');
         } catch (err) {
-            setError(err.message || 'Error al crear medicamento.');
+            if (err.type === 'validation') setErroresApi(err.errores);
+            else setErrorGeneral(err.message || 'Error al crear medicamento.');
         }
     };
 
@@ -94,17 +162,17 @@ function NuevoMedicamento() {
             </div>
 
             <div className="card">
-                {error && (
+                {errorGeneral && (
                     <div style={{
                         color: '#dc3545', backgroundColor: '#f8d7da',
                         border: '1px solid #f5c6cb', padding: '10px',
                         borderRadius: '4px', marginBottom: '15px', fontWeight: 'bold'
                     }}>
-                        {error}
+                        {errorGeneral}
                     </div>
                 )}
 
-                {/* Imagen y preview */}
+                {/* Preview */}
                 <div style={{
                     display: 'flex', alignItems: 'center', gap: '20px',
                     marginBottom: '30px', paddingBottom: '20px',
@@ -130,9 +198,8 @@ function NuevoMedicamento() {
                             {form.monodroga || 'Monodroga'}
                         </p>
                         <label style={{
-                            display: 'inline-block', marginTop: '12px',
-                            padding: '10px 14px', background: '#10B981',
-                            color: 'white', borderRadius: '10px',
+                            display: 'inline-block', marginTop: '12px', padding: '10px 14px',
+                            background: '#10B981', color: 'white', borderRadius: '10px',
                             cursor: 'pointer', fontWeight: '600', fontSize: '14px'
                         }}>
                             Subir imagen
@@ -141,46 +208,59 @@ function NuevoMedicamento() {
                     </div>
                 </div>
 
-                {/* Sección: Identificación */}
+                {/* Identificación */}
                 <SectionTitle title="Identificación" />
                 <div className="form-grid">
                     <div className="form-group">
                         <label>GTIN *</label>
                         <input name="gtin" value={form.gtin} onChange={handleChange}
-                            placeholder="Ej: 07790001234567" />
+                            placeholder="Ej: 07790001234567"
+                            style={erroresApi.gtin ? { borderColor: '#dc3545' } : {}} />
+                        <FieldError errores={erroresApi} campo="gtin" />
                     </div>
 
                     <div className="form-group">
                         <label>Nombre comercial *</label>
-                        <input name="nombre" value={form.nombre} onChange={handleChange} />
+                        <input name="nombre" value={form.nombre} onChange={handleChange}
+                            style={erroresApi.nombre ? { borderColor: '#dc3545' } : {}} />
+                        <FieldError errores={erroresApi} campo="nombre" />
                     </div>
 
                     <div className="form-group">
                         <label>Monodroga *</label>
-                        <input name="monodroga" value={form.monodroga} onChange={handleChange} />
+                        <input name="monodroga" value={form.monodroga} onChange={handleChange}
+                            style={erroresApi.monodroga ? { borderColor: '#dc3545' } : {}} />
+                        <FieldError errores={erroresApi} campo="monodroga" />
                     </div>
 
                     <div className="form-group">
                         <label>Laboratorio titular *</label>
-                        <input name="laboratorio" value={form.laboratorio} onChange={handleChange} />
+                        <input name="laboratorio" value={form.laboratorio} onChange={handleChange}
+                            style={erroresApi.laboratorio ? { borderColor: '#dc3545' } : {}} />
+                        <FieldError errores={erroresApi} campo="laboratorio" />
                     </div>
 
                     <div className="form-group">
                         <label>Presentación *</label>
-                        <select name="presentacion" value={form.presentacion} onChange={handleChange}>
+                        <select name="presentacion" value={form.presentacion} onChange={handleChange}
+                            style={{ width: '100%', padding: '10px', borderRadius: '6px',
+                                border: erroresApi.presentacion ? '1px solid #dc3545' : '1px solid #ddd' }}>
                             <option value="">-- Seleccionar --</option>
                             {PRESENTACIONES.map(p => <option key={p} value={p}>{p}</option>)}
                         </select>
+                        <FieldError errores={erroresApi} campo="presentacion" />
                     </div>
                 </div>
 
-                {/* Sección: Logística (cantidad/unidad a discutir con el equipo) */}
+                {/* Logística */}
                 <SectionTitle title="Logística" />
                 <div className="form-grid">
                     <div className="form-group">
                         <label>Cantidad</label>
                         <input type="number" name="cantidad" value={form.cantidad}
-                            onChange={handleChange} min="0" />
+                            onChange={handleChange} min="0"
+                            style={erroresApi.cantidad ? { borderColor: '#dc3545' } : {}} />
+                        <FieldError errores={erroresApi} campo="cantidad" />
                     </div>
 
                     <div className="form-group">
@@ -192,63 +272,52 @@ function NuevoMedicamento() {
                     <div className="form-group">
                         <label>Volumen (cm³)</label>
                         <input type="number" name="volumen" value={form.volumen}
-                            onChange={handleChange} min="0" step="0.01"
-                            placeholder="Ej: 150.00" />
+                            onChange={handleChange} min="0" step="0.01" placeholder="Ej: 150.00"
+                            style={erroresApi.volumen ? { borderColor: '#dc3545' } : {}} />
+                        <FieldError errores={erroresApi} campo="volumen" />
                     </div>
                 </div>
 
-                {/* Sección: Características */}
+                {/* Características */}
                 <SectionTitle title="Características" />
                 <div className="form-grid">
-                    <CheckboxField
-                        name="esFragil"
-                        checked={form.esFragil}
-                        onChange={handleChange}
-                        label="¿Es frágil?"
-                    />
-                    <CheckboxField
-                        name="esControlado"
-                        checked={form.esControlado}
-                        onChange={handleChange}
-                        label="¿Es controlado? (psicofármaco u otro regulado)"
-                    />
-                    <CheckboxField
-                        name="cadenaFrio"
-                        checked={form.cadenaFrio}
-                        onChange={handleChange}
-                        label="¿Requiere cadena de frío?"
-                    />
+                    <CheckboxField name="esFragil" checked={form.esFragil}
+                        onChange={handleChange} label="¿Es frágil?" />
+                    <CheckboxField name="esControlado" checked={form.esControlado}
+                        onChange={handleChange} label="¿Es controlado? (psicofármaco u otro regulado)" />
+                    <CheckboxField name="cadenaFrio" checked={form.cadenaFrio}
+                        onChange={handleChange} label="¿Requiere cadena de frío?" />
 
-                    {/* Temperaturas: solo si cadenaFrio = true */}
                     {form.cadenaFrio && (
                         <>
                             <div className="form-group">
                                 <label>Temperatura mínima (°C) *</label>
                                 <input type="number" name="temperaturaMinima"
-                                    value={form.temperaturaMinima}
-                                    onChange={handleChange} step="0.1"
-                                    placeholder="Ej: 2" />
+                                    value={form.temperaturaMinima} onChange={handleChange} step="0.1"
+                                    placeholder="Ej: 2"
+                                    style={erroresApi.temperaturaMinima ? { borderColor: '#dc3545' } : {}} />
+                                <FieldError errores={erroresApi} campo="temperaturaMinima" />
                             </div>
                             <div className="form-group">
                                 <label>Temperatura máxima (°C) *</label>
                                 <input type="number" name="temperaturaMaxima"
-                                    value={form.temperaturaMaxima}
-                                    onChange={handleChange} step="0.1"
-                                    placeholder="Ej: 8" />
+                                    value={form.temperaturaMaxima} onChange={handleChange} step="0.1"
+                                    placeholder="Ej: 8"
+                                    style={erroresApi.temperaturaMaxima ? { borderColor: '#dc3545' } : {}} />
+                                <FieldError errores={erroresApi} campo="temperaturaMaxima" />
                             </div>
                         </>
                     )}
                 </div>
 
-                {/* Sección: Información adicional */}
+                {/* Información adicional */}
                 <SectionTitle title="Información adicional" />
                 <div className="form-group">
                     <label>Descripción</label>
                     <textarea name="descripcion" value={form.descripcion} onChange={handleChange}
                         rows="3" placeholder="Descripción del medicamento..."
                         style={{ width: '100%', padding: '10px', borderRadius: '8px',
-                            border: '1px solid #D1D5DB', resize: 'vertical' }}
-                    />
+                            border: '1px solid #D1D5DB', resize: 'vertical' }} />
                 </div>
                 <div className="form-group" style={{ marginTop: '12px' }}>
                     <label>Detalles adicionales</label>
@@ -256,8 +325,7 @@ function NuevoMedicamento() {
                         onChange={handleChange} rows="3"
                         placeholder="Instrucciones especiales, observaciones, etc."
                         style={{ width: '100%', padding: '10px', borderRadius: '8px',
-                            border: '1px solid #D1D5DB', resize: 'vertical' }}
-                    />
+                            border: '1px solid #D1D5DB', resize: 'vertical' }} />
                 </div>
 
                 <div style={{
@@ -272,30 +340,6 @@ function NuevoMedicamento() {
                     </button>
                 </div>
             </div>
-        </div>
-    );
-}
-
-// --- Componentes auxiliares ---
-
-function SectionTitle({ title }) {
-    return (
-        <h3 style={{
-            fontSize: '14px', fontWeight: '600', color: '#6B7280',
-            textTransform: 'uppercase', letterSpacing: '0.05em',
-            margin: '24px 0 12px', borderBottom: '1px solid #E5E7EB', paddingBottom: '6px'
-        }}>
-            {title}
-        </h3>
-    );
-}
-
-function CheckboxField({ name, checked, onChange, label }) {
-    return (
-        <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <input type="checkbox" id={name} name={name} checked={checked} onChange={onChange}
-                style={{ width: '18px', height: '18px', cursor: 'pointer' }} />
-            <label htmlFor={name} style={{ margin: 0, cursor: 'pointer' }}>{label}</label>
         </div>
     );
 }
