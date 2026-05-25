@@ -23,7 +23,7 @@ public class MailService {
     }
 
     public List<Mail> listarTodos() {
-        return mailRepository.findAll();
+        return mailRepository.findAllByOrderByFechaCreacionDesc();
     }
 
     public Mail obtenerPorId(String id) {

@@ -18,6 +18,8 @@ public interface MailRepository extends JpaRepository<Mail, String> {
     List<Mail> findByDestinatarioContainingIgnoreCase(String destinatario);
 
     List<Mail> findByAsuntoContainingIgnoreCase(String asunto);
+    
+    List<Mail> findAllByOrderByFechaCreacionDesc();
 
     boolean existsByAsunto(String asunto);
 
