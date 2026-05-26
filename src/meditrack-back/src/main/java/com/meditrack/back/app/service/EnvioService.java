@@ -17,20 +17,29 @@ import com.meditrack.back.app.model.DetalleEnvio;
 import com.meditrack.back.app.model.Envio;
 import com.meditrack.back.app.model.EstadoEnvio;
 import com.meditrack.back.app.model.HistorialEstado;
+import com.meditrack.back.app.model.Incidente;
 import com.meditrack.back.app.model.Medicamento;
 import com.meditrack.back.app.model.TrackingPublicoDTO;
+import com.meditrack.back.app.model.Usuario;
+import com.meditrack.back.app.model.Role;
 import com.meditrack.back.app.repository.EnvioRepository;
 import com.meditrack.back.app.repository.MedicamentoRepository;
+import com.meditrack.back.app.repository.UsuarioRepository;
 
 @Service
 public class EnvioService {
 
     private final EnvioRepository envioRepository;
     private final MedicamentoRepository medicamentoRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final NotificacionService notificacionService;
 
-    public EnvioService(EnvioRepository envioRepository, MedicamentoRepository medicamentoRepository) {
+    public EnvioService(EnvioRepository envioRepository, MedicamentoRepository medicamentoRepository, 
+                        UsuarioRepository usuarioRepository, NotificacionService notificacionService) {
         this.envioRepository = envioRepository;
         this.medicamentoRepository = medicamentoRepository;
+        this.usuarioRepository = usuarioRepository;
+        this.notificacionService = notificacionService;
     }
 
     private void registrarHistorial(Envio e, String tipo, EstadoEnvio estado, String detalle, String f, String h, String u) {
@@ -60,6 +69,10 @@ public class EnvioService {
         nuevo.setUsuarioResponsable(usuario);
         nuevo.setFechaCreacion(LocalDate.now().toString());
         nuevo.setHoraCreacion(LocalTime.now().toString().substring(0, 5));
+        nuevo.setLatitudOrigen(nuevo.getLatitudOrigen());
+        nuevo.setLongitudOrigen(nuevo.getLongitudOrigen());
+        nuevo.setLatitudDestino(nuevo.getLatitudDestino());
+        nuevo.setLongitudDestino(nuevo.getLongitudDestino());
 
         if (nuevo.getDetalles() != null) {
             for (DetalleEnvio detalle : nuevo.getDetalles()) {
@@ -94,13 +107,16 @@ public class EnvioService {
 
         envio.setRemitente(datosNuevos.getRemitente());
         envio.setDestinatario(datosNuevos.getDestinatario());
-        envio.setDireccionEntrega(datosNuevos.getDireccionEntrega());
         envio.setOrigen(datosNuevos.getOrigen());
         envio.setDestino(datosNuevos.getDestino());
         envio.setFechaEstimada(datosNuevos.getFechaEstimada());
         envio.setDescripcionCarga(datosNuevos.getDescripcionCarga());
         envio.setPrioridad(datosNuevos.getPrioridad());
         envio.setObservaciones(datosNuevos.getObservaciones());
+        envio.setLatitudOrigen(datosNuevos.getLatitudOrigen());
+        envio.setLongitudOrigen(datosNuevos.getLongitudOrigen());
+        envio.setLatitudDestino(datosNuevos.getLatitudDestino());
+        envio.setLongitudDestino(datosNuevos.getLongitudDestino());
 
         if (datosNuevos.getDetalles() != null) {
             List<DetalleEnvio> detallesActuales = envio.getDetalles();
@@ -189,14 +205,127 @@ public class EnvioService {
     }
 
     @Transactional
-    public Envio actualizarEstado(String id, EstadoEnvio nuevoEstado, String usuario, String repartidorId) {
+    public Envio actualizarEstado(String id, EstadoEnvio nuevoEstado, String usuario, String repartidorId, String tipoIncidencia, String descripcionIncidencia) {
+        return actualizarEstado(id, nuevoEstado, usuario, repartidorId, tipoIncidencia, descripcionIncidencia, null, null);
+    }
+
+    @Transactional
+    public Envio actualizarEstado(String id, EstadoEnvio nuevoEstado, String usuario, String repartidorId, String tipoIncidencia, String descripcionIncidencia, String receptorNombre, String receptorDni) {
         Envio envio = buscarPorId(id);
         if (nuevoEstado == EstadoEnvio.ASIGNADO) {
             envio.setRepartidorId(repartidorId);
         }
         envio.setEstado(nuevoEstado);
-        registrarHistorial(envio, "CAMBIO_ESTADO", nuevoEstado, "Cambio a " + nuevoEstado, LocalDate.now().toString(), LocalTime.now().toString().substring(0, 5), usuario);
-        return envioRepository.save(envio);
+        
+        if (nuevoEstado == EstadoEnvio.ENTREGADO) {
+            envio.setReceptorNombre(receptorNombre);
+            envio.setReceptorDni(receptorDni);
+        }
+        
+        String tipoHistorial = "CAMBIO_ESTADO";
+        String detalleHistorial = "Cambio a " + nuevoEstado;
+        
+        if (nuevoEstado == EstadoEnvio.INCIDENTE_REPORTADO) {
+            tipoHistorial = tipoIncidencia;
+            detalleHistorial = descripcionIncidencia;
+            
+            Incidente incidente = new Incidente(
+                envio, 
+                tipoIncidencia != null ? tipoIncidencia : "Incidente Reportado", 
+                descripcionIncidencia != null ? descripcionIncidencia : "Sin descripción", 
+                LocalDate.now().toString(), 
+                LocalTime.now().toString().substring(0, 5), 
+                usuario
+            );
+            envio.agregarIncidente(incidente);
+        }
+        
+        registrarHistorial(envio, tipoHistorial, nuevoEstado, detalleHistorial, LocalDate.now().toString(), LocalTime.now().toString().substring(0, 5), usuario);
+        
+        if ((nuevoEstado == EstadoEnvio.EN_PREPARACION || nuevoEstado == EstadoEnvio.EN_TRANSITO) && envio.getRepartidorId() != null) {
+            try {
+                usuarioRepository.findById(envio.getRepartidorId()).ifPresent(rep -> {
+                    if (!rep.isHaciendoEntrega()) {
+                        rep.setHaciendoEntrega(true);
+                        usuarioRepository.save(rep);
+                    }
+                });
+            } catch (Exception ex) {
+                System.err.println("Error al actualizar haciendoEntrega del repartidor: " + ex.getMessage());
+            }
+        }
+
+        Envio saved = envioRepository.save(envio);
+
+        // Disparar Notificaciones
+        if (nuevoEstado == EstadoEnvio.ASIGNADO && repartidorId != null) {
+            try {
+                usuarioRepository.findById(repartidorId).ifPresent(rep -> {
+                    notificacionService.crearNotificacion(
+                        rep,
+                        "Nuevo Envío Asignado",
+                        "Se te ha asignado el envío " + envio.getId() + ". Detalles - Origen: " + envio.getOrigen() + ", Destino: " + envio.getDestino() + ", Prioridad: " + envio.getPrioridad() + ", Carga: " + envio.getDescripcionCarga() + "."
+                    );
+                });
+            } catch (Exception ex) {
+                System.err.println("Error al enviar notificación de asignación a repartidor: " + ex.getMessage());
+            }
+        } else if (nuevoEstado == EstadoEnvio.INCIDENTE_REPORTADO) {
+            try {
+                String detalleInc = descripcionIncidencia != null ? descripcionIncidencia : "Sin detalles";
+                String tipoInc = tipoIncidencia != null ? tipoIncidencia : "Incidente";
+                String msg = "El repartidor " + usuario + " reportó un incidente (" + tipoInc + ") en el envío " + envio.getId() + ". Descripción: " + detalleInc;
+
+                // 1. Notificar a todos los supervisores
+                List<Usuario> supervisores = usuarioRepository.findByRole(Role.SUPERVISOR);
+                for (Usuario supervisor : supervisores) {
+                    notificacionService.crearNotificacion(supervisor, "Incidente Reportado - Envío " + envio.getId(), msg);
+                }
+
+                // 2. Notificar al operador responsable
+                if (envio.getUsuarioResponsable() != null) {
+                    usuarioRepository.findByNombre(envio.getUsuarioResponsable()).ifPresent(op -> {
+                        notificacionService.crearNotificacion(
+                            op,
+                            "Incidente Reportado (Bajo tu Responsabilidad)",
+                            "Se reportó un incidente (" + tipoInc + ") en el envío " + envio.getId() + ". Detalles: " + detalleInc
+                        );
+                    });
+                }
+
+                // 3. Notificar al remitente si es un usuario
+                if (envio.getRemitente() != null) {
+                    usuarioRepository.findByNombre(envio.getRemitente())
+                        .or(() -> usuarioRepository.findByEmail(envio.getRemitente()))
+                        .or(() -> usuarioRepository.findByDni(envio.getRemitente()))
+                        .ifPresent(rem -> {
+                            notificacionService.crearNotificacion(
+                                rem,
+                                "Incidente en tu Envío - " + envio.getId(),
+                                "Se reportó una incidencia en el traslado de tu envío. Tipo: " + tipoInc + ". Nos contactaremos a la brevedad."
+                            );
+                        });
+                }
+
+                // 4. Notificar al destinatario si es un usuario
+                if (envio.getDestinatario() != null) {
+                    usuarioRepository.findByNombre(envio.getDestinatario())
+                        .or(() -> usuarioRepository.findByEmail(envio.getDestinatario()))
+                        .or(() -> usuarioRepository.findByDni(envio.getDestinatario()))
+                        .ifPresent(dest -> {
+                            notificacionService.crearNotificacion(
+                                dest,
+                                "Incidente en tu Envío - " + envio.getId(),
+                                "Se reportó una incidencia en el traslado de tu envío. Tipo: " + tipoInc + ". Nos contactaremos a la brevedad."
+                            );
+                        });
+                }
+            } catch (Exception ex) {
+                System.err.println("Error al enviar notificaciones de incidente: " + ex.getMessage());
+            }
+        }
+
+        return saved;
     }
 
     @Transactional
@@ -208,7 +337,22 @@ public class EnvioService {
         String repartidorAnterior = envio.getRepartidorId() != null ? envio.getRepartidorId() : "Sin asignar";
         envio.setRepartidorId(nuevoRepartidorId);
         registrarHistorial(envio, "REASIGNACION", envio.getEstado(), "Cambio de repartidor: " + repartidorAnterior + " → " + nuevoRepartidorId, LocalDate.now().toString(), LocalTime.now().toString().substring(0, 5), usuario);
-        return envioRepository.save(envio);
+        Envio saved = envioRepository.save(envio);
+
+        // Disparar Notificación de reasignación al repartidor
+        try {
+            usuarioRepository.findById(nuevoRepartidorId).ifPresent(rep -> {
+                notificacionService.crearNotificacion(
+                    rep,
+                    "Nuevo Envío Asignado (Reasignación)",
+                    "Se te ha asignado el envío " + envio.getId() + " por reasignación. Detalles - Origen: " + envio.getOrigen() + ", Destino: " + envio.getDestino() + ", Prioridad: " + envio.getPrioridad() + ", Carga: " + envio.getDescripcionCarga() + "."
+                );
+            });
+        } catch (Exception ex) {
+            System.err.println("Error al enviar notificación de reasignación a repartidor: " + ex.getMessage());
+        }
+
+        return saved;
     }
 
     @Transactional
@@ -230,4 +374,5 @@ public class EnvioService {
         Envio envio = buscarPorId(id);
         return new TrackingPublicoDTO(envio.getId(), envio.getEstado().name(), envio.getFechaCreacion(), envio.getHoraCreacion());
     }
+
 }

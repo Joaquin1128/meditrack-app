@@ -1,6 +1,5 @@
 package com.meditrack.back.app.controller;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -157,4 +156,5 @@ public class MedicamentoController {
 
         return body;
     }
+
 }

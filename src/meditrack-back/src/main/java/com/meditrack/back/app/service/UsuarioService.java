@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.meditrack.back.app.model.Role;
@@ -16,9 +17,12 @@ import com.meditrack.back.app.repository.UsuarioRepository;
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
+    private final NotificacionService notificacionService;
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-    public UsuarioService(UsuarioRepository usuarioRepository) {
+    public UsuarioService(UsuarioRepository usuarioRepository, NotificacionService notificacionService) {
         this.usuarioRepository = usuarioRepository;
+        this.notificacionService = notificacionService;
     }
 
     public List<Usuario> listarTodos() {
@@ -48,22 +52,36 @@ public class UsuarioService {
         if (usuarioRepository.existsByEmail(datos.get("email"))) {
             throw new RuntimeException("El email ya está registrado");
         }
-        
+
         if (usuarioRepository.existsByDni(datos.get("dni"))) {
             throw new RuntimeException("El DNI ya está registrado");
         }
+
+        String passwordHasheada = passwordEncoder.encode(datos.get("password"));
 
         Usuario nuevo = new Usuario(
             datos.get("email"),
             datos.get("nombre"),
             datos.get("dni"),
-            datos.get("password"),
+            passwordHasheada,
             rolNuevoUsuario
         );
-        
+
         agregarHistorial(nuevo, "Creación", "-", "-", LocalDateTime.now().toString(), autorDelCambio);
-        
-        return usuarioRepository.save(nuevo);
+
+        Usuario saved = usuarioRepository.save(nuevo);
+
+        try {
+            notificacionService.crearNotificacion(
+                saved,
+                "Registro Confirmado",
+                "Se ha confirmado tu registro en el sistema por el administrador " + autorDelCambio.getNombre() + " (" + autorDelCambio.getRole() + ")."
+            );
+        } catch (Exception e) {
+            System.err.println("Error al enviar notificación de confirmación de registro: " + e.getMessage());
+        }
+
+        return saved;
     }
 
     public Usuario actualizar(String id, Map<String, String> datos, Usuario autorDelCambio) {
@@ -78,12 +96,12 @@ public class UsuarioService {
 
         String fechaModificacion = LocalDateTime.now().toString();
 
-        if (datos.containsKey("nombre") && !usuario.getNombre().equals(datos.get("nombre"))){
+        if (datos.containsKey("nombre") && !usuario.getNombre().equals(datos.get("nombre"))) {
             agregarHistorial(usuario, "Nombre", usuario.getNombre(), datos.get("nombre"), fechaModificacion, autorDelCambio);
             usuario.setNombre(datos.get("nombre"));
         }
-        
-        if (datos.containsKey("email") && !usuario.getEmail().equals(datos.get("email"))){
+
+        if (datos.containsKey("email") && !usuario.getEmail().equals(datos.get("email"))) {
             if (usuarioRepository.existsByEmail(datos.get("email"))) {
                 throw new RuntimeException("El email ya está registrado en otra cuenta");
             }
@@ -91,7 +109,7 @@ public class UsuarioService {
             usuario.setEmail(datos.get("email"));
         }
 
-        if (datos.containsKey("dni") && !usuario.getDni().equals(datos.get("dni"))){
+        if (datos.containsKey("dni") && !usuario.getDni().equals(datos.get("dni"))) {
             if (usuarioRepository.existsByDni(datos.get("dni"))) {
                 throw new RuntimeException("El DNI ya está registrado en otra cuenta");
             }
@@ -99,17 +117,33 @@ public class UsuarioService {
             usuario.setDni(datos.get("dni"));
         }
 
-        if (datos.containsKey("role") && usuario.getRole() != rolObjetivo){
+        if (datos.containsKey("role") && usuario.getRole() != rolObjetivo) {
             agregarHistorial(usuario, "Role", usuario.getRole().toString(), rolObjetivo.toString(), fechaModificacion, autorDelCambio);
             usuario.setRole(rolObjetivo);
-        } 
-
-        if (datos.containsKey("password") && !datos.get("password").trim().isEmpty() && !usuario.getPassword().equals(datos.get("password"))) {
-            agregarHistorial(usuario, "Password", usuario.getPassword(), datos.get("password"), fechaModificacion, autorDelCambio);
-            usuario.setPassword(datos.get("password")); 
         }
 
-        return usuarioRepository.save(usuario);
+        if (datos.containsKey("password") && !datos.get("password").trim().isEmpty()) {
+            // Verificamos que la nueva password no sea igual a la actual (comparación BCrypt)
+            if (!passwordEncoder.matches(datos.get("password"), usuario.getPassword())) {
+                // En auditoría nunca se registra el valor real de la password
+                agregarHistorial(usuario, "Password", "[protegida]", "[protegida]", fechaModificacion, autorDelCambio);
+                usuario.setPassword(passwordEncoder.encode(datos.get("password")));
+            }
+        }
+
+        Usuario saved = usuarioRepository.save(usuario);
+
+        try {
+            notificacionService.crearNotificacion(
+                saved,
+                "Datos de Usuario Modificados",
+                "Tus datos personales o rol en la plataforma fueron modificados. Administrador responsable: " + autorDelCambio.getNombre() + "."
+            );
+        } catch (Exception e) {
+            System.err.println("Error al enviar notificación de actualización de usuario: " + e.getMessage());
+        }
+
+        return saved;
     }
 
     public Usuario toggleEstado(String id, Usuario autorDelCambio) {
@@ -132,14 +166,23 @@ public class UsuarioService {
     public Optional<Usuario> buscarPorEmail(String email) {
         return usuarioRepository.findByEmail(email);
     }
-    
+
     public Optional<Usuario> buscarPorDni(String dni) {
         return usuarioRepository.findByDni(dni);
     }
 
+    public String hashearPassword(String password) {
+        return passwordEncoder.encode(password);
+    }
+
+    public boolean verificarPassword(String rawPassword, String hashedPassword) {
+        return passwordEncoder.matches(rawPassword, hashedPassword);
+    }
+
     private void agregarHistorial(Usuario usuario, String campo, String valorAnterior, String valorNuevo, String fecha, Usuario autorDelCambio) {
         HistorialUsuario h = new HistorialUsuario(campo, valorAnterior, valorNuevo, fecha, autorDelCambio);
-        h.setUsuario(usuario); 
+        h.setUsuario(usuario);
         usuario.addHistorial(h);
     }
+    
 }

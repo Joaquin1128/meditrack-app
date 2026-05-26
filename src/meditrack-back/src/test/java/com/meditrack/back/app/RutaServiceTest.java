@@ -11,19 +11,32 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.Mock;
 
 import com.meditrack.back.app.model.Envio;
 import com.meditrack.back.app.model.EstadoEnvio;
 import com.meditrack.back.app.model.EstadoRuta;
+import com.meditrack.back.app.model.Role;
 import com.meditrack.back.app.model.Ruta;
 import com.meditrack.back.app.model.Usuario;
-import com.meditrack.back.app.model.Role;
 import com.meditrack.back.app.repository.EnvioRepository;
 import com.meditrack.back.app.repository.RutaEnvioRepository;
 import com.meditrack.back.app.repository.RutaRepository;
@@ -61,13 +74,12 @@ class RutaServiceTest {
         Envio envio = new Envio();
         envio.setId(id);
         envio.setEstado(EstadoEnvio.PENDIENTE);
-        envio.setDireccionEntrega("Av. Corrientes 1234");
         return envio;
     }
 
     private Map<String, Object> bodyValido() {
         return Map.of(
-            "fecha", "2026-05-18",
+            "fecha", java.time.LocalDate.now().toString(),
             "repartidorId", REPARTIDOR_ID,
             "envios", List.of(
                 Map.of("envioId", ENVIO_ID_1, "orden", 1),
@@ -88,7 +100,7 @@ class RutaServiceTest {
         when(rutaEnvioRepository.existsByEnvio_Id(anyString())).thenReturn(false);
         when(rutaRepository.save(any(Ruta.class))).thenAnswer(i -> i.getArguments()[0]);
         when(usuarioRepository.save(any(Usuario.class))).thenAnswer(i -> i.getArguments()[0]);
-        when(envioService.actualizarEstado(anyString(), eq(EstadoEnvio.ASIGNADO), anyString(), anyString()))
+        when(envioService.actualizarEstado(anyString(), eq(EstadoEnvio.ASIGNADO), anyString(), anyString(), any(), any()))
                 .thenAnswer(i -> {
                     Envio e = (i.getArgument(0).equals(ENVIO_ID_1)) ? envio1 : envio2;
                     e.setEstado(EstadoEnvio.ASIGNADO);
@@ -102,13 +114,13 @@ class RutaServiceTest {
         assertEquals(REPARTIDOR_ID, resultado.getRepartidorId());
         assertEquals(USUARIO_TEST, resultado.getUsuarioResponsable());
         assertTrue(repartidor.isHaciendoEntrega());
-        verify(envioService, times(2)).actualizarEstado(anyString(), eq(EstadoEnvio.ASIGNADO), eq(USUARIO_TEST), eq(REPARTIDOR_ID));
+        verify(envioService, times(2)).actualizarEstado(anyString(), eq(EstadoEnvio.ASIGNADO), eq(USUARIO_TEST), eq(REPARTIDOR_ID), eq(null), eq(null));
     }
 
     @Test
     void crear_sinEnvios_debeLanzarExcepcion() {
         Map<String, Object> body = Map.of(
-            "fecha", "2026-05-18",
+            "fecha", java.time.LocalDate.now().toString(),
             "repartidorId", REPARTIDOR_ID,
             "envios", new ArrayList<>()
         );
@@ -123,14 +135,15 @@ class RutaServiceTest {
     @Test
     void crear_conRepartidorOcupado_debeLanzarExcepcion() {
         Usuario repartidor = repartidorDisponible();
-        repartidor.setHaciendoEntrega(true);
+        String fecha = java.time.LocalDate.now().toString();
 
         when(usuarioRepository.findById(REPARTIDOR_ID)).thenReturn(Optional.of(repartidor));
+        when(rutaRepository.existsByRepartidorIdAndFechaAndEstadoNot(eq(REPARTIDOR_ID), eq(fecha), eq(EstadoRuta.COMPLETADA))).thenReturn(true);
 
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> rutaService.crear(bodyValido(), USUARIO_TEST));
 
-        assertEquals("El repartidor ya tiene una entrega activa", ex.getMessage());
+        assertEquals("El repartidor ya tiene una ruta asignada para el día: " + fecha, ex.getMessage());
     }
 
     @Test
@@ -195,8 +208,10 @@ class RutaServiceTest {
     void buscarPorId_conIdInexistente_debeLanzarExcepcion() {
         when(rutaRepository.findById("RUT-INEXISTENTE")).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class,
+        Exception excepcion = assertThrows(RuntimeException.class,
                 () -> rutaService.buscarPorId("RUT-INEXISTENTE"));
+                
+        assertTrue(excepcion.getMessage().contains("Ruta no encontrada"));
     }
     
 }
