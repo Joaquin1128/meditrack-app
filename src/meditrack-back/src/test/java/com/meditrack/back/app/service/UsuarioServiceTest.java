@@ -29,7 +29,6 @@ class UsuarioServiceTest {
     @InjectMocks
     private UsuarioService usuarioService;
 
-    // Usuarios de apoyo reutilizados en varios tests
     private Usuario admin;
     private Usuario supervisor;
     private Usuario operador;
@@ -37,16 +36,12 @@ class UsuarioServiceTest {
 
     @BeforeEach
     void setUp() {
-        // Estos usuarios simulan quién está "logueado" como autorDelCambio
         admin      = new Usuario("admin@meditrack.com",      "Admin",      "11111111", "pass", Role.ADMINISTRADOR);
         supervisor = new Usuario("supervisor@meditrack.com", "Supervisor", "22222222", "pass", Role.SUPERVISOR);
         operador   = new Usuario("operador@meditrack.com",   "Operador",   "33333333", "pass", Role.OPERADOR);
         repartidor = new Usuario("rep@meditrack.com",        "Repartidor", "44444444", "pass", Role.REPARTIDOR);
     }
 
-    // -------------------------------------------------------------------------
-    // tienePermisoSobreRol
-    // -------------------------------------------------------------------------
     @Nested
     @DisplayName("tienePermisoSobreRol()")
     class TienePermisoSobreRolTest {
@@ -98,14 +93,10 @@ class UsuarioServiceTest {
         }
     }
 
-    // -------------------------------------------------------------------------
-    // crear()
-    // -------------------------------------------------------------------------
     @Nested
     @DisplayName("crear()")
     class CrearTest {
 
-        // Datos mínimos válidos para crear un REPARTIDOR
         private Map<String, String> datosValidos() {
             return Map.of(
                 "email",    "nuevo@meditrack.com",
@@ -192,9 +183,6 @@ class UsuarioServiceTest {
         }
     }
 
-    // -------------------------------------------------------------------------
-    // actualizar()
-    // -------------------------------------------------------------------------
     @Nested
     @DisplayName("actualizar()")
     class ActualizarTest {
@@ -272,9 +260,6 @@ class UsuarioServiceTest {
         }
     }
 
-    // -------------------------------------------------------------------------
-    // toggleEstado()
-    // -------------------------------------------------------------------------
     @Nested
     @DisplayName("toggleEstado()")
     class ToggleEstadoTest {

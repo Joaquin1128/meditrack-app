@@ -65,8 +65,6 @@ class DashboardServiceTest {
         return c;
     }
 
-    // Por defecto los repos devuelven listas vacías para no repetir setup en cada
-    // test.
     @BeforeEach
     void defaultStubs() {
         lenient().when(clienteRepository.findAll()).thenReturn(Collections.emptyList());
