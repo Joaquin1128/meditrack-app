@@ -1,4 +1,4 @@
-const BASE_URL = 'http://localhost:8080';
+export const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 function getAuthHeaders() {
   try {
@@ -615,6 +615,24 @@ export async function getReporte({ tema, fechaInicio, fechaFin, granularidad }) 
     throw new Error(err.error || 'Error al generar el reporte operativo');
   }
   return res.json();
+}
+
+export async function exportReporteCsv({ tema, fechaInicio, fechaFin, granularidad }) {
+  const params = new URLSearchParams({
+    tema,
+    fechaInicio,
+    fechaFin,
+    granularidad
+  });
+  const res = await fetch(`${BASE_URL}/api/reportes/export/csv?${params.toString()}`, {
+    method: 'GET',
+    headers: { ...getAuthHeaders() }
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Error al exportar el reporte a CSV');
+  }
+  return res.blob();
 }
 
 export const getKpisDashboard = async (historico = false) => {

@@ -33,12 +33,13 @@ public class DataSeed implements CommandLineRunner {
 
     private void generateUsers() {
         if (usuarioRepository.count() == 0) {
-            Usuario admin = new Usuario("admin@meditrack.com", "Admin Principal", "12156236", "admin123",
+            org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder encoder = new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder();
+            Usuario admin = new Usuario("admin@meditrack.com", "Admin Principal", "12156236", encoder.encode("admin123"),
                     Role.ADMINISTRADOR);
-            Usuario supervisor = new Usuario("supervisor@meditrack.com", "Admin MediTrack", "30156256", "1234",
+            Usuario supervisor = new Usuario("supervisor@meditrack.com", "Admin MediTrack", "30156256", encoder.encode("1234"),
                     Role.SUPERVISOR);
-            Usuario operador = new Usuario("operador@meditrack.com", "Carlos Ruiz", "42156236", "1234", Role.OPERADOR);
-            Usuario repartidor = new Usuario("repartidor@meditrack.com", "Diego Torres", "41156236", "1234",
+            Usuario operador = new Usuario("operador@meditrack.com", "Carlos Ruiz", "42156236", encoder.encode("1234"), Role.OPERADOR);
+            Usuario repartidor = new Usuario("repartidor@meditrack.com", "Diego Torres", "41156236", encoder.encode("1234"),
                     Role.REPARTIDOR);
 
             usuarioRepository.save(admin);
