@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import { cambiarEstadoCliente, getClientes } from '../../services/api';
-import { getTipoStyles, iconos } from '../../util/Util';
+import { getTipoStyles, iconos, DefaultIcon } from '../../util/Util';
 
 const Skeleton = ({ width = '100%', height = '20px', borderRadius = '4px' }) => (
     <div style={{ width, height, borderRadius, backgroundColor: '#E5E7EB', animation: 'pulse 1.5s infinite' }} />
@@ -17,16 +17,16 @@ function Clientes() {
     const navigate = useNavigate();
 
     useEffect(() => {
-  getClientes()
-    .then(data => {
-      setClientes(data);
-      setLoading(false);
-    })
-    .catch(err => {
-      console.error(err);
-      setLoading(false);
-    });
-}, []);
+        getClientes()
+            .then(data => {
+                setClientes(data);
+                setLoading(false);
+            })
+            .catch(err => {
+                console.error(err);
+                setLoading(false);
+            });
+    }, []);
 
     const handleInactivar = async (id) => {
         try {
@@ -188,7 +188,7 @@ function Clientes() {
                                                 <Skeleton width="42px" height="42px" borderRadius="50%" />
                                                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
                                                     <Skeleton width="140px" height="16px" />
-                                                    <Skeleton width="200px" height="12px" />
+                                                    <Skeleton width="200px" height="12px" className="mobile-hidden" />
                                                 </div>
                                             </div>
                                         </td>
@@ -211,21 +211,22 @@ function Clientes() {
                                                         width: '42px',
                                                         height: '42px',
                                                         borderRadius: '50%',
-                                                        background: '#DCFCE7',
                                                         display: 'flex',
                                                         alignItems: 'center',
                                                         justifyContent: 'center',
-                                                        fontWeight: '700',
                                                         ...getTipoStyles(c.tipoEstablecimiento),
                                                         border: '1px solid #E5E7EB'
                                                     }}>
-                                                        {iconos[c.tipoEstablecimiento] || '🏢'}
+                                                        {(() => {
+                                                            const IconComponent = iconos[c.tipoEstablecimiento] || DefaultIcon;
+                                                            return <IconComponent size={20} />;
+                                                        })()}
                                                     </div>
                                                     <div>
                                                         <div style={{ fontWeight: '700', color: '#111827' }}>
                                                             {c.nombre}
                                                         </div>
-                                                        <div style={{
+                                                        <div className="mobile-hidden" style={{
                                                             fontSize: '13px',
                                                             color: '#6B7280',
                                                             maxWidth: '320px',

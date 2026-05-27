@@ -70,8 +70,8 @@ public class RutaService {
             throw new IllegalArgumentException("El repartidor no está activo");
         }
 
-        if (repartidor.isHaciendoEntrega()) {
-            throw new IllegalArgumentException("El repartidor ya tiene una entrega activa");
+        if (rutaRepository.existsByRepartidorIdAndFechaAndEstadoNot(repartidorId, fecha, EstadoRuta.COMPLETADA)) {
+            throw new IllegalArgumentException("El repartidor ya tiene una ruta asignada para el día: " + fecha);
         }
 
         for (Map<String, Object> envioData : enviosData) {
@@ -94,16 +94,32 @@ public class RutaService {
 
         for (Map<String, Object> envioData : enviosData) {
             String envioId = (String) envioData.get("envioId");
-            int orden = ((Number) envioData.get("orden")).intValue();
+
+            int retiroOrden = 0;
+            int entregaOrden = 0;
+            if (envioData.containsKey("retiroOrden")) {
+                retiroOrden = ((Number) envioData.get("retiroOrden")).intValue();
+            } else if (envioData.containsKey("orden")) {
+                retiroOrden = ((Number) envioData.get("orden")).intValue();
+            }
+
+            if (envioData.containsKey("entregaOrden")) {
+                entregaOrden = ((Number) envioData.get("entregaOrden")).intValue();
+            } else if (envioData.containsKey("orden")) {
+                entregaOrden = ((Number) envioData.get("orden")).intValue();
+            }
 
             Envio envio = envioRepository.findById(envioId).get();
-            ruta.agregarEnvio(new RutaEnvio(envio, orden));
+            ruta.agregarEnvio(new RutaEnvio(envio, retiroOrden, entregaOrden));
 
             envioService.actualizarEstado(envioId, EstadoEnvio.ASIGNADO, usuario, repartidorId, null, null);
         }
 
-        repartidor.setHaciendoEntrega(true);
-        usuarioRepository.save(repartidor);
+        java.time.LocalDate hoy = java.time.LocalDate.now();
+        if (fecha.equals(hoy.toString())) {
+            repartidor.setHaciendoEntrega(true);
+            usuarioRepository.save(repartidor);
+        }
 
         return rutaRepository.save(ruta);
     }
