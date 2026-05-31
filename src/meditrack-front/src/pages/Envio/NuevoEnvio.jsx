@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createEnvio, getMedicamentos, getClientes } from '../../services/api';
+import { crearMailSistema } from '../../util/Util';
 
 const FORM_INICIAL = {
   remitente: '',
@@ -128,7 +129,7 @@ function NuevoEnvio() {
       (m.idMedicamento === idMedicamento && m.lote === lote) ? { ...m, cantidad: val } : m
     ));
   };
-console.log("asd")
+
   const handleGuardar = async () => {
     const camposAValidar = ['remitente', 'destinatario', 'origen', 'destino', 'fechaEstimada'];
     const hayCamposVacios = camposAValidar.some(key => !form[key]?.trim());
@@ -162,6 +163,23 @@ console.log("asd")
       };
 
       await createEnvio(payload);
+
+      await crearMailSistema({
+        asunto: 'Nuevo envío creado',
+        remitente: 'sistema@meditrack.com',
+        destinatario: form.destinatario,
+        contenido: `Se creó un nuevo envío.
+
+        Remitente: ${form.remitente}
+        Destinatario: ${form.destinatario}
+        Dirección destino: ${form.destino}
+        Fecha estimada: ${form.fechaEstimada}
+
+        Medicamentos:
+        ${descripcionGenerada}
+      `
+      });
+
       navigate('/envios', { state: { success: true } });
     } catch (err) {
       setError(err.message || 'Error de conexión con el servidor.');
@@ -194,9 +212,15 @@ console.log("asd")
     setOpenDestinatario(false);
   };
 
-  const clientesFiltradosRemitente = busquedaRemitente.trim() ? clientes.filter(c => c.nombre?.toLowerCase().includes(busquedaRemitente.toLowerCase())) : clientes;
+  const clientesFiltradosRemitente = clientes.filter(c =>
+    c.estadoActivo &&
+    c.nombre?.toLowerCase().includes(busquedaRemitente.toLowerCase())
+  );
 
-  const clientesFiltradosDestinatario = clientes.filter(c => c.nombre?.toLowerCase().includes(busquedaDestinatario.toLowerCase()));
+  const clientesFiltradosDestinatario = clientes.filter(c =>
+    c.estadoActivo &&
+    c.nombre?.toLowerCase().includes(busquedaDestinatario.toLowerCase())
+  );
 
   const opcionesFiltradas = catalogo.filter(m =>
     m.estadoActivo &&
@@ -398,7 +422,7 @@ console.log("asd")
         </div>
 
         <div style={{ background: '#F9FAFB', padding: '20px', borderRadius: '12px', border: '1px solid #E5E7EB', marginTop: '20px' }}>
-          <h3 style={{ margin: '0 0 4px 0', fontSize: '16px', fontWeight: '700', color: '#374151' }}>Asignación y Detalle de la Carga *</h3>
+          <h3 style={{ margin: '0 0 4px 0', fontSize: '16px', fontWeight: '700', color: '#374151' }}>Asignación y detalle de la carga *</h3>
           <p style={{ margin: '0 0 16px 0', fontSize: '13px', color: '#6B7280' }}>Busque un medicamento del catálogo. Luego complete lote, vencimiento vigente y añádalo.</p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
@@ -438,14 +462,14 @@ console.log("asd")
                 <input type="text" value={loteMed} onChange={e => setLoteMed(e.target.value)} placeholder="Ej: LOTE-123" style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #D1D5DB', boxSizing: 'border-box', minHeight: '42px' }} />
               </div>
               <div style={{ flex: 1 }}>
-                <label style={{ fontSize: '13px', fontWeight: '600', color: '#4B5563', marginBottom: '4px', display: 'block' }}>F. Vencimiento *</label>
+                <label style={{ fontSize: '13px', fontWeight: '600', color: '#4B5563', marginBottom: '4px', display: 'block' }}>Fecha de vencimiento *</label>
                 <input type="date" value={vencimientoMed} onChange={e => setVencimientoMed(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #D1D5DB', boxSizing: 'border-box', minHeight: '42px' }} />
               </div>
               <div style={{ width: '100px' }}>
                 <label style={{ fontSize: '13px', fontWeight: '600', color: '#4B5563', marginBottom: '4px', display: 'block' }}>Cantidad</label>
                 <input type="number" min="1" value={cantidadMed} onChange={e => setCantidadMed(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #D1D5DB', boxSizing: 'border-box', minHeight: '42px' }} />
               </div>
-              <button type="button" onClick={handleAñadirCarga} disabled={!busqueda.trim()} style={{ padding: '11px 20px', backgroundColor: '#10B981', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', minHeight: '42px' }}>
+              <button type="button" onClick={handleAñadirCarga} disabled={!busqueda.trim()} style={{ padding: '11px 20px', backgroundColor: '#10B981', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif", minHeight: '42px' }}>
                 AÑADIR
               </button>
             </div>

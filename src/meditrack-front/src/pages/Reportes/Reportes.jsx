@@ -1,17 +1,23 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { getReporte } from '../../services/api';
-
+import { exportReporteCsv } from '../../services/api';
 function Reportes() {
-  const [tema, setTema] = useState('volumen');
-  const [fechaInicio, setFechaInicio] = useState('');
-  const [fechaFin, setFechaFin] = useState('');
-  const [granularidad, setGranularidad] = useState('diaria');
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [tema, setTema] = useState(location.state?.tema || 'volumen');
+  const [fechaInicio, setFechaInicio] = useState(location.state?.fechaInicio || '');
+  const [fechaFin, setFechaFin] = useState(location.state?.fechaFin || '');
+  const [granularidad, setGranularidad] = useState(location.state?.granularidad || 'diaria');
   const [resultados, setResultados] = useState(null);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState('');
 
+  const puedeExportar = !!resultados && Array.isArray(resultados.data) && resultados.data.length > 0;
+
   const handleGenerarReporte = async (e) => {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
     if (!fechaInicio || !fechaFin) {
       setError('Por favor, seleccione un rango de fechas válido.');
       return;
@@ -29,11 +35,43 @@ function Reportes() {
     }
   };
 
+  useEffect(() => {
+    if (location.state?.autoEjecutar) {
+      handleGenerarReporte();
+    }
+  }, [location.state]);
+  const handleExportarCsv = async () => {
+
+    if (!fechaInicio || !fechaFin) {
+      setError('Por favor, seleccione un rango de fechas válido.');
+      return;
+    }
+    setError('');
+    setCargando(true);
+    try {
+      const blob = await exportReporteCsv({ tema, fechaInicio, fechaFin, granularidad });
+      const url = window.URL.createObjectURL(blob);
+      const filename = `reporte_${tema}_${fechaInicio}_a_${fechaFin}.csv`;
+      const a = document.createElement('a');
+
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      setError(err.message || 'Error al exportar el reporte a CSV.');
+    } finally {
+      setCargando(false);
+    }
+  };
+
   const skeletonStyle = { backgroundColor: '#E5E7EB', borderRadius: '8px', height: '42px', width: '100%', marginBottom: '10px' };
-  
-  const buttonGroupStyle = { 
-    display: 'flex', 
-    gap: '10px', 
+
+  const buttonGroupStyle = {
+    display: 'flex',
+    gap: '10px',
     marginTop: '5px',
     flexWrap: 'wrap',
     width: '100%'
@@ -71,21 +109,21 @@ function Reportes() {
     width: '100%',
     overflowX: 'auto',
     WebkitOverflowScrolling: 'touch',
-    border: '1px solid #E5E7EB', 
-    borderRadius: '8px', 
+    border: '1px solid #E5E7EB',
+    borderRadius: '8px',
     background: '#fff'
   };
 
   return (
     <div className="container" style={{ padding: '10px', maxWidth: '1200px', margin: '0 auto' }}>
-      <div className="page-header" style={{ marginBottom: '20px' }}>
-        <h1 style={{ fontSize: 'calc(18px + 1vw)', margin: 0 }}>Reportes Operativos</h1>
+      <div className="page-header-row" style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '24px' }}>
+        <button className="btn btn-secondary" onClick={() => navigate('/menu')}>VOLVER</button>
+        <h1 style={{ fontSize: '24px', fontWeight: '800', color: '#111827' }}>Reportes Operativos</h1>
       </div>
 
       <div className="card" style={{ padding: '20px', backgroundColor: '#fff', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
         <form onSubmit={handleGenerarReporte}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            
             <div className="form-group">
               <label style={{ fontWeight: '600', color: '#4B5563', fontSize: '14px' }}>Tema del Reporte *</label>
               <div style={buttonGroupStyle}>
@@ -128,8 +166,44 @@ function Reportes() {
             </div>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '25px', paddingTop: '20px', borderTop: '1px solid #eee' }}>
-            <button type="submit" style={{ width: '100%', maxWidth: '200px', padding: '12px 25px', backgroundColor: '#10B981', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '25px', paddingTop: '20px', borderTop: '1px solid #eee', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              onClick={handleExportarCsv}
+              disabled={!puedeExportar || cargando}
+              style={{
+                width: '100%',
+                maxWidth: '200px',
+                padding: '12px 25px',
+                border: 'none',
+                borderRadius: '8px',
+                fontWeight: 'bold',
+                fontSize: '14px',
+                cursor: (!puedeExportar || cargando) ? 'not-allowed' : 'pointer',
+                backgroundColor: (!puedeExportar || cargando) ? '#F3F4F6' : '#2563EB',
+                color: (!puedeExportar || cargando) ? '#6B7280' : 'white',
+                opacity: (!puedeExportar || cargando) ? 0.6 : 1,
+                transition: 'all 0.2s ease'
+              }}
+            >
+              DESCARGAR
+            </button>
+
+            <button
+              type="submit"
+              style={{
+                width: '100%',
+                maxWidth: '200px',
+                padding: '12px 25px',
+                backgroundColor: '#10B981',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                fontSize: '14px'
+              }}
+            >
               GENERAR REPORTE
             </button>
           </div>
@@ -140,7 +214,7 @@ function Reportes() {
         {error && <div style={{ color: '#dc3545', backgroundColor: '#f8d7da', padding: '10px', borderRadius: '4px', marginBottom: '15px', fontWeight: 'bold', fontSize: '14px' }}>{error}</div>}
 
         <div className="card" style={{ padding: '20px', backgroundColor: '#fff', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-          <h3 style={{ margin: '0 0 15px 0', fontSize: '16px', fontWeight: '700', color: '#374151' }}>Resultados del Análisis</h3>
+          <h3 style={{ margin: '0 0 15px 0', fontSize: '16px', fontWeight: '700', color: '#374151' }}>Resultados del análisis</h3>
           
           {cargando && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -206,6 +280,7 @@ function Reportes() {
                     <tr>
                       <th style={{ padding: '12px 10px', textAlign: 'left' }}>Período</th>
                       <th style={{ padding: '12px 10px', textAlign: 'left' }}>Tipo de Incidencia</th>
+                      <th style={{ padding: '12px 10px', textAlign: 'left' }}>Descripción</th>
                       <th style={{ padding: '12px 10px', textAlign: 'left' }}>Repartidor Asignado</th>
                       <th style={{ padding: '12px 10px', textAlign: 'center' }}>Estado</th>
                     </tr>
@@ -214,9 +289,10 @@ function Reportes() {
                     {resultados.data.map((item, idx) => (
                       <tr key={idx} style={{ borderBottom: '1px solid #E5E7EB' }}>
                         <td style={{ padding: '10px', color: '#6B7280' }}>{item.periodo}</td>
-                        <td style={{ padding: '10px', fontWeight: '600' }}>{item.tipo}</td>
+                        <td style={{ padding: '10px', fontWeight: '600' }}>{item.tipo?.replaceAll('_', ' ')}</td>
+                        <td style={{ padding: '10px', color: '#4B5563', maxWidth: '300px', wordBreak: 'break-word' }}>{item.descripcion}</td>
                         <td style={{ padding: '10px' }}>{item.repartidor}</td>
-                        <td style={{ padding: '10px', textAlign: 'center' }}>{item.estado}</td>
+                        <td style={{ padding: '10px', textAlign: 'center' }}><span style={{ color: '#F59E0B', fontWeight: 'bold' }}>{item.estado?.replaceAll('_', ' ')}</span></td>
                       </tr>
                     ))}
                   </tbody>

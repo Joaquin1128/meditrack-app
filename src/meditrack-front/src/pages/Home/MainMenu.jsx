@@ -11,7 +11,9 @@ import {
   Hospital,
   NotepadText,
   History,
-  CircleAlert
+  CircleAlert,
+  LayoutDashboard,
+  Mail
 } from 'lucide-react';
 
 const MainMenu = () => {
@@ -47,6 +49,7 @@ const MainMenu = () => {
       title: "Reportes",
       rolesPermitidos: ['ADMINISTRADOR', 'SUPERVISOR'],
       items: [
+        { label: "KPIs", icon: <LayoutDashboard size={32} />, path: "/kpis", color: "#4338CA" },
         { label: "Reportes", icon: <ShieldAlert size={32} />, path: "/reportes", color: "#4338CA" },
       ]
     },
@@ -55,11 +58,23 @@ const MainMenu = () => {
       rolesPermitidos: ['ADMINISTRADOR', 'SUPERVISOR', 'REPARTIDOR'],
       items: [
         { label: "Repartidor", icon: <Users size={32} />, path: "/repartidor", color: "#ec7f35" },
-        { label: "Asignaciones", icon: <NotepadText size={32} />, path: "/asignaciones-repartidor", color: "#ec7f35" },
+        { label: "Asignaciones", icon: <NotepadText size={32} />, path: "/viajes", color: "#ec7f35" },
         { label: "Historial", icon: <History size={32} />, path: "/historial-repartidor", color: "#ec7f35" },
         { label: "Transportes", icon: <Truck size={32} />, path: "/transportes", color: "#ec7f35" },
       ]
-    }
+    },
+    {
+      title: "Comunicaciones",
+      rolesPermitidos: ['ADMINISTRADOR', 'SUPERVISOR'],
+      items: [
+        {
+          label: "Mails",
+          icon: <Mail size={32} />,
+          path: "/mails",
+          color: "#7c3aed"
+        },
+      ]
+    },
   ];
 
   const filteredSections = menuSections.filter(section => 
