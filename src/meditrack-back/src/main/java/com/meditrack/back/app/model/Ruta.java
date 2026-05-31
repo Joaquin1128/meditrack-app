@@ -30,7 +30,7 @@ public class Ruta {
     @Column(name = "repartidor_id", nullable = false)
     private String repartidorId;
 
-    @Column(name = "transporte_id", nullable = false)
+    @Column(name = "transporte_id")
     private Long transporteId;
 
     @Enumerated(EnumType.STRING)
