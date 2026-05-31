@@ -178,7 +178,7 @@ export async function updateEnvio(id, data) {
   return res.json();
 }
 
-export async function updateEstadoEnvio(id, estado, fecha, hora, usuario, repartidorId = null,tipoIncidencia = null, descripcionIncidencia = null, receptorNombre = null, receptorDni = null) {
+export async function updateEstadoEnvio(id, estado, fecha, hora, usuario, repartidorId = null, tipoIncidencia = null, descripcionIncidencia = null, receptorNombre = null, receptorDni = null) {
   const bodyData = { estado, fecha, hora, usuario };
   if (repartidorId) {
     bodyData.repartidorId = repartidorId;
@@ -390,6 +390,13 @@ export async function toggleEstadoUsuario(id) {
 
 
 export async function getRutas() {
+
+  const headers = {
+    ...getAuthHeaders()
+  };
+
+  console.log("HEADERS RUTAS:", headers);
+
   const res = await fetch(`${BASE_URL}/api/rutas?_t=${Date.now()}`, {
     headers: { ...getAuthHeaders() },
     cache: 'no-store'
@@ -521,10 +528,7 @@ export async function desactivarTransporte(id) {
   if (!res.ok) throw new Error(body.error || "Error al desactivar transporte");
   return body;
 }
-<<<<<<< HEAD
-=======
 
->>>>>>> origin/main
 //Clientes
 export async function getClientes() {
   const response = await fetch(`${BASE_URL}/api/clientes`, {
@@ -544,7 +548,7 @@ export async function getClienteById(id) {
       headers: { ...getAuthHeaders() },
     }
   );
-  
+
   if (!response.ok)
     throw new Error('Error al obtener cliente');
 
@@ -621,9 +625,9 @@ export async function getReporte({ tema, fechaInicio, fechaFin, granularidad }) 
 }
 
 export const getKpisDashboard = async (historico = false) => {
-    const response = await fetch(`${BASE_URL}/api/kpis/dashboard?historico=${historico}`);
-    if (!response.ok) throw new Error('Error al obtener las métricas');
-    return await response.json();
+  const response = await fetch(`${BASE_URL}/api/kpis/dashboard?historico=${historico}`);
+  if (!response.ok) throw new Error('Error al obtener las métricas');
+  return await response.json();
 }
 
 export async function exportReporteCsv({ tema, fechaInicio, fechaFin, granularidad }) {
