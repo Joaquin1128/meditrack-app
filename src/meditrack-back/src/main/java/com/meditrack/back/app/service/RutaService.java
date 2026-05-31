@@ -65,7 +65,7 @@ public class RutaService {
         if (rutaRepository.existsByTransporteIdAndFechaAndEstadoNot(transporteId, fecha, EstadoRuta.COMPLETADA)) {
             throw new IllegalArgumentException("El transporte ya tiene una ruta asignada para el día: " + fecha);
         }
-        
+
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> enviosData = (List<Map<String, Object>>) datos.get("envios");
 
@@ -77,15 +77,15 @@ public class RutaService {
             throw new IllegalArgumentException("La fecha de la ruta es obligatoria");
         }
 
-        if (transporteId == null) {
-            throw new IllegalArgumentException("El transporte es obligatorio");
-        }
-
         Usuario repartidor = usuarioRepository.findById(repartidorId)
                 .orElseThrow(() -> new IllegalArgumentException("Repartidor no encontrado"));
 
         if (!repartidor.isEstadoActivo()) {
             throw new IllegalArgumentException("El repartidor no está activo");
+        }
+
+        if (transporteId == null) {
+            throw new IllegalArgumentException("El transporte es obligatorio");
         }
 
         Transporte transporte = transporteRepository.findById(transporteId)
