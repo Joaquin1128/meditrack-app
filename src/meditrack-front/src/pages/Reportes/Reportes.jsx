@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { getReporte } from '../../services/api';
-
+import { exportReporteCsv } from '../../services/api';
 function Reportes() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [tema, setTema] = useState(location.state?.tema || 'volumen');
   const [fechaInicio, setFechaInicio] = useState(location.state?.fechaInicio || '');
   const [fechaFin, setFechaFin] = useState(location.state?.fechaFin || '');
@@ -11,6 +13,8 @@ function Reportes() {
   const [resultados, setResultados] = useState(null);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState('');
+
+  const puedeExportar = !!resultados && Array.isArray(resultados.data) && resultados.data.length > 0;
 
   const handleGenerarReporte = async (e) => {
     if (e && e.preventDefault) e.preventDefault();
@@ -36,12 +40,38 @@ function Reportes() {
       handleGenerarReporte();
     }
   }, [location.state]);
+  const handleExportarCsv = async () => {
+
+    if (!fechaInicio || !fechaFin) {
+      setError('Por favor, seleccione un rango de fechas válido.');
+      return;
+    }
+    setError('');
+    setCargando(true);
+    try {
+      const blob = await exportReporteCsv({ tema, fechaInicio, fechaFin, granularidad });
+      const url = window.URL.createObjectURL(blob);
+      const filename = `reporte_${tema}_${fechaInicio}_a_${fechaFin}.csv`;
+      const a = document.createElement('a');
+
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      setError(err.message || 'Error al exportar el reporte a CSV.');
+    } finally {
+      setCargando(false);
+    }
+  };
 
   const skeletonStyle = { backgroundColor: '#E5E7EB', borderRadius: '8px', height: '42px', width: '100%', marginBottom: '10px' };
-  
-  const buttonGroupStyle = { 
-    display: 'flex', 
-    gap: '10px', 
+
+  const buttonGroupStyle = {
+    display: 'flex',
+    gap: '10px',
     marginTop: '5px',
     flexWrap: 'wrap',
     width: '100%'
@@ -79,15 +109,16 @@ function Reportes() {
     width: '100%',
     overflowX: 'auto',
     WebkitOverflowScrolling: 'touch',
-    border: '1px solid #E5E7EB', 
-    borderRadius: '8px', 
+    border: '1px solid #E5E7EB',
+    borderRadius: '8px',
     background: '#fff'
   };
 
   return (
     <div className="container" style={{ padding: '10px', maxWidth: '1200px', margin: '0 auto' }}>
-      <div className="page-header" style={{ marginBottom: '20px' }}>
-        <h1 style={{ fontSize: 'calc(18px + 1vw)', margin: 0 }}>Reportes operativos</h1>
+      <div className="page-header-row" style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '24px' }}>
+        <button className="btn btn-secondary" onClick={() => navigate('/menu')}>VOLVER</button>
+        <h1 style={{ fontSize: '24px', fontWeight: '800', color: '#111827' }}>Reportes Operativos</h1>
       </div>
 
       <div className="card" style={{ padding: '20px', backgroundColor: '#fff', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
@@ -135,8 +166,44 @@ function Reportes() {
             </div>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '25px', paddingTop: '20px', borderTop: '1px solid #eee' }}>
-            <button type="submit" style={{ width: '100%', maxWidth: '200px', padding: '12px 25px', backgroundColor: '#10B981', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '25px', paddingTop: '20px', borderTop: '1px solid #eee', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              onClick={handleExportarCsv}
+              disabled={!puedeExportar || cargando}
+              style={{
+                width: '100%',
+                maxWidth: '200px',
+                padding: '12px 25px',
+                border: 'none',
+                borderRadius: '8px',
+                fontWeight: 'bold',
+                fontSize: '14px',
+                cursor: (!puedeExportar || cargando) ? 'not-allowed' : 'pointer',
+                backgroundColor: (!puedeExportar || cargando) ? '#F3F4F6' : '#2563EB',
+                color: (!puedeExportar || cargando) ? '#6B7280' : 'white',
+                opacity: (!puedeExportar || cargando) ? 0.6 : 1,
+                transition: 'all 0.2s ease'
+              }}
+            >
+              DESCARGAR
+            </button>
+
+            <button
+              type="submit"
+              style={{
+                width: '100%',
+                maxWidth: '200px',
+                padding: '12px 25px',
+                backgroundColor: '#10B981',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                fontSize: '14px'
+              }}
+            >
               GENERAR REPORTE
             </button>
           </div>

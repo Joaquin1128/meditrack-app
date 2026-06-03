@@ -625,6 +625,33 @@ export const getKpisDashboard = async (historico = false) => {
   return await response.json();
 };
 
+export async function exportReporteCsv({ tema, fechaInicio, fechaFin, granularidad }) {
+  const params = new URLSearchParams({
+    tema,
+    fechaInicio,
+    fechaFin,
+    granularidad: granularidad || "diaria",
+  });
+
+  const url = (`${BASE_URL}/api/reportes/export/csv?${params.toString()}`);
+
+  const res = await fetch(url, {
+    method: 'GET',
+    headers: {
+      ...getAuthHeaders(),
+      Accept: 'text/csv',
+    },
+  });
+
+  await handleResponse(res);
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || "Error al exportar el reporte a CSV");
+  }
+
+  return await res.blob();
+}
 //Mails
 export async function getMails() {
   const response = await fetch(
