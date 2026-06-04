@@ -681,13 +681,6 @@ export async function exportReporteExcel({ tema, fechaInicio, fechaFin, granular
   return await res.blob();
 }
 
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.error || "Error al exportar el reporte a CSV");
-  }
-
-  return await res.blob();
-}
 //Mails
 export async function getMails() {
   const response = await fetch(
