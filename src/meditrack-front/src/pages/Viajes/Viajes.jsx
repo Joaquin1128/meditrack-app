@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { getRutas, getClientes } from '../../services/api';
 import MapaRuta from '../../components/MapaRuta';
+import OfflineBanner from '../../components/OfflineBanner';
 import { iconos, DefaultIcon } from '../../util/Util';
 import './Viajes.css';
 
@@ -313,6 +314,14 @@ function Viajes() {
 
     useEffect(() => {
         if (user) fetchRutas();
+
+        const handleOnlineReload = () => {
+            if (user) fetchRutas(true);
+        };
+        window.addEventListener('online', handleOnlineReload);
+        return () => {
+            window.removeEventListener('online', handleOnlineReload);
+        };
     }, [user]);
 
     useEffect(() => {
@@ -450,6 +459,7 @@ function Viajes() {
 
     return (
         <div className="viajes-page">
+            <OfflineBanner />
             <div className="viajes-content-container">
                 
                 {/* Cabecera Principal */}
