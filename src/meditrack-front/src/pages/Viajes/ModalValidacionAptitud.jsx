@@ -41,7 +41,7 @@ export function ModalValidacionAptitud({ onAprobado, onBloqueado, onCancelar }) 
         }
     }, [onAprobado, onBloqueado]);
 
-    const puedeReintentar = fase === 'error' && intentosRestantes > 0;
+    const _puedeReintentar = fase === 'error' && intentosRestantes > 0;
     const bloqueadoFinal = fase === 'error' && intentosRestantes <= 0;
 
     const getMensaje = () => {
