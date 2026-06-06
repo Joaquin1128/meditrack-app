@@ -43,4 +43,5 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
     public void afterHandshake(ServerHttpRequest request, ServerHttpResponse response,
             WebSocketHandler wsHandler, Exception exception) {
     }
+    
 }

@@ -14,7 +14,9 @@ const WS_URL = 'http://localhost:8080/ws';
  */
 export function useNotificacionesWS(userId, token, onNotificacion) {
   const callbackRef = useRef(onNotificacion);
-  callbackRef.current = onNotificacion;
+  useEffect(() => {
+    callbackRef.current = onNotificacion;
+  });
 
   useEffect(() => {
     if (!userId || !token) return;
