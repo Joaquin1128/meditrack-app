@@ -1,13 +1,14 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { 
+import {
   logout as apiLogout,
   getNotificaciones,
   getNotificacionesUnreadCount,
   marcarNotificacionLeida,
   marcarTodasNotificacionesLeidas
 } from '../services/api';
+import { useNotificacionesWS } from '../hooks/useNotificacionesWS';
 import logo from '../assets/logo.png';
 import ModalHistorialNotificaciones from './ModalHistorialNotificaciones';
 
@@ -20,6 +21,16 @@ function Navbar({ publicMode = false, buttonText, buttonRoute }) {
   const [isOpen, setIsOpen] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const dropdownRef = useRef(null);
+
+  const wsToken = user?.token ?? null;
+  const wsUserId = user?.id ?? null;
+
+  const handleNuevaNotificacion = useCallback((notif) => {
+    setUnreadCount(prev => prev + 1);
+    setNotifications(prev => [notif, ...prev]);
+  }, []);
+
+  useNotificacionesWS(wsUserId, wsToken, handleNuevaNotificacion);
 
   const fetchUnreadCount = async () => {
     if (!user) return;
