@@ -389,6 +389,7 @@ function Viajes() {
     const porcentajeCompletado = totalParadas > 0 ? Math.round((paradasCompletadas / totalParadas) * 100) : 0;
     
     const rutaIniciada = paradasCompletadas > 0 || (paradaActual && !['PENDIENTE', 'ASIGNADO'].includes(paradaActual.envio.estado));
+    const esRutaDeHoy = rutaHoy?.fecha === hoy;
 
     const getClienteIcon = (name = '') => {
         const lower = name.toLowerCase().trim();
@@ -700,10 +701,21 @@ function Viajes() {
                 <div className="viajes-footer">
                     <div className="viajes-footer-container">
                         <button 
-                            onClick={() => navigate('/viajes/detalle')}
-                            className={`viajes-footer-btn btn-action-hover ${paradaActual ? 'is-active' : 'is-inactive'}`}
+                            onClick={() => esRutaDeHoy && navigate('/viajes/detalle')}
+                            disabled={!esRutaDeHoy}
+                            className={`viajes-footer-btn btn-action-hover ${paradaActual && esRutaDeHoy ? 'is-active' : 'is-inactive'}`}
+                            style={{
+                                cursor: esRutaDeHoy ? 'pointer' : 'not-allowed',
+                                opacity: esRutaDeHoy ? 1 : 0.6,
+                                background: esRutaDeHoy ? '' : '#9CA3AF'
+                            }}
                         >
-                            {paradaActual ? (
+                            {!esRutaDeHoy ? (
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                                    RUTA PROGRAMADA PARA EL {rutaHoy.fecha.split('-').reverse().join('/')}
+                                </span>
+                            ) : paradaActual ? (
                                 <>
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                                     {rutaIniciada ? 'CONTINUAR RUTA' : 'INICIAR RUTA'} (PARADA {indexParadaActual})
