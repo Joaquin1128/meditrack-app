@@ -1,21 +1,23 @@
 import { useState } from "react";
+import { Link } from 'react-router-dom';
 import { getTrackingPublico } from "../../services/api";
 import Navbar from '../../components/Navbar';
 import bg from '../../assets/bg.png';
 import { Search } from 'lucide-react';
 
-const PASOS =[
-    {key: 'PENDIENTE', label: 'PENDIENTE'},
-    {key: 'ASIGNADO', label: 'ASIGNADO'},
-    {key: 'EN_PREPARACION', label: 'EN PREPARACION'},
-    {key: 'EN_TRANSITO', label: 'EN TRANSITO'},
-    {key: 'EN_PUNTO_DE_ENTREGA', label: 'EN PUNTO DE ENTREGA'},
-    {key: 'ENTREGADO', label: 'ENTREGADO'},
-    {key: 'CANCELADO', label: 'CANCELADO'},
+
+const PASOS = [
+    { key: 'PENDIENTE', label: 'PENDIENTE' },
+    { key: 'ASIGNADO', label: 'ASIGNADO' },
+    { key: 'EN_PREPARACION', label: 'EN PREPARACION' },
+    { key: 'EN_TRANSITO', label: 'EN TRANSITO' },
+    { key: 'EN_PUNTO_DE_ENTREGA', label: 'EN PUNTO DE ENTREGA' },
+    { key: 'ENTREGADO', label: 'ENTREGADO' },
+    { key: 'CANCELADO', label: 'CANCELADO' },
 ];
 
-function formaUltimaActualizacion(fecha, hora){
-    if(!fecha && !hora) return '';
+function formaUltimaActualizacion(fecha, hora) {
+    if (!fecha && !hora) return '';
     const [y, m, d] = (fecha || '').split('-');
     const fechaFormateada = y && m && d ? `${d}/${m}/${y}` : (fecha || '');
     return `${fechaFormateada} ${hora ? `${hora}` : ''}`.trim();
@@ -28,8 +30,8 @@ export default function TrackingPublico() {
     const [cargando, setCargando] = useState(false);
 
     const idxActual = resultado
-    ? PASOS.findIndex(p => p.key === resultado.estado)
-    : -1;
+        ? PASOS.findIndex(p => p.key === resultado.estado)
+        : -1;
 
     const pasosFiltrados = resultado?.estado === 'CANCELADO'
         ? PASOS.filter(p => p.key !== 'ENTREGADO')
@@ -56,26 +58,26 @@ export default function TrackingPublico() {
             setCargando(false);
         }
     }
-        return(
-            <div style={{
-                backgroundImage: `url(${bg})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
-                minHeight: '100vh',
-                width: '100vw',
-                overflowX: 'hidden',
-                overflowY: 'auto',
-                boxSizing: 'border-box',
-                paddingBottom: 24
-            }}>
-            <Navbar/>
+    return (
+        <div style={{
+            backgroundImage: `url(${bg})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            minHeight: '100vh',
+            width: '100vw',
+            overflowX: 'hidden',
+            overflowY: 'auto',
+            boxSizing: 'border-box',
+            paddingBottom: 24
+        }}>
+            <Navbar />
 
             <div style={{
-                maxWidth: 820, 
-                margin: '20px auto', 
+                maxWidth: 820,
+                margin: '20px auto',
                 width: 'calc(100% - 32px)',
-                padding: '32px 24px', 
+                padding: '32px 24px',
                 color: '#111827',
                 background: '#ffffff',
                 borderRadius: 16,
@@ -86,7 +88,7 @@ export default function TrackingPublico() {
                 <p style={{ margin: '0 0 16px 0', fontSize: 'clamp(0.875rem, 3vw, 1rem)' }}>Ingresá tu Tracking ID para consultar el estado de tu envío.</p>
 
                 <form onSubmit={consultar} style={{
-                    display: 'flex', 
+                    display: 'flex',
                     alignItems: 'center',
                     position: 'relative',
                     marginTop: 12,
@@ -97,8 +99,8 @@ export default function TrackingPublico() {
                         onChange={(e) => setTrackingId(e.target.value)}
                         placeholder="Ej: A1B2C3D4"
                         style={{
-                            width: '100%', 
-                            padding: '12px 50px 12px 14px', 
+                            width: '100%',
+                            padding: '12px 50px 12px 14px',
                             boxSizing: 'border-box',
                             borderRadius: 8,
                             border: '1px solid #D1D5DB',
@@ -107,37 +109,37 @@ export default function TrackingPublico() {
                         }}
                     />
                     <button type="submit"
-                            disabled={cargando}
-                            style={{
-                                position: 'absolute',
-                                right: 6,
-                                top: '50%',
-                                transform: 'translateY(-50%)',
-                                background: cargando ? '#059669' : '#00A86B',
-                                color: '#fff',
-                                border: 'none',
-                                cursor: cargando ? 'not-allowed' : 'pointer',
-                                borderRadius: 6,
-                                width: 36,
-                                height: 36,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                transition: "filter 0.15s ease, background 0.15s ease",
-                                filter: cargando ? 'brightness(0.95)' : 'none',
-                            }}
-                                onMouseEnter={(e) => {
-                                    if(!cargando) e.currentTarget.style.filter = 'brightness(0.92)';
-                                }}
-                                onMouseOut={(e) => {
-                                    e.currentTarget.style.filter = cargando ? 'brightness(0.95)' : 'none';
-                                }}
-                                >
+                        disabled={cargando}
+                        style={{
+                            position: 'absolute',
+                            right: 6,
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            background: cargando ? '#059669' : '#00A86B',
+                            color: '#fff',
+                            border: 'none',
+                            cursor: cargando ? 'not-allowed' : 'pointer',
+                            borderRadius: 6,
+                            width: 36,
+                            height: 36,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            transition: "filter 0.15s ease, background 0.15s ease",
+                            filter: cargando ? 'brightness(0.95)' : 'none',
+                        }}
+                        onMouseEnter={(e) => {
+                            if (!cargando) e.currentTarget.style.filter = 'brightness(0.92)';
+                        }}
+                        onMouseOut={(e) => {
+                            e.currentTarget.style.filter = cargando ? 'brightness(0.95)' : 'none';
+                        }}
+                    >
                         {cargando ? (
-                            <svg 
-                                width="18" 
-                                height="18" 
-                                viewBox="0 0 24 24" 
+                            <svg
+                                width="18"
+                                height="18"
+                                viewBox="0 0 24 24"
                                 xmlns="http://www.w3.org/2000/svg"
                                 style={{
                                     animation: 'spin 1s linear infinite',
@@ -157,19 +159,19 @@ export default function TrackingPublico() {
                         )}
                     </button>
                 </form>
-            {error && (
-                <div style={{marginTop: 16, color: '#DC2626'}}>
-                    {error}
-                </div>
-            )}
+                {error && (
+                    <div style={{ marginTop: 16, color: '#DC2626' }}>
+                        {error}
+                    </div>
+                )}
 
-            {resultado && (
-                <div style={{ marginTop: 32 }}>
-                    <h2 style={{ marginBottom: 24, fontSize: 'clamp(1.25rem, 4vw, 1.5rem)' }}>
-                        Estado actual: {resultado.estado?.replaceAll('_', ' ')}
-                    </h2>
+                {resultado && (
+                    <div style={{ marginTop: 32 }}>
+                        <h2 style={{ marginBottom: 24, fontSize: 'clamp(1.25rem, 4vw, 1.5rem)' }}>
+                            Estado actual: {resultado.estado?.replaceAll('_', ' ')}
+                        </h2>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', marginTop: 22 }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', marginTop: 22 }}>
                             {pasosFiltrados.map((p, i) => {
                                 const idxEnOriginal = PASOS.findIndex(orig => orig.key === p.key);
                                 const completado = idxActual !== -1 && idxEnOriginal <= idxActual;
@@ -178,68 +180,100 @@ export default function TrackingPublico() {
                                 const borderCircleColor = actual || completado ? '#00A86B' : '#9CA3AF';
                                 const bgCircleColor = actual ? '#00A86B' : '#ffffff';
                                 const lineBg = completado && idxActual > idxEnOriginal ? '#00A86B' : '#F3F4F6';
-                            
-                            return(
-                                <div key={p.key} style={{ display: 'flex', flexDirection: 'column' }}>
-                                    <div style={{ 
-                                        display: 'flex', 
-                                        alignItems: 'center', 
-                                        justifyContent: 'space-between', 
-                                        gap: 16,
-                                        flexWrap: 'wrap'
-                                    }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                                            <div style={{
-                                                width: 24,
-                                                height: 24,
-                                                borderRadius: '50%',
-                                                border: `3px solid ${borderCircleColor}`,
-                                                background: bgCircleColor,
+
+                                return (
+                                    <div key={p.key} style={{ display: 'flex', flexDirection: 'column' }}>
+                                        <div
+                                            style={{
                                                 display: 'flex',
                                                 alignItems: 'center',
-                                                justifyContent: 'center',
-                                                flexShrink: 0,
-                                                boxSizing: 'border-box'
+                                                justifyContent: 'space-between',
+                                                gap: 16,
+                                                flexWrap: 'wrap'
                                             }}
-                                            title={p.label}
-                                            />
+                                        >
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                                                <div
+                                                    style={{
+                                                        width: 24,
+                                                        height: 24,
+                                                        borderRadius: '50%',
+                                                        border: `3px solid ${borderCircleColor}`,
+                                                        background: bgCircleColor,
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        flexShrink: 0,
+                                                        boxSizing: 'border-box'
+                                                    }}
+                                                    title={p.label}
+                                                />
 
-                                            <div style={{ fontSize: 14, fontWeight: actual ? 700 : 500, color: actual ? '#00A86B' : '#111827' }}>
-                                                {p.label}
+                                                <div
+                                                    style={{
+                                                        fontSize: 14,
+                                                        fontWeight: actual ? 700 : 500,
+                                                        color: actual ? '#00A86B' : '#111827'
+                                                    }}
+                                                >
+                                                    {p.label}
+                                                </div>
                                             </div>
+
+                                            {actual && (
+                                                <div
+                                                    style={{
+                                                        fontSize: 14,
+                                                        color: '#00A86B',
+                                                        fontWeight: 700,
+                                                        marginLeft: 'auto',
+                                                        paddingLeft: 40
+                                                    }}
+                                                >
+                                                    {formaUltimaActualizacion(resultado.fechaUltimoEstado, resultado.horaUltimoEstado)}
+                                                </div>
+                                            )}
                                         </div>
 
-                                        {actual && (
-                                            <div style={{ 
-                                                fontSize: 14, 
-                                                color: '#00A86B', 
-                                                fontWeight: 700,
-                                                marginLeft: 'auto',
-                                                paddingLeft: 40
-                                            }}>
-                                                {formaUltimaActualizacion(resultado.fechaUltimoEstado, resultado.horaUltimoEstado)}
-                                            </div>
+                                        {i < pasosFiltrados.length - 1 && (
+                                            <div
+                                                style={{
+                                                    width: 2,
+                                                    height: 32,
+                                                    background: lineBg,
+                                                    marginLeft: 11,
+                                                    marginTop: 4,
+                                                    marginBottom: 4
+                                                }}
+                                            />
                                         )}
                                     </div>
+                                );
+                            })}
+                        </div>
 
-                                    {i < pasosFiltrados.length - 1 && (
-                                        <div style={{
-                                            width: 2, 
-                                            height: 32, 
-                                            background: lineBg,
-                                            marginLeft: 11,
-                                            marginTop: 4,
-                                            marginBottom: 4
-                                        }} />
-                                    )}
-                                </div>
-                            );
-                        })}
+                        <div style={{ marginTop: 24 }}>
+                            <Link
+                                to="/reclamo-cambio-datos"
+                                state={{ trackingId: resultado.trackingId || trackingId }}
+                                style={{
+                                    display: 'inline-block',
+                                    background: '#2563EB',
+                                    color: '#fff',
+                                    padding: '10px 16px',
+                                    borderRadius: 8,
+                                    textDecoration: 'none',
+                                    fontWeight: 600
+                                }}
+                            >
+                                ¿Tenés un problema con tu envío? Hacé clic acá para registrar un reclamo.
+                            </Link>
+                        </div>
                     </div>
-                </div>
-            )}
-            </div>
-            </div>
-        );
+                )}
 
-    }
+            </div>
+        </div>
+    );
+
+}
