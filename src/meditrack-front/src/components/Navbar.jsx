@@ -9,6 +9,7 @@ import {
   marcarTodasNotificacionesLeidas
 } from '../services/api';
 import { useNotificacionesWS } from '../hooks/useNotificacionesWS';
+import NotificacionToast from './NotificacionToast';
 import logo from '../assets/logo.png';
 import ModalHistorialNotificaciones from './ModalHistorialNotificaciones';
 
@@ -20,6 +21,7 @@ function Navbar({ publicMode = false, buttonText, buttonRoute }) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [toasts, setToasts] = useState([]);
   const dropdownRef = useRef(null);
 
   const wsToken = user?.token ?? null;
@@ -28,6 +30,11 @@ function Navbar({ publicMode = false, buttonText, buttonRoute }) {
   const handleNuevaNotificacion = useCallback((notif) => {
     setUnreadCount(prev => prev + 1);
     setNotifications(prev => [notif, ...prev]);
+    setToasts(prev => [...prev, notif]);
+  }, []);
+
+  const removeToast = useCallback((id) => {
+    setToasts(prev => prev.filter(t => t.id !== id));
   }, []);
 
   useNotificacionesWS(wsUserId, wsToken, handleNuevaNotificacion);
@@ -294,6 +301,7 @@ function Navbar({ publicMode = false, buttonText, buttonRoute }) {
           </>
         )}
       </div>
+      <NotificacionToast toasts={toasts} onRemove={removeToast} />
     </nav>
   );
 }
