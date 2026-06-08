@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { getRutas, getClientes } from '../../services/api';
+import { getRutas, getClientes, getEnvioById } from '../../services/api';
 import MapaRuta from '../../components/MapaRuta';
 import OfflineBanner from '../../components/OfflineBanner';
 import { iconos, DefaultIcon } from '../../util/Util';
@@ -309,6 +309,18 @@ function Viajes() {
             const todasLasRutas = await getRutas();
             const misRutas = todasLasRutas.filter(r => r.repartidorId === user.id);
             setRutas(misRutas);
+
+            // Precarga en segundo plano de detalles de envíos para rutas activas (cacheado offline)
+            if (navigator.onLine) {
+                const activas = misRutas.filter(r => r.estado !== 'COMPLETADA');
+                const enviosIds = activas.flatMap(r => r.envios ? r.envios.map(re => re.envio?.id).filter(Boolean) : []);
+                if (enviosIds.length > 0) {
+                    console.log(`[Offline Sync] Pre-fetching details for ${enviosIds.length} shipments...`);
+                    Promise.all(enviosIds.map(id => 
+                        getEnvioById(id).catch(err => console.warn(`Error pre-fetching envio ${id}`, err))
+                    ));
+                }
+            }
         } catch (error) {
             console.error("Error al cargar rutas", error);
         } finally {

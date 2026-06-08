@@ -3,6 +3,7 @@ const PRECACHE_ASSETS = [
   '/',
   '/index.html',
   '/favicon.svg',
+  '/icons.svg',
   '/logo192.png',
   '/logo512.png'
 ];
