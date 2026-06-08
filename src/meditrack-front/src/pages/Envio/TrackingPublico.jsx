@@ -345,7 +345,7 @@ export default function TrackingPublico() {
                 type={modalType}
                 onClose={() => setIsModalOpen(false)}
             />
-            </div>
+           
         </div>
     );
 
