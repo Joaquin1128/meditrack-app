@@ -521,11 +521,14 @@ function NuevaRuta() {
           </table>
 
           <div style={{ marginTop: '24px', padding: '16px', backgroundColor: '#F9FAFB', borderRadius: '8px', fontSize: '13px', color: '#6b7280' }}>
+
             <strong style={{ color: '#374151' }}>Resumen:</strong>{" "}
             Ruta para el <strong style={{ color: '#111827' }}>{fecha}</strong> |{" "}
             Repartidor: <strong style={{ color: '#111827' }}>{repartidores.find(r => r.id === repartidorId)?.nombre}</strong> |{" "}
             Transporte: <strong style={{ color: '#111827' }}>{getNombreTransporte(transporteId)}</strong> |{" "}
-            {seleccionados.length} envíos · {paradas.length} paradas
+            {seleccionados.length} {seleccionados.length === 1 ? 'envío' : 'envíos' } · 
+            {paradas.length} {paradas.length === 1 ? 'parada' : 'paradas' }
+
           </div>
 
           <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'space-between' }}>

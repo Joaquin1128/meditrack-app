@@ -29,6 +29,8 @@ import Reportes from './pages/Reportes/Reportes';
 import DashboardKPI from './pages/Reportes/DashboardKPI';
 import { LoadScript } from "@react-google-maps/api";
 import Mails from './pages/Mails/Mails';
+import ReclamoCambioDatos from './pages/ReclamoCambioDato/ReclamoCambioDatos';
+import Repartidores from './pages/Usuarios/Repartidores';
 
 
 function App() {
@@ -43,6 +45,7 @@ function App() {
             <Route path="/" element={<TrackingPublico />} />
             <Route path="/login" element={<Login />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reclamo-cambio-datos" element={ <ReclamoCambioDatos />}/>
             <Route element={<ProtectedLayout />}>
               <Route path="/menu" element={<MainMenu />} />
               <Route path="/envios" element={<Home />} />
@@ -66,8 +69,8 @@ function App() {
               <Route path="/reportes" element={<ProtectedRoute roles={['SUPERVISOR', 'ADMINISTRADOR']}><Reportes /></ProtectedRoute>} />
               <Route path="/kpis" element={<ProtectedRoute roles={['SUPERVISOR', 'ADMINISTRADOR']}><DashboardKPI /></ProtectedRoute>} />
               <Route path="/transportes" element={<ProtectedRoute roles={['ADMINISTRADOR', 'SUPERVISOR', 'REPARTIDOR']}><Transportes /></ProtectedRoute>} />
-              <Route path="/mails" element={ <ProtectedRoute roles={['SUPERVISOR', 'ADMINISTRADOR']}><Mails /></ProtectedRoute> }
-              />
+              <Route path="/mails" element={ <ProtectedRoute roles={['SUPERVISOR', 'ADMINISTRADOR']}><Mails /></ProtectedRoute> }/>
+              <Route path="/repartidor" element={ <ProtectedRoute roles={['SUPERVISOR', 'ADMINISTRADOR']}><Repartidores /></ProtectedRoute> }/>
             </Route>
             <Route path="*" element={<Navigate to="/menu" replace />} />
           </Routes>
