@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { LoadScript } from '@react-google-maps/api';
 import ProtectedLayout from './components/ProtectedLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Home/Login';
@@ -27,10 +28,11 @@ import EditarCliente from './pages/Clientes/EditarCliente';
 import Transportes from './pages/Transportes/Transportes';
 import Reportes from './pages/Reportes/Reportes';
 import DashboardKPI from './pages/Reportes/DashboardKPI';
-import { LoadScript } from "@react-google-maps/api";
 import Mails from './pages/Mails/Mails';
 import ReclamoCambioDatos from './pages/ReclamoCambioDato/ReclamoCambioDatos';
 import Repartidores from './pages/Usuarios/Repartidores';
+
+
 
 function App() {
   return (
