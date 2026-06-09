@@ -19,7 +19,6 @@ function Transportes() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [errorModal, setErrorModal] = useState('');
-    const [searchExpanded, setSearchExpanded] = useState(false);
 
     const [modalAbierto, setModalAbierto] = useState(false);
     const [modoEdicion, setModoEdicion] = useState(false);
