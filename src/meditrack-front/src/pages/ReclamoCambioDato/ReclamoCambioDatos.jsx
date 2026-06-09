@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { crearReclamoCambioDatos } from '../../services/api';
 import Navbar from '../../components/Navbar';
-import bg from '../../assets/bg.png';
 
 function ReclamoCambioDatos() {
     const location = useLocation();
