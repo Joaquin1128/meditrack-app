@@ -68,7 +68,7 @@ function Rutas() {
   return (
     <div className="container rutas-container">
       <div className="page-header-row">
-        <button className="btn btn-secondary" onClick={() => navigate('/menu')}>VOLVER</button>
+        <button className="btn btn-secondary" onClick={() => navigate(-1)}>VOLVER</button>
         <h1 style={{ fontSize: '24px', fontWeight: '800', color: '#111827' }}>Gestión de rutas</h1>
       </div>
 
@@ -76,23 +76,12 @@ function Rutas() {
         <div className="table-header-actions">
           <input
             className="search-input"
-            style={{ margin: 0, flexGrow: 1 }}
             placeholder="Buscar por ID, repartidor o fecha..."
             value={busqueda}
             onChange={e => setBusqueda(e.target.value)}
           />
           <select
             className="status-filter-select"
-            style={{
-              padding: '12px',
-              border: '1px solid #E5E7EB',
-              borderRadius: '8px',
-              fontSize: '14px',
-              backgroundColor: '#fff',
-              cursor: 'pointer',
-              minWidth: '160px',
-              flexShrink: 0
-            }}
             value={filtroEstado}
             onChange={e => setFiltroEstado(e.target.value)}
           >

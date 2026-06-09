@@ -197,7 +197,7 @@ function Medicamentos() {
             `}</style>
             
             <div className="page-header-row">
-                <button className="btn btn-secondary" onClick={() => navigate('/menu')}>VOLVER</button>
+                <button className="btn btn-secondary" onClick={() => navigate(-1)}>VOLVER</button>
                 <h1 style={{ fontSize: '24px', fontWeight: '800', color: '#111827' }}>Gestión de medicamentos</h1>
             </div>
 
