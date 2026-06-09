@@ -5,6 +5,7 @@ import ModalHistorial from '../../components/ModalHistorial';
 import StatusLine from '../../components/StatusLine';
 import ModalCancelacion from '../../components/ModalCancelacion';
 import { useAuth } from '../../context/AuthContext';
+import { Copy, Check } from 'lucide-react';
 
 const ESTADO_COLORS = {
   PENDIENTE: '#6b7280',
@@ -52,6 +53,7 @@ function DetalleEnvio() {
   const [cancelacionAbierta, setCancelacionAbierta] = useState(false);
   const [modalReasignarAbierto, setModalReasignarAbierto] = useState(false);
   const [showSnackbar, setShowSnackbar] = useState(false);
+  const [copiado, setCopiado] = useState(false);
   
   const [modalForm, setModalForm] = useState({ nuevoEstado: '', fecha: '', hora: '', usuario: '', repartidorId: '' });
   const [repartidorReasignar, setRepartidorReasignar] = useState('');
@@ -322,6 +324,14 @@ function DetalleEnvio() {
     }
   };
 
+  const handleCopiarId = () => {
+    if (envio?.id) {
+      navigator.clipboard.writeText(envio.id);
+      setCopiado(true);
+      setTimeout(() => setCopiado(false), 2000);
+    }
+  };
+
   const getNombreRepartidor = (repartidorId) => {
     if (!repartidorId) return 'Sin asignar';
     const rep = repartidores.find(r => r.id === repartidorId);
@@ -479,7 +489,26 @@ function DetalleEnvio() {
         <div className="info-row-grid">
           <div className="detail-field">
             <label>TRACKING ID</label>
-            <span style={{ fontWeight: 'bold', color: '#2563EB' }}>{envio.id}</span>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontWeight: 'bold', color: '#2563EB' }}>{envio.id}</span>
+              <button
+                onClick={handleCopiarId}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  padding: '4px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: copiado ? '#10B981' : '#9CA3AF',
+                  transition: 'color 0.2s'
+                }}
+                title="Copiar ID al portapapeles"
+              >
+                {copiado ? <Check size={16} /> : <Copy size={16} />}
+              </button>
+            </div>
           </div>
           <div className="detail-field">
             <label>ESTADO</label>

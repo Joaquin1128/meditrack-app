@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
-import { Calendar, Eye, Clock, Download, Plus, ArrowLeft, ArrowRight, Search, EllipsisVertical } from 'lucide-react';
+import { Calendar, Eye, Clock, Download, Plus, ArrowLeft, ArrowRight, Search, EllipsisVertical, Copy, Check } from 'lucide-react';
 import { getEnvios, descargarEtiqueta } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import ModalHistorial from '../../components/ModalHistorial';
@@ -43,6 +43,7 @@ function Home() {
   const [activeIndex, setActiveIndex] = useState(null);
   const [envioSeleccionado, setEnvioSeleccionado] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [copiadoId, setCopiadoId] = useState(null);
   
   const navigate = useNavigate();
   const location = useLocation();
@@ -138,6 +139,12 @@ function Home() {
 
   const totalPages = Math.ceil(filtradosYOrdenados.length / ITEMS_PER_PAGE);
   const paginatedData = filtradosYOrdenados.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+  const handleCopiarId = (id) => {
+    navigator.clipboard.writeText(id);
+    setCopiadoId(id);
+    setTimeout(() => setCopiadoId(null), 2000);
+  };
 
   return (
     <div className="container">
@@ -380,7 +387,28 @@ function Home() {
             ) : (
                 paginatedData.map(e => (
                     <tr key={e.id}>
-                        <td style={{ fontWeight: 'bold', color: '#2563EB' }}>{e.id}</td>
+                        <td style={{ fontWeight: 'bold', color: '#2563EB' }}>
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                {e.id}
+                                <button
+                                    onClick={() => handleCopiarId(e.id)}
+                                    style={{
+                                        background: 'none',
+                                        border: 'none',
+                                        padding: '2px',
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        color: copiadoId === e.id ? '#10B981' : '#9CA3AF',
+                                        transition: 'color 0.2s'
+                                    }}
+                                    title="Copiar ID al portapapeles"
+                                >
+                                    {copiadoId === e.id ? <Check size={14} /> : <Copy size={14} />}
+                                </button>
+                            </div>
+                        </td>
                         <td>{e.destinatario}</td>
                         <td className="mobile-hidden"><span className="status-tag" style={{ backgroundColor: `${ESTADO_COLORS[e.estado]}15`, color: ESTADO_COLORS[e.estado] }}>{e.estado?.replace(/_/g, ' ')}</span></td>
                         <td className="mobile-hidden" style={{ fontSize: '13px' }}>{e.fechaCreacion}</td>
