@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { login as apiLogin, verify2fa } from '../../services/api';
 import Navbar from '../../components/Navbar';
 import bg from '../../assets/bg.png';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Copy, Check } from 'lucide-react';
 import LegalModal from '../../components/LegalModal';
 
 function Login() {
@@ -25,6 +25,18 @@ function Login() {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState('terms');
+
+  const [copiadoEmail, setCopiadoEmail] = useState('');
+
+  const handleCopiarEmail = (email) => {
+    navigator.clipboard.writeText(email);
+    setCopiadoEmail(email);
+    setTimeout(() => setCopiadoEmail(''), 2000);
+  };
+
+  const handleAutoFill = (email, password) => {
+    setForm({ email, password });
+  };
 
   if (user) return <Navigate to="/menu" replace />;
 
@@ -284,12 +296,46 @@ function Login() {
         </form>
 
         {step === 1 && (
-          <div style={{ marginTop: 32, fontSize: '12px', color: '#6b7280', borderTop: '1px solid #e5e7eb', paddingTop: 16, textAlign: 'center' }}>
-            <strong style={{ display: 'block', marginBottom: 8 }}>Usuarios de prueba:</strong>
-            supervisor@meditrack.com · 1234<br />
-            repartidor@meditrack.com · 1234<br />
-            operador@meditrack.com · 1234<br />
-            admin@meditrack.com · admin123
+          <div style={{ marginTop: 32, fontSize: '12px', color: '#6b7280', borderTop: '1px solid #e5e7eb', paddingTop: 16 }}>
+            <strong style={{ display: 'block', marginBottom: 12, textAlign: 'center' }}>Usuarios de prueba (haz click para autocompletar):</strong>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {[
+                { email: 'supervisor@meditrack.com', pass: '1234', label: 'Supervisor' },
+                { email: 'repartidor@meditrack.com', pass: '1234', label: 'Repartidor' },
+                { email: 'operador@meditrack.com', pass: '1234', label: 'Operador' },
+                { email: 'admin@meditrack.com', pass: 'admin123', label: 'Administrador' }
+              ].map(testUser => (
+                <div 
+                  key={testUser.email} 
+                  onClick={() => handleAutoFill(testUser.email, testUser.pass)}
+                  style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center', 
+                    background: '#F9FAFB', 
+                    padding: '6px 10px', 
+                    borderRadius: '6px', 
+                    border: '1px solid #F3F4F6',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.borderColor = '#00A86B';
+                    e.currentTarget.style.background = '#F0FDF4';
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.borderColor = '#F3F4F6';
+                    e.currentTarget.style.background = '#F9FAFB';
+                  }}
+                  title="Click para autocompletar"
+                >
+                  <span style={{ fontSize: '11px', color: '#374151' }}>{testUser.email}</span>
+                  <span style={{ fontSize: '11px', color: '#6B7280', fontWeight: 'bold' }}>
+                    {testUser.pass}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
