@@ -419,7 +419,11 @@ td {
   padding: 30px;
   border-radius: 12px;
   width: 450px;
+  max-width: 95%;
+  max-height: 90vh;
+  overflow-y: auto;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
 }
 
 .modal-content h2 {
@@ -1129,7 +1133,6 @@ input:checked+.slider:before {
   .mobile-nav-item:active svg {
     transform: scale(0.9);
   }
-
   /* Padding for main content to prevent mobile nav overlap */
   .main-content-wrapper {
     padding-bottom: 74px;
@@ -1138,5 +1141,11 @@ input:checked+.slider:before {
   /* Hide the top text "VOLVER" button inside header rows on mobile screens */
   .page-header-row button.btn-secondary {
     display: none !important;
+  }
+
+  /* Responsive grid for forms */
+  .form-grid {
+    grid-template-columns: 1fr !important;
+    gap: 15px !important;
   }
 }
