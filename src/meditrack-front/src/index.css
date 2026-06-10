@@ -1139,4 +1139,47 @@ input:checked+.slider:before {
   .page-header-row button.btn-secondary {
     display: none !important;
   }
+
+  /* Responsividad para Formularios y Contenedores */
+  .container {
+    padding: 15px 10px !important;
+  }
+  
+  .card {
+    padding: 16px !important;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  /* Responsividad para la fila de agregar medicamento en Nuevo/Editar Envío */
+  .add-medicine-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+
+  .add-medicine-row > div,
+  .add-medicine-row .qty-wrapper {
+    width: 100% !important;
+    flex: none !important;
+  }
+
+  .add-medicine-row button {
+    width: 100% !important;
+    margin-top: 5px !important;
+  }
+
+  /* Responsividad para botones de acción del formulario */
+  .form-actions-row {
+    flex-direction: column-reverse !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+
+  .form-actions-row button {
+    width: 100% !important;
+  }
 }
