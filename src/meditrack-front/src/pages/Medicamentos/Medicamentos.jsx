@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Search } from 'lucide-react';
-import { inactivarMedicamento, getMedicamentos } from '../../services/api';
+import { inactivarMedicamento, getMedicamentos, BASE_URL } from '../../services/api';
 
 const Skeleton = ({ width = '100%', height = '20px', borderRadius = '4px' }) => (
     <div style={{ width, height, borderRadius, backgroundColor: '#E5E7EB', animation: 'pulse 1.5s infinite' }} />
@@ -14,6 +14,21 @@ function Medicamentos() {
     const [paginaActual, setPaginaActual] = useState(1);
     const medicamentosPorPagina = 10;
     const navigate = useNavigate();
+    const location = useLocation();
+    const hasProcessedSuccess = useRef(false);
+    const [showSnackbar, setShowSnackbar] = useState(false);
+    const [isEdit, setIsEdit] = useState(false);
+
+    useEffect(() => {
+        if ((location.state?.success || location.state?.editSuccess) && !hasProcessedSuccess.current) {
+            hasProcessedSuccess.current = true;
+            setIsEdit(!!location.state?.editSuccess);
+            setShowSnackbar(true);
+            const timer = setTimeout(() => setShowSnackbar(false), 3000);
+            window.history.replaceState({}, document.title);
+            return () => clearTimeout(timer);
+        }
+    }, [location.state]);
 
     useEffect(() => {
         getMedicamentos()
@@ -59,6 +74,11 @@ function Medicamentos() {
 
     return (
         <div className="container">
+            {showSnackbar && (
+                <div className={`snackbar-msg ${isEdit ? 'edit' : ''}`}>
+                    {isEdit ? '¡Medicamento editado correctamente!' : '¡Medicamento creado correctamente!'}
+                </div>
+            )}
             <style>{`
                 @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
                 
@@ -271,7 +291,7 @@ function Medicamentos() {
                                                             m.imagenUrl
                                                                 ? (m.imagenUrl.startsWith('http') 
                                                                     ? m.imagenUrl 
-                                                                    : `http://localhost:8080${m.imagenUrl}`)
+                                                                    : `${BASE_URL}${m.imagenUrl}`)
                                                                 : '/placeholder-medicamento.png'
                                                         }
                                                         alt={m.nombre}
@@ -411,7 +431,7 @@ function Medicamentos() {
                                                 m.imagenUrl
                                                     ? (m.imagenUrl.startsWith('http') 
                                                         ? m.imagenUrl 
-                                                        : `http://localhost:8080${m.imagenUrl}`)
+                                                        : `${BASE_URL}${m.imagenUrl}`)
                                                     : '/placeholder-medicamento.png'
                                             }
                                             alt={m.nombre}
