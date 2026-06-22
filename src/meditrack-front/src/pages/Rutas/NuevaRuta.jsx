@@ -749,8 +749,8 @@ function NuevaRuta() {
               )}
             </div>
 
-
         </div>
+      </div>
       )}
 
       {paso === 3 && (
