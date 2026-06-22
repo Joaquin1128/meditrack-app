@@ -320,16 +320,17 @@ function Viajes() {
     const alertaFatigaIdRef = useRef(alertaFatigaId);
     useEffect(() => { alertaFatigaIdRef.current = alertaFatigaId; }, [alertaFatigaId]);
 
-    useNotificacionesWS(user?.id, user?.token, useCallback((notif) => {
+    const userId = user?.id;
+    useNotificacionesWS(userId, user?.token, useCallback((notif) => {
         if (notif.tipo !== 'DECISION_FATIGA' || !alertaFatigaIdRef.current) return;
         setAlertaFatigaId(null);
         if (notif.decision === 'BLOQUEADO') {
-            getUsuarioById(user.id)
+            getUsuarioById(userId)
                 .then(u => updateUser({ estaBloqueado: u.estaBloqueado, fechaBloqueo: u.fechaBloqueo }))
                 .catch(() => {});
             setViajeBlockeado(true);
         }
-    }, [user?.id, updateUser]));
+    }, [userId, updateUser]));
 
     useEffect(() => {
         setViajeBlockeado(isBlocked());
