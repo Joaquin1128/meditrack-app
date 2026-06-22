@@ -11,6 +11,7 @@ import com.meditrack.back.app.repository.MailRepository;
 import com.meditrack.back.app.repository.MedicamentoRepository;
 import com.meditrack.back.app.repository.UsuarioRepository;
 
+
 @Component
 public class DataSeed implements CommandLineRunner {
 
