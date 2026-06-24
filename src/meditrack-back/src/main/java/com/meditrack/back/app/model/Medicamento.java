@@ -53,6 +53,12 @@ public class Medicamento {
     @Column(name = "peso_gramos")
     private Integer pesoGramos = 0;
 
+    @Column(name = "temperatura_minima")
+    private Double temperaturaMinima;
+
+    @Column(name = "temperatura_maxima")
+    private Double temperaturaMaxima;
+
     public Medicamento(String nombre, String descripcion, String presentacion, int cantidad, String unidadMedida,
             String laboratorio, String monodroga, boolean cadenaFrio, String imagenUrl) {
         this.descripcion = descripcion;
@@ -180,6 +186,22 @@ public class Medicamento {
 
     public void setPesoGramos(Integer pesoGramos) {
         this.pesoGramos = pesoGramos;
+    }
+
+    public Double getTemperaturaMinima() {
+        return temperaturaMinima;
+    }
+
+    public void setTemperaturaMinima(Double temperaturaMinima) {
+        this.temperaturaMinima = temperaturaMinima;
+    }
+
+    public Double getTemperaturaMaxima() {
+        return temperaturaMaxima;
+    }
+
+    public void setTemperaturaMaxima(Double temperaturaMaxima) {
+        this.temperaturaMaxima = temperaturaMaxima;
     }
 
 }
