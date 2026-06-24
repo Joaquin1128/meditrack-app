@@ -58,7 +58,6 @@ public class Medicamento {
 
     @Column(name = "temperatura_maxima")
     private Double temperaturaMaxima;
-
     public Medicamento(String nombre, String descripcion, String presentacion, int cantidad, String unidadMedida,
             String laboratorio, String monodroga, boolean cadenaFrio, String imagenUrl) {
         this.descripcion = descripcion;
@@ -203,5 +202,4 @@ public class Medicamento {
     public void setTemperaturaMaxima(Double temperaturaMaxima) {
         this.temperaturaMaxima = temperaturaMaxima;
     }
-
 }

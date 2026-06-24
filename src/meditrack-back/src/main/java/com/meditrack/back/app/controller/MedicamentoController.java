@@ -162,7 +162,6 @@ public class MedicamentoController {
         body.put("cadenaFrio", String.valueOf(cadenaFrio));
         body.put("volumenCm3", String.valueOf(volumenCm3));
         body.put("pesoGramos", String.valueOf(pesoGramos));
-
         if (temperaturaMinima != null) {
             body.put("temperaturaMinima", String.valueOf(temperaturaMinima));
         }

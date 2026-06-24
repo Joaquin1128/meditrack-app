@@ -61,7 +61,6 @@ public class MedicamentoService {
         medicamento.setUnidadMedida(body.get("unidadMedida"));
         medicamento.setCantidad(Integer.parseInt(body.get("cantidad")));
         medicamento.setLaboratorio(body.get("laboratorio"));
-        
         boolean cadenaFrio = Boolean.parseBoolean(body.get("cadenaFrio"));
         medicamento.setCadenaFrio(cadenaFrio);
         
